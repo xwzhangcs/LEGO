@@ -47,7 +47,7 @@ public:
 	void loadVoxelData(const QString& filename);
 	void saveImage(const QString& filename);
 	void inputVoxel();
-	void simplifyByOpenCV();
+	void simplifyByOpenCV(double epsilon);
 	void simplifyByOurCustom();
 	double calculateBuildingHeight(const std::vector<cv::Mat>& voxel_data, const std::vector<glm::dvec2>& footprint, const std::vector<std::vector<glm::dvec2>>& holes);
 	glm::dvec2 samplePoint(const glutils::BoundingBox& bbox, const std::vector<glm::dvec2>& polygon);

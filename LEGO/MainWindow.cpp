@@ -1,6 +1,7 @@
 #include "MainWindow.h"
 #include <QFileDialog>
 #include <iostream>
+#include "OpenCVOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -54,8 +55,11 @@ void MainWindow::onInputVoxel() {
 }
 
 void MainWindow::onSimplifyByOpenCV() {
-	glWidget->simplifyByOpenCV();
-	glWidget->update();
+	OpenCVOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->simplifyByOpenCV(dlg.getEpsilon());
+		glWidget->update();
+	}
 }
 
 void MainWindow::onSimplifyByOurCustom() {

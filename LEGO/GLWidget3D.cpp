@@ -317,7 +317,7 @@ void GLWidget3D::inputVoxel() {
 	update3DGeometry(voxel_data);
 }
 
-void GLWidget3D::simplifyByOpenCV() {
+void GLWidget3D::simplifyByOpenCV(double epsilon) {
 	std::vector<Building> buildings;
 
 	// get size
@@ -335,7 +335,7 @@ void GLWidget3D::simplifyByOpenCV() {
 		if (hierarchy[i][3] != -1) continue;
 
 		std::vector<cv::Point> simplified_contour;
-		cv::approxPolyDP(contours[i], simplified_contour, 1.0, true);
+		cv::approxPolyDP(contours[i], simplified_contour, epsilon, true);
 
 		if (simplified_contour.size() >= 3) {
 			std::vector<glm::dvec2> footprint(simplified_contour.size());
@@ -348,7 +348,7 @@ void GLWidget3D::simplifyByOpenCV() {
 			int hole_id = hierarchy[i][2];
 			while (hole_id != -1) {
 				std::vector<cv::Point2f> simplified_hole;
-				cv::approxPolyDP(contours[hole_id], simplified_hole, 1.0, true);
+				cv::approxPolyDP(contours[hole_id], simplified_hole, epsilon, true);
 				if (simplified_hole.size() >= 3) {
 					std::vector<glm::dvec2> hole_pts(simplified_hole.size());
 					for (int j = 0; j < simplified_hole.size(); j++) {
