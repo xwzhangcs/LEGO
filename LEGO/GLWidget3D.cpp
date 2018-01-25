@@ -408,55 +408,58 @@ void GLWidget3D::simplifyByOurCustom() {
 	for (int i = 0; i < hierarchy.size(); i++) {
 		if (hierarchy[i][3] != -1) continue;
 
-		std::vector<cv::Point2f> simplified_contour;
-		contour::simplify(contours[i], simplified_contour);
-		if (simplified_contour.size() >= 3) {
-			std::vector<glm::dvec2> footprint(simplified_contour.size());
-			for (int j = 0; j < footprint.size(); j++) {
-				footprint[j] = glm::dvec2(simplified_contour[j].x, simplified_contour[j].y);
-			}
+		try {
+			Building building = calculateBuilding(contours, hierarchy, i, size, 1.0);
 
-			// simplify the hole as well
-			std::vector<std::vector<glm::dvec2>> holes;
-			int hole_id = hierarchy[i][2];
-			while (hole_id != -1) {
-				std::vector<cv::Point2f> simplified_hole;
-				contour::simplify(contours[hole_id], simplified_hole);
-				if (simplified_hole.size() >= 3) {
-					std::vector<glm::dvec2> hole_pts(simplified_hole.size());
-					for (int j = 0; j < simplified_hole.size(); j++) {
-						hole_pts[j] = glm::dvec2(simplified_hole[j].x, simplified_hole[j].y);
+			std::vector<cv::Point2f> simplified_contour;
+			contour::simplify(contours[i], simplified_contour);
+			if (simplified_contour.size() >= 3) {
+				std::vector<glm::dvec2> footprint(simplified_contour.size());
+				for (int j = 0; j < footprint.size(); j++) {
+					footprint[j] = glm::dvec2(simplified_contour[j].x, simplified_contour[j].y);
+				}
+
+				// simplify the hole as well
+				std::vector<std::vector<glm::dvec2>> holes;
+				int hole_id = hierarchy[i][2];
+				while (hole_id != -1) {
+					std::vector<cv::Point2f> simplified_hole;
+					contour::simplify(contours[hole_id], simplified_hole);
+					if (simplified_hole.size() >= 3) {
+						std::vector<glm::dvec2> hole_pts(simplified_hole.size());
+						for (int j = 0; j < simplified_hole.size(); j++) {
+							hole_pts[j] = glm::dvec2(simplified_hole[j].x, simplified_hole[j].y);
+						}
+						holes.push_back(hole_pts);
 					}
-					holes.push_back(hole_pts);
+
+					hole_id = hierarchy[hole_id][0];
 				}
 
-				hole_id = hierarchy[hole_id][0];
-			}
+				// calculate the building height
+				//building.height = calculateBuildingHeight(voxel_data, footprint, holes);
 
-			// create a building object
-			Building building;
-
-			// calculate the building height
-			building.height = calculateBuildingHeight(voxel_data, footprint, holes);
-						
-			// Translate the xy coordinates such that the center of the image will be the center of the world coordinate system.
-			// Also, the y coordinate is flipped vertically because of the fliiped image coordinate system.
-			building.footprint.resize(footprint.size());
-			for (int j = 0; j < footprint.size(); j++) {
-				building.footprint[j] = glm::dvec2(footprint[j].x - size.width() * 0.5, size.height() * 0.5 - footprint[j].y);
-			}
-
-			// simplify the hole as well
-			building.holes.resize(holes.size());
-			for (int j = 0; j < holes.size(); j++) {
-				building.holes[j].resize(holes[j].size());
-				for (int k = 0; k < holes[j].size(); k++) {
-					building.holes[j][k] = glm::dvec2(holes[j][k].x - size.width() * 0.5, size.height() * 0.5 - holes[j][k].y);
+				// Translate the xy coordinates such that the center of the image will be the center of the world coordinate system.
+				// Also, the y coordinate is flipped vertically because of the fliiped image coordinate system.
+				building.footprint.resize(footprint.size());
+				for (int j = 0; j < footprint.size(); j++) {
+					building.footprint[j] = glm::dvec2(footprint[j].x - size.width() * 0.5, size.height() * 0.5 - footprint[j].y);
 				}
+
+				// simplify the hole as well
+				building.holes.resize(holes.size());
+				for (int j = 0; j < holes.size(); j++) {
+					building.holes[j].resize(holes[j].size());
+					for (int k = 0; k < holes[j].size(); k++) {
+						building.holes[j][k] = glm::dvec2(holes[j][k].x - size.width() * 0.5, size.height() * 0.5 - holes[j][k].y);
+					}
+				}
+
+				buildings.push_back(building);
+				cnt++;
 			}
-			
-			buildings.push_back(building);
-			cnt++;
+		}
+		catch (char* ex) {
 		}
 	}
 
@@ -514,6 +517,59 @@ glm::dvec2 GLWidget3D::samplePoint(const glutils::BoundingBox& bbox, const std::
 	}
 
 	return glm::dvec2(bbox.center());
+}
+
+Building GLWidget3D::calculateBuilding(std::vector<std::vector<cv::Point>> contours, std::vector<cv::Vec4i> hierarchy, int i, const QSize& size, double epsilon) {
+	std::vector<cv::Point> simplified_contour;
+	cv::approxPolyDP(contours[i], simplified_contour, epsilon, true);
+
+	if (simplified_contour.size() < 3) throw "Invalid contour";
+
+	std::vector<glm::dvec2> footprint(simplified_contour.size());
+	for (int j = 0; j < footprint.size(); j++) {
+		footprint[j] = glm::dvec2(simplified_contour[j].x, simplified_contour[j].y);
+	}
+
+	// simplify the hole as well
+	std::vector<std::vector<glm::dvec2>> holes;
+	int hole_id = hierarchy[i][2];
+	while (hole_id != -1) {
+		std::vector<cv::Point2f> simplified_hole;
+		cv::approxPolyDP(contours[hole_id], simplified_hole, epsilon, true);
+		if (simplified_hole.size() >= 3) {
+			std::vector<glm::dvec2> hole_pts(simplified_hole.size());
+			for (int j = 0; j < simplified_hole.size(); j++) {
+				hole_pts[j] = glm::dvec2(simplified_hole[j].x, simplified_hole[j].y);
+			}
+			holes.push_back(hole_pts);
+		}
+
+		hole_id = hierarchy[hole_id][0];
+	}
+
+	// create a building object
+	Building building;
+
+	// calculate the building height
+	building.height = calculateBuildingHeight(voxel_data, footprint, holes);
+
+	// Translate the xy coordinates such that the center of the image will be the center of the world coordinate system.
+	// Also, the y coordinate is flipped vertically because of the fliiped image coordinate system.
+	building.footprint.resize(footprint.size());
+	for (int j = 0; j < footprint.size(); j++) {
+		building.footprint[j] = glm::dvec2(footprint[j].x - size.width() * 0.5, size.height() * 0.5 - footprint[j].y);
+	}
+
+	// simplify the hole as well
+	building.holes.resize(holes.size());
+	for (int j = 0; j < holes.size(); j++) {
+		building.holes[j].resize(holes[j].size());
+		for (int k = 0; k < holes[j].size(); k++) {
+			building.holes[j][k] = glm::dvec2(holes[j][k].x - size.width() * 0.5, size.height() * 0.5 - holes[j][k].y);
+		}
+	}
+
+	return building;
 }
 
 void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {

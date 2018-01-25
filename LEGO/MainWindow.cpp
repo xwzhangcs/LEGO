@@ -43,7 +43,7 @@ void MainWindow::onOpen() {
 }
 
 void MainWindow::onSaveImage() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Save screen shot..."), "", tr("Image files (*.png *.jpg *.bmp)"));
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save screen shot..."), "", tr("Image files (*.png)"));
 	if (filename.isEmpty()) return;
 
 	glWidget->saveImage(filename);
