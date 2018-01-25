@@ -18,7 +18,7 @@ public:
 
 
 public slots:
-	void onOpenSliceImage();
+	void onOpen();
 	void onRenderingModeChanged();
 };
 

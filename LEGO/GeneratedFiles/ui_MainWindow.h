@@ -31,6 +31,7 @@ public:
     QAction *actionRenderingBasic;
     QAction *actionRenderingSSAO;
     QAction *actionRenderingHatching;
+    QAction *actionOpen;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -60,6 +61,9 @@ public:
         actionRenderingHatching = new QAction(MainWindowClass);
         actionRenderingHatching->setObjectName(QStringLiteral("actionRenderingHatching"));
         actionRenderingHatching->setCheckable(true);
+        actionOpen = new QAction(MainWindowClass);
+        actionOpen->setObjectName(QStringLiteral("actionOpen"));
+        actionOpen->setIcon(icon);
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -80,7 +84,7 @@ public:
 
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuRendering->menuAction());
-        menuFile->addAction(actionOpenSliceImage);
+        menuFile->addAction(actionOpen);
         menuFile->addSeparator();
         menuFile->addAction(actionExit);
         menuRendering->addAction(actionRenderingBasic);
@@ -101,6 +105,8 @@ public:
         actionRenderingBasic->setText(QApplication::translate("MainWindowClass", "Basic", 0));
         actionRenderingSSAO->setText(QApplication::translate("MainWindowClass", "SSAO", 0));
         actionRenderingHatching->setText(QApplication::translate("MainWindowClass", "Hatching", 0));
+        actionOpen->setText(QApplication::translate("MainWindowClass", "Open", 0));
+        actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
     } // retranslateUi

@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 #include <QFileDialog>
+#include <iostream>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -10,14 +11,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupRendering->addAction(ui.actionRenderingSSAO);
 	groupRendering->addAction(ui.actionRenderingHatching);
 
-	connect(ui.actionOpenSliceImage, SIGNAL(triggered()), this, SLOT(onOpenSliceImage()));
+	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingSSAO, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingHatching, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 
 	// create tool bar for file menu
-	ui.mainToolBar->addAction(ui.actionOpenSliceImage);
+	ui.mainToolBar->addAction(ui.actionOpen);
 
 	// setup the GL widget
 	glWidget = new GLWidget3D(this);
@@ -27,13 +28,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 MainWindow::~MainWindow() {
 }
 
-void MainWindow::onOpenSliceImage() {
-	QString filename = QFileDialog::getOpenFileName(this, tr("Load slice image..."), "", tr("IMage files (*.png *.jpg *.bmp)"));
+void MainWindow::onOpen() {
+	QString filename = QFileDialog::getOpenFileName(this, tr("Load voxel data..."), "", tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) return;
 
-	glWidget->loadSliceImage(filename);
+	// get directory
+	QDir dir = QFileInfo(filename).absoluteDir();
 
-	this->setWindowTitle("LEGO - " + filename);
+	// scan all the files in the directory to get a voxel data
+	QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
+	std::vector<cv::Mat> voxel_data(files.size());
+	for (int i = 0; i < files.size(); i++) {
+		//std::cout << "[" << files[i].toUtf8().constData() << "]" << std::endl;
+		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
+	}
+
+	glWidget->loadVoxelData(voxel_data);
 }
 
 void MainWindow::onRenderingModeChanged() {

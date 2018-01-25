@@ -27,7 +27,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionOpenSliceImage"/>
+    <addaction name="actionOpen"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -93,6 +93,18 @@
    </property>
    <property name="text">
     <string>Hatching</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset>
+     <normaloff>Resources/open.png</normaloff>Resources/open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

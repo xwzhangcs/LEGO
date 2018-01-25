@@ -10,6 +10,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include "Building.h"
+#include "GLUtils.h"
 
 class MainWindow;
 
@@ -41,10 +42,10 @@ public:
 
 	void drawScene();
 	void render();
-	void clear();
-	void open(const QString& filename);
 	void saveImage(const QString& filename);
-	void loadSliceImage(const QString& filename);
+	void loadVoxelData(const std::vector<cv::Mat>& voxel_data);
+	double calculateBuildingHeight(const std::vector<cv::Mat>& voxel_data, const std::vector<glm::dvec2>& footprint, const std::vector<std::vector<glm::dvec2>>& holes);
+	glm::dvec2 samplePoint(const glutils::BoundingBox& bbox, const std::vector<glm::dvec2>& polygon);
 	void update3DGeometry();
 
 	void keyPressEvent(QKeyEvent* e);

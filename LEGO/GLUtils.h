@@ -24,22 +24,22 @@ namespace glutils {
 
 	class BoundingBox {
 	public:
-		glm::vec3 minPt;
-		glm::vec3 maxPt;
+		glm::dvec3 minPt;
+		glm::dvec3 maxPt;
 
 	public:
 		BoundingBox();
-		BoundingBox(const std::vector<glm::vec2>& points);
-		BoundingBox(const std::vector<glm::vec3>& points);
-		BoundingBox(const std::vector<std::vector<glm::vec3> >& points);
-		void addPoint(const glm::vec2& point);
-		void addPoint(const glm::vec3& point);
-		float sx() { return maxPt.x - minPt.x; }
-		float sy() { return maxPt.y - minPt.y; }
-		float sz() { return maxPt.z - minPt.z; }
-		glm::vec3 center() { return (maxPt + minPt) * 0.5f; }
-		bool contains(const glm::vec2& point, float threshold);
-		bool contains(const glm::vec3& point, float threshold);
+		BoundingBox(const std::vector<glm::dvec2>& points);
+		BoundingBox(const std::vector<glm::dvec3>& points);
+		BoundingBox(const std::vector<std::vector<glm::dvec3>>& points);
+		void addPoint(const glm::dvec2& point);
+		void addPoint(const glm::dvec3& point);
+		double sx() const { return maxPt.x - minPt.x; }
+		double sy() const { return maxPt.y - minPt.y; }
+		double sz() const { return maxPt.z - minPt.z; }
+		glm::dvec3 center() const { return (maxPt + minPt) * 0.5; }
+		bool contains(const glm::dvec2& point, double threshold) const;
+		bool contains(const glm::dvec3& point, double threshold) const;
 	};
 
 	// The following definitions are for triangulation only.
@@ -71,6 +71,7 @@ namespace glutils {
 	// geometry computation
 	float crossProduct(const glm::vec2& a, const glm::vec2& b);
 	bool isWithinPolygon(const glm::vec2& p, const std::vector<glm::vec2>& points);
+	bool isWithinPolygon(const glm::dvec2& p, const std::vector<glm::dvec2>& points);
 	float area(const std::vector<glm::vec2>& points);
 	void offsetPolygon(const std::vector<glm::vec2>& points, float offsetDistance, std::vector<glm::vec2>& offset_points);
 	float distance(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, bool segmentOnly = false);

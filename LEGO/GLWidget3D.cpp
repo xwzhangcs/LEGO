@@ -294,15 +294,6 @@ void GLWidget3D::render() {
 	glActiveTexture(GL_TEXTURE0);
 }
 
-void GLWidget3D::clear() {
-	update();
-}
-
-void GLWidget3D::open(const QString& filename) {
-
-	update();
-}
-
 void GLWidget3D::saveImage(const QString& filename) {
 	/*
 	QPixmap pixmap(size());
@@ -313,17 +304,18 @@ void GLWidget3D::saveImage(const QString& filename) {
 	image.save(filename);
 }
 
-void GLWidget3D::loadSliceImage(const QString& filename) {
+void GLWidget3D::loadVoxelData(const std::vector<cv::Mat>& voxel_data) {
 	buildings.clear();
 
-	// read an image
-	cv::Mat img = cv::imread(filename.toUtf8().constData(), cv::IMREAD_GRAYSCALE);
+	// get size
+	QSize size(voxel_data[0].cols, voxel_data[0].rows);
 
 	// extract contours
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
 	//cv::findContours(img.clone(), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-	cv::findContours(img.clone(), contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+	cv::findContours(voxel_data[5].clone(), contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
 
 	// traverse all the external contours
 	for (int i = 0; i < hierarchy.size(); i++) {
@@ -332,16 +324,13 @@ void GLWidget3D::loadSliceImage(const QString& filename) {
 		std::vector<cv::Point> simplified_contour;
 		contour::simplify(contours[i], simplified_contour);
 		if (simplified_contour.size() >= 3) {
-			// Translate the xy coordinates such that the center of the image will be the center of the world coordinate system.
-			// Also, the y coordinate is flipped vertically because of the fliiped image coordinate system.
-			Building building;
-			building.footprint.resize(simplified_contour.size());
-			for (int j = 0; j < simplified_contour.size(); j++) {
-				building.footprint[j] = glm::dvec2(simplified_contour[j].x - img.cols * 0.5, img.rows * 0.5 - simplified_contour[j].y);
+			std::vector<glm::dvec2> footprint(simplified_contour.size());
+			for (int j = 0; j < footprint.size(); j++) {
+				footprint[j] = glm::dvec2(simplified_contour[j].x, simplified_contour[j].y);
 			}
-			building.height = 10;
 
 			// simplify the hole as well
+			std::vector<std::vector<glm::dvec2>> holes;
 			int hole_id = hierarchy[i][2];
 			while (hole_id != -1) {
 				std::vector<cv::Point> simplified_hole;
@@ -349,12 +338,34 @@ void GLWidget3D::loadSliceImage(const QString& filename) {
 				if (simplified_hole.size() >= 3) {
 					std::vector<glm::dvec2> hole_pts(simplified_hole.size());
 					for (int j = 0; j < simplified_hole.size(); j++) {
-						hole_pts[j] = glm::dvec2(simplified_hole[j].x - img.cols * 0.5, img.rows * 0.5 - simplified_hole[j].y);
+						hole_pts[j] = glm::dvec2(simplified_hole[j].x, simplified_hole[j].y);
 					}
-					building.holes.push_back(hole_pts);
+					holes.push_back(hole_pts);
 				}
 
 				hole_id = hierarchy[hole_id][0];
+			}
+
+			// create a building object
+			Building building;
+
+			// calculate the building height
+			building.height = calculateBuildingHeight(voxel_data, footprint, holes);
+						
+			// Translate the xy coordinates such that the center of the image will be the center of the world coordinate system.
+			// Also, the y coordinate is flipped vertically because of the fliiped image coordinate system.
+			building.footprint.resize(footprint.size());
+			for (int j = 0; j < footprint.size(); j++) {
+				building.footprint[j] = glm::dvec2(footprint[j].x - size.width() * 0.5, size.height() * 0.5 - footprint[j].y);
+			}
+
+			// simplify the hole as well
+			building.holes.resize(holes.size());
+			for (int j = 0; j < holes.size(); j++) {
+				building.holes[j].resize(holes[j].size());
+				for (int k = 0; k < holes[j].size(); k++) {
+					building.holes[j][k] = glm::dvec2(holes[j][k].x - size.width() * 0.5, size.height() * 0.5 - holes[j][k].y);
+				}
 			}
 			
 			buildings.push_back(building);
@@ -362,6 +373,60 @@ void GLWidget3D::loadSliceImage(const QString& filename) {
 	}
 
 	update3DGeometry();
+
+}
+
+double GLWidget3D::calculateBuildingHeight(const std::vector<cv::Mat>& voxel_data, const std::vector<glm::dvec2>& footprint, const std::vector<std::vector<glm::dvec2>>& holes) {
+	// calculate bounding box
+	glutils::BoundingBox bbox(footprint);
+
+	// sample points
+	const int N = 30;
+	std::vector<glm::dvec2> points(N);
+	for (int i = 0; i < N; i++) {
+		glm::dvec2 pt;
+		while (true) {
+			pt = samplePoint(bbox, footprint);
+			bool inside = true;
+			for (int j = 0; j < holes.size(); j++) {
+				if (glutils::isWithinPolygon(pt, holes[j])) {
+					inside = false;
+					break;
+				}
+			}
+			if (inside) break;
+		}
+
+		points[i] = pt;
+	}
+
+	// check the height of points
+	for (int i = 5; i < voxel_data.size(); i++) {
+		int cnt = 0;
+		for (int j = 0; j < points.size(); j++) {
+			int u = (int)points[j].x;
+			int v = (int)points[j].y;
+			u = std::min(std::max(0, u), voxel_data[i].cols - 1);
+			v = std::min(std::max(0, v), voxel_data[i].rows - 1);
+
+			if (voxel_data[i].at<uchar>(v, u) == 255) cnt++;
+		}
+
+		if (cnt < points.size() * 0.7) {
+			return i;
+		}
+	}
+
+	return voxel_data.size();
+}
+
+glm::dvec2 GLWidget3D::samplePoint(const glutils::BoundingBox& bbox, const std::vector<glm::dvec2>& polygon) {
+	for (int iter = 0; iter < 10000; iter++) {
+		glm::dvec2 pt(bbox.minPt.x + bbox.sx() * (double)(rand() % 1000) / 999.0, bbox.minPt.y + bbox.sy() * (double)(rand() % 1000) / 999.0);
+		if (glutils::isWithinPolygon(pt, polygon)) return pt;
+	}
+
+	return glm::dvec2(bbox.center());
 }
 
 void GLWidget3D::update3DGeometry() {

@@ -12,21 +12,21 @@ namespace glutils {
 	typedef boost::geometry::model::d2::point_xy<double>		point_2d;
 
 	BoundingBox::BoundingBox() {
-		minPt.x = (std::numeric_limits<float>::max)();
-		minPt.y = (std::numeric_limits<float>::max)();
-		minPt.z = (std::numeric_limits<float>::max)();
-		maxPt.x = -(std::numeric_limits<float>::max)();
-		maxPt.y = -(std::numeric_limits<float>::max)();
-		maxPt.z = -(std::numeric_limits<float>::max)();
+		minPt.x = std::numeric_limits<double>::max();
+		minPt.y = std::numeric_limits<double>::max();
+		minPt.z = std::numeric_limits<double>::max();
+		maxPt.x = -std::numeric_limits<double>::max();
+		maxPt.y = -std::numeric_limits<double>::max();
+		maxPt.z = -std::numeric_limits<double>::max();
 	}
 
-	BoundingBox::BoundingBox(const std::vector<glm::vec2>& points) {
-		minPt.x = (std::numeric_limits<float>::max)();
-		minPt.y = (std::numeric_limits<float>::max)();
-		minPt.z = 0.0f;
-		maxPt.x = -(std::numeric_limits<float>::max)();
-		maxPt.y = -(std::numeric_limits<float>::max)();
-		maxPt.z = 0.0f;
+	BoundingBox::BoundingBox(const std::vector<glm::dvec2>& points) {
+		minPt.x = std::numeric_limits<double>::max();
+		minPt.y = std::numeric_limits<double>::max();
+		minPt.z = 0.0;
+		maxPt.x = -std::numeric_limits<double>::max();
+		maxPt.y = -std::numeric_limits<double>::max();
+		maxPt.z = 0.0;
 
 		for (int i = 0; i < points.size(); ++i) {
 			minPt.x = std::min(minPt.x, points[i].x);
@@ -36,13 +36,13 @@ namespace glutils {
 		}
 	}
 
-	BoundingBox::BoundingBox(const std::vector<glm::vec3>& points) {
-		minPt.x = (std::numeric_limits<float>::max)();
-		minPt.y = (std::numeric_limits<float>::max)();
-		minPt.z = (std::numeric_limits<float>::max)();
-		maxPt.x = -(std::numeric_limits<float>::max)();
-		maxPt.y = -(std::numeric_limits<float>::max)();
-		maxPt.z = -(std::numeric_limits<float>::max)();
+	BoundingBox::BoundingBox(const std::vector<glm::dvec3>& points) {
+		minPt.x = std::numeric_limits<double>::max();
+		minPt.y = std::numeric_limits<double>::max();
+		minPt.z = std::numeric_limits<double>::max();
+		maxPt.x = -std::numeric_limits<double>::max();
+		maxPt.y = -std::numeric_limits<double>::max();
+		maxPt.z = -std::numeric_limits<double>::max();
 
 		for (int i = 0; i < points.size(); ++i) {
 			minPt.x = std::min(minPt.x, points[i].x);
@@ -54,13 +54,13 @@ namespace glutils {
 		}
 	}
 
-	BoundingBox::BoundingBox(const std::vector<std::vector<glm::vec3> >& points) {
-		minPt.x = (std::numeric_limits<float>::max)();
-		minPt.y = (std::numeric_limits<float>::max)();
-		minPt.z = (std::numeric_limits<float>::max)();
-		maxPt.x = -(std::numeric_limits<float>::max)();
-		maxPt.y = -(std::numeric_limits<float>::max)();
-		maxPt.z = -(std::numeric_limits<float>::max)();
+	BoundingBox::BoundingBox(const std::vector<std::vector<glm::dvec3> >& points) {
+		minPt.x = (std::numeric_limits<double>::max)();
+		minPt.y = (std::numeric_limits<double>::max)();
+		minPt.z = (std::numeric_limits<double>::max)();
+		maxPt.x = -(std::numeric_limits<double>::max)();
+		maxPt.y = -(std::numeric_limits<double>::max)();
+		maxPt.z = -(std::numeric_limits<double>::max)();
 
 		for (int i = 0; i < points.size(); ++i) {
 			for (int k = 0; k < points[i].size(); ++k) {
@@ -74,14 +74,14 @@ namespace glutils {
 		}
 	}
 
-	void BoundingBox::addPoint(const glm::vec2& point) {
+	void BoundingBox::addPoint(const glm::dvec2& point) {
 		minPt.x = std::min(minPt.x, point.x);
 		minPt.y = std::min(minPt.y, point.y);
 		maxPt.x = std::max(maxPt.x, point.x);
 		maxPt.y = std::max(maxPt.y, point.y);
 	}
 
-	void BoundingBox::addPoint(const glm::vec3& point) {
+	void BoundingBox::addPoint(const glm::dvec3& point) {
 		minPt.x = std::min(minPt.x, point.x);
 		minPt.y = std::min(minPt.y, point.y);
 		minPt.z = std::min(minPt.z, point.z);
@@ -90,13 +90,13 @@ namespace glutils {
 		maxPt.z = std::max(maxPt.z, point.z);
 	}
 
-	bool BoundingBox::contains(const glm::vec2& point, float threshold) {
+	bool BoundingBox::contains(const glm::dvec2& point, double threshold) const {
 		if (point.x < minPt.x - threshold || point.x > maxPt.x + threshold) return false;
 		if (point.y < minPt.y - threshold || point.y > maxPt.y + threshold) return false;
 		return true;
 	}
 
-	bool BoundingBox::contains(const glm::vec3& point, float threshold) {
+	bool BoundingBox::contains(const glm::dvec3& point, double threshold) const {
 		if (point.x < minPt.x - threshold || point.x > maxPt.x + threshold) return false;
 		if (point.y < minPt.y - threshold || point.y > maxPt.y + threshold) return false;
 		if (point.z < minPt.z - threshold || point.z > maxPt.z + threshold) return false;
@@ -108,9 +108,19 @@ namespace glutils {
 	}
 
 	/**
-		* Test if the point is inside the polygon
-		*/
+	 * Test if the point is inside the polygon
+	 */
 	bool isWithinPolygon(const glm::vec2& p, const std::vector<glm::vec2>& points) {
+		boost::geometry::model::ring<point_2d> contour;
+		for (int i = 0; i < points.size(); ++i) {
+			contour.push_back(point_2d(points[i].x, points[i].y));
+		}
+		boost::geometry::correct(contour);
+
+		return boost::geometry::within(point_2d(p.x, p.y), contour);
+	}
+
+	bool isWithinPolygon(const glm::dvec2& p, const std::vector<glm::dvec2>& points) {
 		boost::geometry::model::ring<point_2d> contour;
 		for (int i = 0; i < points.size(); ++i) {
 			contour.push_back(point_2d(points[i].x, points[i].y));
