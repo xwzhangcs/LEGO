@@ -64,4 +64,5 @@ void MainWindow::onRenderingModeChanged() {
 	else if (ui.actionRenderingHatching->isChecked()) {
 		glWidget->renderManager.renderingMode = RenderManager::RENDERING_MODE_HATCHING;
 	}
+	glWidget->update();
 }
