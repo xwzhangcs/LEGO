@@ -33,10 +33,14 @@ public:
     QAction *actionRenderingHatching;
     QAction *actionOpen;
     QAction *actionSaveImage;
+    QAction *actionSimplifyByOpenCV;
+    QAction *actionSimplifyByOurCustom;
+    QAction *actionInputVoxel;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuRendering;
+    QMenu *menuSimplify;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -70,6 +74,12 @@ public:
         QIcon icon1;
         icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionSaveImage->setIcon(icon1);
+        actionSimplifyByOpenCV = new QAction(MainWindowClass);
+        actionSimplifyByOpenCV->setObjectName(QStringLiteral("actionSimplifyByOpenCV"));
+        actionSimplifyByOurCustom = new QAction(MainWindowClass);
+        actionSimplifyByOurCustom->setObjectName(QStringLiteral("actionSimplifyByOurCustom"));
+        actionInputVoxel = new QAction(MainWindowClass);
+        actionInputVoxel->setObjectName(QStringLiteral("actionInputVoxel"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -80,6 +90,8 @@ public:
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuRendering = new QMenu(menuBar);
         menuRendering->setObjectName(QStringLiteral("menuRendering"));
+        menuSimplify = new QMenu(menuBar);
+        menuSimplify->setObjectName(QStringLiteral("menuSimplify"));
         MainWindowClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindowClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -89,6 +101,7 @@ public:
         MainWindowClass->setStatusBar(statusBar);
 
         menuBar->addAction(menuFile->menuAction());
+        menuBar->addAction(menuSimplify->menuAction());
         menuBar->addAction(menuRendering->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addSeparator();
@@ -98,6 +111,9 @@ public:
         menuRendering->addAction(actionRenderingBasic);
         menuRendering->addAction(actionRenderingSSAO);
         menuRendering->addAction(actionRenderingHatching);
+        menuSimplify->addAction(actionInputVoxel);
+        menuSimplify->addAction(actionSimplifyByOpenCV);
+        menuSimplify->addAction(actionSimplifyByOurCustom);
 
         retranslateUi(MainWindowClass);
 
@@ -117,8 +133,12 @@ public:
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
         actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));
         actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
+        actionSimplifyByOpenCV->setText(QApplication::translate("MainWindowClass", "OpenCV", 0));
+        actionSimplifyByOurCustom->setText(QApplication::translate("MainWindowClass", "Custom", 0));
+        actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
+        menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));
     } // retranslateUi
 
 };

@@ -7,10 +7,10 @@
 
 Camera::Camera() {
 	center = glm::vec2(0, 0);
-	xrot = 90.0f;
+	xrot = 40.0f;
 	yrot = 0.0;
 	zrot = 0.0f;
-	pos = glm::vec3(0, 0, 300);
+	pos = glm::vec3(0, 0, 200);
 	fovy = 45.0f;
 }
 

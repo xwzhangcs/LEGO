@@ -14,6 +14,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
+	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
+	connect(ui.actionSimplifyByOpenCV, SIGNAL(triggered()), this, SLOT(onSimplifyByOpenCV()));
+	connect(ui.actionSimplifyByOurCustom, SIGNAL(triggered()), this, SLOT(onSimplifyByOurCustom()));
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingSSAO, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingHatching, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
@@ -34,17 +37,8 @@ void MainWindow::onOpen() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Load voxel data..."), "", tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) return;
 
-	// get directory
-	QDir dir = QFileInfo(filename).absoluteDir();
-
-	// scan all the files in the directory to get a voxel data
-	QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
-	std::vector<cv::Mat> voxel_data(files.size());
-	for (int i = 0; i < files.size(); i++) {
-		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
-	}
-
-	glWidget->loadVoxelData(voxel_data);
+	glWidget->loadVoxelData(filename);
+	glWidget->update();
 }
 
 void MainWindow::onSaveImage() {
@@ -52,6 +46,21 @@ void MainWindow::onSaveImage() {
 	if (filename.isEmpty()) return;
 
 	glWidget->saveImage(filename);
+}
+
+void MainWindow::onInputVoxel() {
+	glWidget->inputVoxel();
+	glWidget->update();
+}
+
+void MainWindow::onSimplifyByOpenCV() {
+	glWidget->simplifyByOpenCV();
+	glWidget->update();
+}
+
+void MainWindow::onSimplifyByOurCustom() {
+	glWidget->simplifyByOurCustom();
+	glWidget->update();
 }
 
 void MainWindow::onRenderingModeChanged() {

@@ -26,6 +26,8 @@ public:
 	glm::mat4 light_mvpMatrix;
 	glm::vec3 spot_light_pos;
 
+	std::vector<cv::Mat> voxel_data;
+
 	// rendering engine
 	RenderManager renderManager;
 	
@@ -42,11 +44,15 @@ public:
 
 	void drawScene();
 	void render();
+	void loadVoxelData(const QString& filename);
 	void saveImage(const QString& filename);
-	void loadVoxelData(const std::vector<cv::Mat>& voxel_data);
+	void inputVoxel();
+	void simplifyByOpenCV();
+	void simplifyByOurCustom();
 	double calculateBuildingHeight(const std::vector<cv::Mat>& voxel_data, const std::vector<glm::dvec2>& footprint, const std::vector<std::vector<glm::dvec2>>& holes);
 	glm::dvec2 samplePoint(const glutils::BoundingBox& bbox, const std::vector<glm::dvec2>& polygon);
-	void update3DGeometry();
+	void update3DGeometry(const std::vector<cv::Mat>& voxel_data);
+	void update3DGeometry(const std::vector<Building>& buildings);
 
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);

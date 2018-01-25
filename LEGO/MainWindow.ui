@@ -41,7 +41,16 @@
     <addaction name="actionRenderingSSAO"/>
     <addaction name="actionRenderingHatching"/>
    </widget>
+   <widget class="QMenu" name="menuSimplify">
+    <property name="title">
+     <string>Simplify</string>
+    </property>
+    <addaction name="actionInputVoxel"/>
+    <addaction name="actionSimplifyByOpenCV"/>
+    <addaction name="actionSimplifyByOurCustom"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSimplify"/>
    <addaction name="menuRendering"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -119,6 +128,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSimplifyByOpenCV">
+   <property name="text">
+    <string>OpenCV</string>
+   </property>
+  </action>
+  <action name="actionSimplifyByOurCustom">
+   <property name="text">
+    <string>Custom</string>
+   </property>
+  </action>
+  <action name="actionInputVoxel">
+   <property name="text">
+    <string>Input</string>
    </property>
   </action>
  </widget>

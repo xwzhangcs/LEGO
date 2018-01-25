@@ -20,6 +20,9 @@ public:
 public slots:
 	void onOpen();
 	void onSaveImage();
+	void onInputVoxel();
+	void onSimplifyByOpenCV();
+	void onSimplifyByOurCustom();
 	void onRenderingModeChanged();
 };
 
