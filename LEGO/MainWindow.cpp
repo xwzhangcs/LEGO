@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupRendering->addAction(ui.actionRenderingHatching);
 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingSSAO, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
@@ -19,6 +20,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
+	ui.mainToolBar->addAction(ui.actionSaveImage);
 
 	// setup the GL widget
 	glWidget = new GLWidget3D(this);
@@ -39,11 +41,17 @@ void MainWindow::onOpen() {
 	QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
 	std::vector<cv::Mat> voxel_data(files.size());
 	for (int i = 0; i < files.size(); i++) {
-		//std::cout << "[" << files[i].toUtf8().constData() << "]" << std::endl;
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
 	glWidget->loadVoxelData(voxel_data);
+}
+
+void MainWindow::onSaveImage() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save screen shot..."), "", tr("Image files (*.png *.jpg *.bmp)"));
+	if (filename.isEmpty()) return;
+
+	glWidget->saveImage(filename);
 }
 
 void MainWindow::onRenderingModeChanged() {

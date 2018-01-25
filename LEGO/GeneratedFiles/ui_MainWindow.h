@@ -32,6 +32,7 @@ public:
     QAction *actionRenderingSSAO;
     QAction *actionRenderingHatching;
     QAction *actionOpen;
+    QAction *actionSaveImage;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -64,6 +65,11 @@ public:
         actionOpen = new QAction(MainWindowClass);
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
         actionOpen->setIcon(icon);
+        actionSaveImage = new QAction(MainWindowClass);
+        actionSaveImage->setObjectName(QStringLiteral("actionSaveImage"));
+        QIcon icon1;
+        icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionSaveImage->setIcon(icon1);
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -86,6 +92,8 @@ public:
         menuBar->addAction(menuRendering->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addSeparator();
+        menuFile->addAction(actionSaveImage);
+        menuFile->addSeparator();
         menuFile->addAction(actionExit);
         menuRendering->addAction(actionRenderingBasic);
         menuRendering->addAction(actionRenderingSSAO);
@@ -107,6 +115,8 @@ public:
         actionRenderingHatching->setText(QApplication::translate("MainWindowClass", "Hatching", 0));
         actionOpen->setText(QApplication::translate("MainWindowClass", "Open", 0));
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
+        actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));
+        actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
     } // retranslateUi

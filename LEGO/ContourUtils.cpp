@@ -2,18 +2,19 @@
 
 namespace contour {
 	
-	void simplify(std::vector<cv::Point> contour, std::vector<cv::Point>& result, float eps) {
+	void simplify(std::vector<cv::Point> contour, std::vector<cv::Point2f>& result, double eps) {
 		// simplify contours
-		std::vector<cv::Point> approx_contour;
+		/*std::vector<cv::Point> approx_contour;
 		cv::approxPolyDP(contour, approx_contour, eps, true);
 
 		if (approx_contour.size() < 2) {
 			result.clear();
 			return;
 		}
+		*/
 
 		// regularize a contour
-		regularizePolygon(approx_contour, result);
+		regularizePolygon(contour, result);
 	}
 
 	/**
@@ -22,27 +23,27 @@ namespace contour {
 	* @param contour	input contour polygon
 	* @param result	output regularized polygon
 	*/
-	void regularizePolygon(std::vector<cv::Point> contour, std::vector<cv::Point>& result) {
+	void regularizePolygon(std::vector<cv::Point> contour, std::vector<cv::Point2f>& result) {
 		result.clear();
 
-		float resolution = 5.0f;
-		float area = cv::contourArea(contour);
+		double resolution = 5.0;
+		double area = cv::contourArea(contour);
 
-		float min_cost = std::numeric_limits<float>::max();
+		double min_cost = std::numeric_limits<double>::max();
 
-		for (float angle = 0; angle < 180; angle += 10) {
-			float theta = angle / 180 * CV_PI;
+		for (double angle = 0; angle < 180; angle += 10) {
+			double theta = angle / 180 * CV_PI;
 			for (int dx = 0; dx < resolution; dx++) {
 				for (int dy = 0; dy < resolution; dy++) {
 					// create a transformation matrix
-					cv::Mat_<float> M = (cv::Mat_<float>(3, 3) << cos(theta) / resolution, -sin(theta) / resolution, dx / resolution, sin(theta) / resolution, cos(theta) / resolution, dy / resolution, 0, 0, 1);
+					cv::Mat_<double> M = (cv::Mat_<double>(3, 3) << cos(theta) / resolution, -sin(theta) / resolution, dx / resolution, sin(theta) / resolution, cos(theta) / resolution, dy / resolution, 0, 0, 1);
 
 					// transform the polygon
 					std::vector<cv::Point> polygon(contour.size());
 					for (int i = 0; i < contour.size(); i++) {
-						cv::Mat_<float> p = (cv::Mat_<float>(3, 1) << contour[i].x, contour[i].y, 1);
-						cv::Mat_<float> p2 = M * p;
-						polygon[i] = cv::Point(p2(0, 0), p2(1, 0));
+						cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << contour[i].x, contour[i].y, 1);
+						cv::Mat_<double> p2 = M * p;
+						polygon[i] = cv::Point2f(p2(0, 0), p2(1, 0));
 					}
 
 					// calculate the bounding box
@@ -62,10 +63,10 @@ namespace contour {
 					}
 
 					// update the transformation matrix
-					M = (cv::Mat_<float>(3, 3) << cos(theta) / resolution, -sin(theta) / resolution, dx / resolution - min_pt.x, sin(theta) / resolution, cos(theta) / resolution, dy / resolution - min_pt.y, 0, 0, 1);
+					M = (cv::Mat_<double>(3, 3) << cos(theta) / resolution, -sin(theta) / resolution, dx / resolution - min_pt.x, sin(theta) / resolution, cos(theta) / resolution, dy / resolution - min_pt.y, 0, 0, 1);
 
 					// create inverse transformation matrix
-					cv::Mat_<float> invM = M.inv();
+					cv::Mat_<double> invM = M.inv();
 					
 					cv::Mat img(max_pt.y - min_pt.y + 1, max_pt.x - min_pt.x + 1, CV_8U, cv::Scalar(0));
 
@@ -82,24 +83,24 @@ namespace contour {
 					//cv::imwrite("test.png", img);
 
 					// extract a contour (my custom version)
-					std::vector<cv::Point> new_contour;
+					std::vector<cv::Point2f> new_contour;
 					findContour(img, new_contour);
 
-					float a = cv::contourArea(new_contour) * resolution * resolution;
+					double a = cv::contourArea(new_contour) * resolution * resolution;
 					if (new_contour.size() >= 3 && a > 0) {
 						// convert the polygon back to the original coordinates
 						for (int i = 0; i < new_contour.size(); i++) {
-							cv::Mat_<float> p = (cv::Mat_<float>(3, 1) << new_contour[i].x, new_contour[i].y, 1);
-							cv::Mat_<float> p2 = invM * p;
-							new_contour[i] = cv::Point(p2(0, 0), p2(1, 0));
+							cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << (double)new_contour[i].x, (double)new_contour[i].y, 1.0);
+							cv::Mat_<double> p2 = invM * p;
+							new_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
 						}
 
 						// calculate cost
-						float cost = 0.0f;
+						double cost = 0.0;
 						for (int i = 0; i < new_contour.size(); i++) {
-							float min_dist = std::numeric_limits<float>::max();
+							double min_dist = std::numeric_limits<double>::max();
 							for (int j = 0; j < contour.size(); j++) {
-								float dist = cv::norm(new_contour[i] - contour[j]);
+								double dist = std::hypot(new_contour[i].x - contour[j].x, new_contour[i].y - contour[j].y);
 								min_dist = std::min(min_dist, dist);
 							}
 							cost += min_dist;
@@ -127,11 +128,11 @@ namespace contour {
 	* @param img		input single-channel image (0 - background, 255 - footprint)
 	* @param contour	output contour polygon
 	*/
-	void findContour(const cv::Mat& img, std::vector<cv::Point>& contour) {
+	void findContour(const cv::Mat& img, std::vector<cv::Point2f>& contour) {
 		contour.clear();
 
 		// find the start point
-		cv::Point start;
+		cv::Point2f start;
 		bool found = false;
 		for (int r = 0; r < img.rows && !found; r++) {
 			for (int c = 0; c < img.cols; c++) {
@@ -143,8 +144,8 @@ namespace contour {
 			}
 		}
 
-		cv::Point prev_dir(1, 0);
-		cv::Point cur = start;
+		cv::Point2f prev_dir(1, 0);
+		cv::Point2f cur = start;
 		contour.push_back(cur);
 		int cnt = 0;
 		do {
@@ -153,8 +154,8 @@ namespace contour {
 				break;
 			}
 
-			cv::Point left_dir(prev_dir.y, -prev_dir.x);
-			cv::Point next = cur + left_dir;
+			cv::Point2f left_dir(prev_dir.y, -prev_dir.x);
+			cv::Point2f next = cur + left_dir;
 			if (img.at<uchar>(next.y, next.x) == 255) {
 				if (contour.size() > 0 && contour.back() != cur) contour.push_back(cur);
 				cur = next;
@@ -194,7 +195,7 @@ namespace contour {
 			}
 			*/
 
-			cv::Point right_dir(-prev_dir.y, prev_dir.x);
+			cv::Point2f right_dir(-prev_dir.y, prev_dir.x);
 			next = cur + right_dir;
 			if (img.at<uchar>(next.y, next.x) == 255) {
 				if (contour.size() > 0 && contour.back() != cur) contour.push_back(cur);
@@ -203,7 +204,7 @@ namespace contour {
 				continue;
 			}
 
-			cv::Point back_dir = -prev_dir;
+			cv::Point2f back_dir = -prev_dir;
 			next = cur + back_dir;
 			if (img.at<uchar>(next.y, next.x) == 255) {
 				//contour.push_back(cur);
