@@ -49,9 +49,10 @@ public:
 	void inputVoxel();
 	void simplifyByOpenCV(double epsilon);
 	void simplifyByOurCustom();
-	double calculateBuildingHeight(const std::vector<cv::Mat>& voxel_data, const std::vector<glm::dvec2>& footprint, const std::vector<std::vector<glm::dvec2>>& holes);
+	double calculateBuildingHeight(const std::vector<cv::Point>& footprint, const std::vector<std::vector<cv::Point>>& holes);
 	glm::dvec2 samplePoint(const glutils::BoundingBox& bbox, const std::vector<glm::dvec2>& polygon);
-	Building calculateBuilding(std::vector<std::vector<cv::Point>> contours, std::vector<cv::Vec4i> hierarchy, int i, const QSize& size, double epsilon);
+	Building calculateBuildingByOpenCV(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size, double epsilon);
+	Building calculateBuildingByOurCustom(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size);
 	void update3DGeometry(const std::vector<cv::Mat>& voxel_data);
 	void update3DGeometry(const std::vector<Building>& buildings);
 
