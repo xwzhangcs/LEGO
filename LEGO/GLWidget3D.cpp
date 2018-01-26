@@ -372,6 +372,7 @@ void GLWidget3D::simplifyByOurCustom() {
 	int cnt = 0;
 	for (int i = 0; i < hierarchy.size(); i++) {
 		if (hierarchy[i][3] != -1) continue;
+		if (contours[i].size() < 3) continue;
 
 		// obtain all the holes inside this contour
 		std::vector<std::vector<cv::Point>> holes;
