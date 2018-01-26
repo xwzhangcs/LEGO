@@ -2,6 +2,7 @@
 #include <QFileDialog>
 #include <iostream>
 #include "OpenCVOptionDialog.h"
+#include "OurCustomOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -50,7 +51,7 @@ void MainWindow::onSaveImage() {
 }
 
 void MainWindow::onInputVoxel() {
-	glWidget->inputVoxel();
+	glWidget->showInputVoxel();
 	glWidget->update();
 }
 
@@ -63,8 +64,11 @@ void MainWindow::onSimplifyByOpenCV() {
 }
 
 void MainWindow::onSimplifyByOurCustom() {
-	glWidget->simplifyByOurCustom();
-	glWidget->update();
+	OurCustomOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->simplifyByOurCustom(dlg.getResolution());
+		glWidget->update();
+	}
 }
 
 void MainWindow::onRenderingModeChanged() {

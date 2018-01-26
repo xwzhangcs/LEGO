@@ -313,7 +313,7 @@ void GLWidget3D::saveImage(const QString& filename) {
 	image.save(filename);
 }
 
-void GLWidget3D::inputVoxel() {
+void GLWidget3D::showInputVoxel() {
 	update3DGeometry(voxel_data);
 }
 
@@ -343,7 +343,7 @@ void GLWidget3D::simplifyByOpenCV(double epsilon) {
 			hole_id = hierarchy[hole_id][0];
 		}
 
-		// calculate building
+		// calculate building by simplifying the contour and holes
 		try {
 			Building building = calculateBuildingByOpenCV(contours[i], holes, size, epsilon);
 			buildings.push_back(building);
@@ -356,7 +356,41 @@ void GLWidget3D::simplifyByOpenCV(double epsilon) {
 	update3DGeometry(buildings);
 }
 
-void GLWidget3D::simplifyByOurCustom() {
+/**
+* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
+*/
+Building GLWidget3D::calculateBuildingByOpenCV(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size, double epsilon) {
+	std::vector<cv::Point> simplified_contour;
+	cv::approxPolyDP(contour, simplified_contour, epsilon, true);
+
+	if (simplified_contour.size() < 3) throw "Invalid contour";
+
+	// create a building object
+	Building building;
+	building.height = calculateBuildingHeight(contour, holes);
+
+	building.footprint.resize(simplified_contour.size());
+	for (int i = 0; i < simplified_contour.size(); i++) {
+		building.footprint[i] = glm::dvec2(simplified_contour[i].x - size.width() * 0.5, size.height() * 0.5 - simplified_contour[i].y);
+	}
+
+	// simplify the hole as well
+	building.holes.resize(holes.size());
+	for (int i = 0; i < holes.size(); i++) {
+		std::vector<cv::Point2f> simplified_hole;
+		cv::approxPolyDP(holes[i], simplified_hole, epsilon, true);
+		if (simplified_hole.size() >= 3) {
+			building.holes[i].resize(simplified_hole.size());
+			for (int j = 0; j < simplified_hole.size(); j++) {
+				building.holes[i][j] = glm::dvec2(simplified_hole[j].x - size.width() * 0.5, size.height() * 0.5 - simplified_hole[j].y);
+			}
+		}
+	}
+
+	return building;
+}
+
+void GLWidget3D::simplifyByOurCustom(int resolution) {
 	std::vector<Building> buildings;
 
 	// get size
@@ -371,6 +405,8 @@ void GLWidget3D::simplifyByOurCustom() {
 	// traverse all the external contours
 	int cnt = 0;
 	for (int i = 0; i < hierarchy.size(); i++) {
+		std::cout << "Processing building " << i << std::endl;
+
 		if (hierarchy[i][3] != -1) continue;
 		if (contours[i].size() < 3) continue;
 
@@ -383,19 +419,63 @@ void GLWidget3D::simplifyByOurCustom() {
 			hole_id = hierarchy[hole_id][0];
 		}
 
-		// calculate building
+		// calculate building by simplifying the contour and holes
 		try {
-			Building building = calculateBuildingByOurCustom(contours[i], holes, size);
+			Building building = calculateBuildingByOurCustom(contours[i], holes, size, resolution);
 			buildings.push_back(building);
 			cnt++;
 		}
 		catch (char* ex) {
 		}
 	}
+	std::cout << "Processing buildings has been finished." << std::endl;
 
 	update3DGeometry(buildings);
 }
 
+/**
+* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
+*/
+Building GLWidget3D::calculateBuildingByOurCustom(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size, int resolution) {
+	std::vector<cv::Point2f> simplified_contour;
+	contour::simplify(contour, simplified_contour, resolution);
+
+	if (simplified_contour.size() < 3) throw "Invalid contour";
+
+	// create a building object
+	Building building;
+	building.height = calculateBuildingHeight(contour, holes);
+
+	building.footprint.resize(simplified_contour.size());
+	for (int i = 0; i < simplified_contour.size(); i++) {
+		building.footprint[i] = glm::dvec2(simplified_contour[i].x - size.width() * 0.5, size.height() * 0.5 - simplified_contour[i].y);
+	}
+
+	// simplify the hole as well
+	building.holes.resize(holes.size());
+	for (int i = 0; i < holes.size(); i++) {
+		std::vector<cv::Point2f> simplified_hole;
+		std::vector<cv::Point2f> simplified_hole2;
+		contour::simplify(holes[i], simplified_hole, resolution);
+		if (simplified_hole.size() >= 3) {
+			building.holes[i].resize(simplified_hole.size());
+			for (int j = 0; j < simplified_hole.size(); j++) {
+				building.holes[i][j] = glm::dvec2(simplified_hole[j].x - size.width() * 0.5, size.height() * 0.5 - simplified_hole[j].y);
+			}
+		}
+	}
+
+	return building;
+}
+
+/**
+ * Calculate the building height for the specified footprint and holes.
+ * Sample many points within the footprint excluding the holes, and check the maximum height such that 65% of the sampled points are still remained.
+ *
+ * @param footprint		footprint of the building
+ * @param holes			holes of the building
+ * @return				height of the building
+ */
 double GLWidget3D::calculateBuildingHeight(const std::vector<cv::Point>& footprint, const std::vector<std::vector<cv::Point>>& holes) {
 	std::vector<glm::dvec2> footprint2(footprint.size());
 	for (int i = 0; i < footprint.size(); i++) {
@@ -461,75 +541,6 @@ glm::dvec2 GLWidget3D::samplePoint(const glutils::BoundingBox& bbox, const std::
 	return glm::dvec2(bbox.center());
 }
 
-/**
- * Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
- */
-Building GLWidget3D::calculateBuildingByOpenCV(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size, double epsilon) {
-	std::vector<cv::Point> simplified_contour;
-	cv::approxPolyDP(contour, simplified_contour, epsilon, true);
-
-	if (simplified_contour.size() < 3) throw "Invalid contour";
-
-	// create a building object
-	Building building;
-	building.height = calculateBuildingHeight(contour, holes);
-
-	building.footprint.resize(simplified_contour.size());
-	for (int i = 0; i < simplified_contour.size(); i++) {
-		building.footprint[i] = glm::dvec2(simplified_contour[i].x - size.width() * 0.5, size.height() * 0.5 - simplified_contour[i].y);
-	}
-
-	// simplify the hole as well
-	building.holes.resize(holes.size());
-	for (int i = 0; i < holes.size(); i++) {
-		std::vector<cv::Point2f> simplified_hole;
-		cv::approxPolyDP(holes[i], simplified_hole, epsilon, true);
-		if (simplified_hole.size() >= 3) {
-			building.holes[i].resize(simplified_hole.size());
-			for (int j = 0; j < simplified_hole.size(); j++) {
-				building.holes[i][j] = glm::dvec2(simplified_hole[j].x - size.width() * 0.5, size.height() * 0.5 - simplified_hole[j].y);
-			}
-		}
-	}
-
-	return building;
-}
-
-/**
-* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
-*/
-
-Building GLWidget3D::calculateBuildingByOurCustom(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size) {
-	std::vector<cv::Point2f> simplified_contour;
-	contour::simplify(contour, simplified_contour);
-
-	if (simplified_contour.size() < 3) throw "Invalid contour";
-
-	// create a building object
-	Building building;
-	building.height = calculateBuildingHeight(contour, holes);
-	
-	building.footprint.resize(simplified_contour.size());
-	for (int i = 0; i < simplified_contour.size(); i++) {
-		building.footprint[i] = glm::dvec2(simplified_contour[i].x - size.width() * 0.5, size.height() * 0.5 - simplified_contour[i].y);
-	}
-
-	// simplify the hole as well
-	building.holes.resize(holes.size());
-	for (int i = 0; i < holes.size(); i++) {
-		std::vector<cv::Point2f> simplified_hole;
-		contour::simplify(holes[i], simplified_hole);
-		if (simplified_hole.size() >= 3) {
-			building.holes[i].resize(simplified_hole.size());
-			for (int j = 0; j < simplified_hole.size(); j++) {
-				building.holes[i][j] = glm::dvec2(simplified_hole[j].x - size.width() * 0.5, size.height() * 0.5 - simplified_hole[j].y);
-			}
-		}
-	}
-
-	return building;
-}
-
 void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 	renderManager.removeObjects();
 
@@ -540,8 +551,6 @@ void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 		for (int y = 0; y < voxel_data[i].rows; y++) {
 			for (int x = 0; x < voxel_data[i].cols; x++) {
 				if (voxel_data[i].at<uchar>(y, x) != 255) continue;
-
-				//glutils::drawBox(1, 1, 1, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
 				glutils::drawBox(1, 1, 1, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
 			}
 		}
@@ -558,6 +567,8 @@ void GLWidget3D::update3DGeometry(const std::vector<Building>& buildings) {
 
 	std::vector<Vertex> vertices;
 	for (int i = 0; i < buildings.size(); i++) {
+		std::cout << "generate geometry " << i << std::endl;
+
 		if (buildings[i].holes.size() == 0) {
 			glutils::drawPrism(buildings[i].footprint, buildings[i].height, glm::vec4(0.7, 1, 0.7, 1), glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), vertices);
 		}
