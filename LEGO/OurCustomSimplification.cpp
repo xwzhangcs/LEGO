@@ -69,7 +69,7 @@ void OurCustomSimplification::calculateBuildings(std::vector<cv::Point> contour,
 		// extract contours
 		std::vector<std::vector<cv::Point>> contours_in_copped_img;
 		std::vector<cv::Vec4i> hierarchy_in_cropped_img;
-		cv::findContours(cropped_img, contours_in_copped_img, hierarchy_in_cropped_img, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		cv::findContours(cropped_img.clone(), contours_in_copped_img, hierarchy_in_cropped_img, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 		bool found_next_contour = false;
 		for (int i = 0; i < hierarchy_in_cropped_img.size(); i++) {
