@@ -26,7 +26,7 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 	setAutoFillBackground(false);
 
 	// light direction for shadow mapping
-	light_dir = glm::normalize(glm::vec3(-1, -3, -1));
+	light_dir = glm::normalize(glm::vec3(-1, 1, -3));
 
 	// model/view/projection matrices for shadow mapping
 	glm::mat4 light_pMatrix = glm::ortho<float>(-300, 300, -300, 300, 0.1, 600);
@@ -352,14 +352,14 @@ void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 		for (int y = 0; y < voxel_data[i].rows; y++) {
 			for (int x = 0; x < voxel_data[i].cols; x++) {
 				if (voxel_data[i].at<uchar>(y, x) != 255) continue;
-				glutils::drawBox(1, 1, 1, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
+				glutils::drawBox(1, 1, 1, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
 			}
 		}
 	}
 	renderManager.addObject("building", "", vertices, true);
 
 	std::vector<Vertex> vertices2;
-	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), vertices2);
+	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::mat4(), vertices2);
 	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
@@ -374,16 +374,16 @@ void GLWidget3D::update3DGeometry(const std::vector<Building>& buildings) {
 		std::cout << "generate geometry " << i << std::endl;
 
 		if (buildings[i].holes.size() == 0) {
-			glutils::drawPrism(buildings[i].footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
+			glutils::drawPrism(buildings[i].footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 		else {
-			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
+			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 	}
 	renderManager.addObject("building", "", vertices, true);
 
 	std::vector<Vertex> vertices2;
-	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), vertices2);
+	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, 0)), vertices2);
 	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
@@ -528,9 +528,9 @@ void GLWidget3D::mousePressEvent(QMouseEvent *e) {
 	setFocus();
 
 	if (e->buttons() & Qt::LeftButton) {
+		camera.mousePress(e->x(), e->y());
 	}
 	else if (e->buttons() & Qt::RightButton) {
-		camera.mousePress(e->x(), e->y());
 	}
 }
 
@@ -539,7 +539,7 @@ void GLWidget3D::mousePressEvent(QMouseEvent *e) {
 */
 
 void GLWidget3D::mouseMoveEvent(QMouseEvent *e) {
-	if (e->buttons() & Qt::RightButton) {
+	if (e->buttons() & Qt::LeftButton) {
 		if (shiftPressed) {
 			camera.move(e->x(), e->y());
 		}

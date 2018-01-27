@@ -7,7 +7,7 @@
 
 Camera::Camera() {
 	center = glm::vec2(0, 0);
-	xrot = 40.0f;
+	xrot = 0.0f;
 	yrot = 0.0;
 	zrot = 0.0f;
 	pos = glm::vec3(0, 0, 200);
@@ -28,9 +28,9 @@ void Camera::rotate(int mouse_x, int mouse_y, float senstivity) {
 	xrot += (mouse_y - mouse_pos.y) * senstivity;
 	if (xrot > 180) xrot -= 360;
 	else if (xrot < -180) xrot += 360;
-	yrot += (mouse_x - mouse_pos.x) * senstivity;
-	if (yrot > 180) yrot -= 180;
-	else if (yrot < -180) yrot += 360;
+	zrot += (mouse_x - mouse_pos.x) * senstivity;
+	if (zrot > 180) zrot -= 180;
+	else if (zrot < -180) zrot += 360;
 	updateMVPMatrix();
 
 	mouse_pos = glm::vec2(mouse_x, mouse_y);
