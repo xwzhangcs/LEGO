@@ -28,6 +28,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionSaveOBJ"/>
     <addaction name="separator"/>
     <addaction name="actionSaveImage"/>
     <addaction name="separator"/>
@@ -118,13 +119,13 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionSaveImage">
+  <action name="actionSaveOBJ">
    <property name="icon">
     <iconset>
      <normaloff>Resources/save.png</normaloff>Resources/save.png</iconset>
    </property>
    <property name="text">
-    <string>Save Image</string>
+    <string>Save OBJ</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -143,6 +144,19 @@
   <action name="actionInputVoxel">
    <property name="text">
     <string>Input</string>
+   </property>
+  </action>
+  <action name="actionSaveImage">
+   <property name="text">
+    <string>Save Image</string>
+   </property>
+   <property name="shortcut">
+    <string>P</string>
+   </property>
+  </action>
+  <action name="actionSaveImageHD">
+   <property name="text">
+    <string>Save Image HD</string>
    </property>
   </action>
  </widget>

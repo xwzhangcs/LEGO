@@ -19,6 +19,7 @@ public:
 
 public slots:
 	void onOpen();
+	void onSaveOBJ();
 	void onSaveImage();
 	void onInputVoxel();
 	void onSimplifyByOpenCV();

@@ -186,8 +186,11 @@
     <ClCompile Include="GLWidget3D.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainWindow.cpp" />
+    <ClCompile Include="OBJWriter.cpp" />
     <ClCompile Include="OpenCVOptionDialog.cpp" />
+    <ClCompile Include="OpenCVSimplification.cpp" />
     <ClCompile Include="OurCustomOptionDialog.cpp" />
+    <ClCompile Include="OurCustomSimplification.cpp" />
     <ClCompile Include="RenderManager.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShadowMapping.cpp" />
@@ -276,6 +279,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I.\..\glew" "-I.\..\glm" "-I.\..\opencv\include" "-I$(BOOST_INCLUDEDIR)\." "-I$(CGAL_DIR)\include" "-I$(CGAL_DIR)\auxiliary\gmp\include"</Command>
     </CustomBuild>
+    <ClInclude Include="OBJWriter.h" />
+    <ClInclude Include="OpenCVSimplification.h" />
+    <ClInclude Include="OurCustomSimplification.h" />
     <ClInclude Include="RenderManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShadowMapping.h" />

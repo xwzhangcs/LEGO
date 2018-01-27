@@ -1,6 +1,7 @@
 #include "MainWindow.h"
-#include <QFileDialog>
 #include <iostream>
+#include <QFileDialog>
+#include <QDateTime>
 #include "OpenCVOptionDialog.h"
 #include "OurCustomOptionDialog.h"
 
@@ -14,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupRendering->addAction(ui.actionRenderingHatching);
 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(ui.actionSaveOBJ, SIGNAL(triggered()), this, SLOT(onSaveOBJ()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
@@ -25,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
-	ui.mainToolBar->addAction(ui.actionSaveImage);
+	ui.mainToolBar->addAction(ui.actionSaveOBJ);
 
 	// setup the GL widget
 	glWidget = new GLWidget3D(this);
@@ -43,11 +45,21 @@ void MainWindow::onOpen() {
 	glWidget->update();
 }
 
-void MainWindow::onSaveImage() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Save screen shot..."), "", tr("Image files (*.png)"));
+void MainWindow::onSaveOBJ() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save OBJ file..."), "", tr("OBJ files (*.obj)"));
 	if (filename.isEmpty()) return;
 
-	glWidget->saveImage(filename);
+	glWidget->saveOBJ(filename);
+}
+
+void MainWindow::onSaveImage() {
+	if (!QDir("screenshot").exists()) {
+		QDir().mkdir("screenshot");
+	}
+	QDateTime dateTime = QDateTime().currentDateTime();
+	QString str = QString("screenshot/") + dateTime.toString("yyyyMMddhhmmss") + QString(".png");
+
+	glWidget->saveImage(str);
 }
 
 void MainWindow::onInputVoxel() {
@@ -66,7 +78,7 @@ void MainWindow::onSimplifyByOpenCV() {
 void MainWindow::onSimplifyByOurCustom() {
 	OurCustomOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOurCustom(dlg.getResolution());
+		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getSlicingThreshold());
 		glWidget->update();
 	}
 }

@@ -14,6 +14,7 @@
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
@@ -28,24 +29,32 @@ public:
     QSpinBox *spinBoxResolution;
     QPushButton *pushButtonCancel;
     QPushButton *pushButtonOK;
+    QDoubleSpinBox *doubleSpinBoxSlicingThreshold;
+    QLabel *label_2;
 
     void setupUi(QDialog *OurCustomOptionDialog)
     {
         if (OurCustomOptionDialog->objectName().isEmpty())
             OurCustomOptionDialog->setObjectName(QStringLiteral("OurCustomOptionDialog"));
-        OurCustomOptionDialog->resize(189, 92);
+        OurCustomOptionDialog->resize(202, 121);
         label = new QLabel(OurCustomOptionDialog);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(30, 10, 61, 21));
+        label->setGeometry(QRect(20, 10, 61, 21));
         spinBoxResolution = new QSpinBox(OurCustomOptionDialog);
         spinBoxResolution->setObjectName(QStringLiteral("spinBoxResolution"));
-        spinBoxResolution->setGeometry(QRect(100, 10, 61, 22));
+        spinBoxResolution->setGeometry(QRect(120, 10, 61, 22));
         pushButtonCancel = new QPushButton(OurCustomOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(100, 50, 81, 31));
+        pushButtonCancel->setGeometry(QRect(110, 80, 81, 31));
         pushButtonOK = new QPushButton(OurCustomOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(10, 50, 81, 31));
+        pushButtonOK->setGeometry(QRect(10, 80, 81, 31));
+        doubleSpinBoxSlicingThreshold = new QDoubleSpinBox(OurCustomOptionDialog);
+        doubleSpinBoxSlicingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSlicingThreshold"));
+        doubleSpinBoxSlicingThreshold->setGeometry(QRect(120, 40, 62, 22));
+        label_2 = new QLabel(OurCustomOptionDialog);
+        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setGeometry(QRect(20, 40, 91, 21));
 
         retranslateUi(OurCustomOptionDialog);
 
@@ -58,6 +67,7 @@ public:
         label->setText(QApplication::translate("OurCustomOptionDialog", "Resolution:", 0));
         pushButtonCancel->setText(QApplication::translate("OurCustomOptionDialog", "Cancel", 0));
         pushButtonOK->setText(QApplication::translate("OurCustomOptionDialog", "OK", 0));
+        label_2->setText(QApplication::translate("OurCustomOptionDialog", "Slicing threshold:", 0));
     } // retranslateUi
 
 };
