@@ -23,15 +23,15 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 	setAutoFillBackground(false);
 
 	// light direction for shadow mapping
-	light_dir = glm::normalize(glm::vec3(-4, -5, -8));
+	light_dir = glm::normalize(glm::vec3(-1, -3, -1));
 
 	// model/view/projection matrices for shadow mapping
-	glm::mat4 light_pMatrix = glm::ortho<float>(-200, 200, -200, 200, 0.1, 400);
+	glm::mat4 light_pMatrix = glm::ortho<float>(-300, 300, -300, 300, 0.1, 600);
 	glm::mat4 light_mvMatrix = glm::lookAt(-light_dir * 50.0f, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
 	// spot light
-	spot_light_pos = glm::vec3(2, 2.5, 8);
+	spot_light_pos = glm::vec3(2, 2.5, 3);
 }
 
 /**
@@ -363,6 +363,12 @@ void GLWidget3D::calculateBuildingLayers(std::vector<cv::Point> contour, std::ve
 		max_y = std::max(max_y, contour[i].y);
 	}
 
+	// have 1px as margin
+	min_x = std::max(0, min_x - 1);
+	min_y = std::max(0, min_y - 1);
+	max_x = std::min(size.width() - 1, max_x + 1);
+	max_y = std::min(size.height() - 1, max_y + 1);
+
 	// find the height at which the contour drastically changes
 	int next_height = findDrasticChange(voxel_data, height, contour, holes, slicing_threshold);
 
@@ -374,7 +380,6 @@ void GLWidget3D::calculateBuildingLayers(std::vector<cv::Point> contour, std::ve
 		if (next_height >= voxel_data.size()) return;
 
 		cv::Mat cropped_img(voxel_data[next_height], cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
-		cv::imwrite("test.png", cropped_img);
 
 		// extract contours
 		std::vector<std::vector<cv::Point>> contours_in_copped_img;
@@ -625,9 +630,10 @@ int GLWidget3D::findDrasticChange(const std::vector<cv::Mat>& voxel_data, int st
 		cv::fillPoly(img, hole_pts, cv::Scalar(128), cv::LINE_4);
 	}
 
-	int union_cnt = 0;
-	int inter_cnt = 0;
 	for (int i = start_id + 1; i < voxel_data.size(); i++) {
+		int union_cnt = 0;
+		int inter_cnt = 0;
+
 		for (int r = min_y; r <= max_y; r++) {
 			for (int c = min_x; c <= max_x; c++) {
 				// ignore the pixels within the holes
@@ -656,12 +662,15 @@ void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 		for (int y = 0; y < voxel_data[i].rows; y++) {
 			for (int x = 0; x < voxel_data[i].cols; x++) {
 				if (voxel_data[i].at<uchar>(y, x) != 255) continue;
-				glutils::drawBox(1, 1, 1, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
+				glutils::drawBox(1, 1, 1, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
 			}
 		}
 	}
-
 	renderManager.addObject("building", "", vertices, true);
+
+	std::vector<Vertex> vertices2;
+	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), vertices2);
+	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
@@ -675,14 +684,17 @@ void GLWidget3D::update3DGeometry(const std::vector<Building>& buildings) {
 		std::cout << "generate geometry " << i << std::endl;
 
 		if (buildings[i].holes.size() == 0) {
-			glutils::drawPrism(buildings[i].footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
+			glutils::drawPrism(buildings[i].footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 		else {
-			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
+			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 	}
-
 	renderManager.addObject("building", "", vertices, true);
+
+	std::vector<Vertex> vertices2;
+	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, 0)), vertices2);
+	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
