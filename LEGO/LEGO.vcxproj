@@ -138,6 +138,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Building.cpp" />
+    <ClCompile Include="BuildingSimplification.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="ContourUtils.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_GLWidget3D.cpp">
@@ -237,6 +238,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Building.h" />
+    <ClInclude Include="BuildingSimplification.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ContourUtils.h" />
     <ClInclude Include="GeneratedFiles\ui_MainWindow.h" />

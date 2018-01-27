@@ -297,7 +297,7 @@ namespace contour {
 				}
 
 				prev_it = it;
-				next_it++;
+				if (next_it != x_map.end())	next_it++;
 			}
 
 			prev_it = y_map.end();
@@ -332,6 +332,9 @@ namespace contour {
 						updated = true;
 					}
 				}
+
+				prev_it = it;
+				if (next_it != y_map.end())	next_it++;
 			}
 
 			// if no update, stop the optimization

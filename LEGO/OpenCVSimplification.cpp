@@ -33,24 +33,15 @@ void OpenCVSimplification::simplify(std::vector<Building>& buildings) {
 	}
 }
 
-void OpenCVSimplification::calculateBuildings(std::vector<cv::Point> contour, std::vector<std::vector<cv::Point>> holes, int height, std::vector<Building>& buildings) {
+void OpenCVSimplification::calculateBuildings(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings) {
 	// calculate the bounding box
-	int min_x = std::numeric_limits<int>::max();
-	int max_x = -std::numeric_limits<int>::max();
-	int min_y = std::numeric_limits<int>::max();
-	int max_y = -std::numeric_limits<int>::max();
-	for (int i = 0; i < contour.size(); i++) {
-		min_x = std::min(min_x, contour[i].x);
-		max_x = std::max(max_x, contour[i].x);
-		min_y = std::min(min_y, contour[i].y);
-		max_y = std::max(max_y, contour[i].y);
-	}
+	cv::Rect bbox = boundingBox(contour);
 
 	// have 1px as margin
-	min_x = std::max(0, min_x - 1);
-	min_y = std::max(0, min_y - 1);
-	max_x = std::min(size.width() - 1, max_x + 1);
-	max_y = std::min(size.height() - 1, max_y + 1);
+	bbox.x = std::max(0, bbox.x - 1);
+	bbox.y = std::max(0, bbox.y - 1);
+	bbox.width = std::min(size.width() - bbox.x - 1, bbox.width + 1);
+	bbox.height = std::min(size.height() - bbox.y - 1, bbox.height + 1);
 
 	// find the height at which the contour drastically changes
 	int next_height = findDrasticChange(height, contour, holes, slicing_threshold);
@@ -62,41 +53,48 @@ void OpenCVSimplification::calculateBuildings(std::vector<cv::Point> contour, st
 
 		if (next_height >= voxel_data.size()) return;
 
-		cv::Mat cropped_img(voxel_data[next_height], cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
+		cv::Mat cropped_img(voxel_data[next_height], bbox);
 
 		// extract contours
-		std::vector<std::vector<cv::Point>> contours_in_copped_img;
-		std::vector<cv::Vec4i> hierarchy_in_cropped_img;
-		cv::findContours(cropped_img.clone(), contours_in_copped_img, hierarchy_in_cropped_img, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		std::vector<std::vector<cv::Point>> next_contours;
+		std::vector<cv::Vec4i> next_hierarchy;
+		cv::findContours(cropped_img.clone(), next_contours, next_hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
-		bool found_next_contour = false;
-		for (int i = 0; i < hierarchy_in_cropped_img.size(); i++) {
-			if (hierarchy_in_cropped_img[i][3] != -1) continue;
+		for (int i = 0; i < next_hierarchy.size(); i++) {
+			if (next_hierarchy[i][3] != -1) continue;
+			if (next_contours[i].size() < 3) continue;
 
-			found_next_contour = true;
-			contour = contours_in_copped_img[i];
+			std::vector<cv::Point> next_contour = next_contours[i];
 
 			// obtain all the holes inside this contour
-			holes.clear();
-			int hole_id = hierarchy_in_cropped_img[i][2];
+			std::vector<std::vector<cv::Point>> next_holes;
+			int hole_id = next_hierarchy[i][2];
 			while (hole_id != -1) {
-				holes.push_back(contours_in_copped_img[hole_id]);
-				hole_id = hierarchy_in_cropped_img[hole_id][0];
+				next_holes.push_back(next_contours[hole_id]);
+				hole_id = next_hierarchy[hole_id][0];
 			}
 
 			// offset back the contour and holes
-			for (int i = 0; i < contour.size(); i++) {
-				contour[i].x += min_x;
-				contour[i].y += min_y;
+			for (int i = 0; i < next_contour.size(); i++) {
+				next_contour[i].x += bbox.x;
+				next_contour[i].y += bbox.y;
 			}
-			for (int i = 0; i < holes.size(); i++) {
-				for (int j = 0; j < holes[i].size(); j++) {
-					holes[i][j].x += min_x;
-					holes[i][j].y += min_y;
+			for (int i = 0; i < next_holes.size(); i++) {
+				for (int j = 0; j < next_holes[i].size(); j++) {
+					next_holes[i][j].x += bbox.x;
+					next_holes[i][j].y += bbox.y;
 				}
 			}
 
-			calculateBuildings(contour, holes, next_height, buildings);
+			// check if the next contour is mostly within the contour
+			int cnt_outside = 0;
+			for (int j = 0; j < next_contour.size(); j++) {
+				if (pointPolygonTest(contour, next_contour[j], false) < 0) cnt_outside++;
+			}
+
+			if (cnt_outside < next_contour.size() / 2) {
+				calculateBuildings(next_contour, next_holes, next_height, buildings);
+			}
 		}
 	}
 	catch (char* ex) {
@@ -140,43 +138,22 @@ Building OpenCVSimplification::calculateBuilding(const std::vector<cv::Point>& c
 
 int OpenCVSimplification::findDrasticChange(int height, const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, double threshold) {
 	// calculate the bounding box
-	int min_x = std::numeric_limits<int>::max();
-	int max_x = -std::numeric_limits<int>::max();
-	int min_y = std::numeric_limits<int>::max();
-	int max_y = -std::numeric_limits<int>::max();
-	for (int i = 0; i < contour.size(); i++) {
-		min_x = std::min(min_x, contour[i].x);
-		max_x = std::max(max_x, contour[i].x);
-		min_y = std::min(min_y, contour[i].y);
-		max_y = std::max(max_y, contour[i].y);
-	}
+	cv::Rect bbox = boundingBox(contour);
 
 	// create image of the contour of the current slice
-	cv::Mat img(voxel_data[0].rows, voxel_data[0].cols, CV_8U, cv::Scalar(0));
+	cv::Mat img(size.height(), size.width(), CV_8U, cv::Scalar(0));
 	std::vector<std::vector<cv::Point>> contours(1);
 	contours[0] = contour;
 	cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
 	for (int i = 0; i < holes.size(); i++) {
 		std::vector<std::vector<cv::Point>> hole_pts(1);
 		hole_pts[0] = holes[i];
-		cv::fillPoly(img, hole_pts, cv::Scalar(128), cv::LINE_4);
+		cv::fillPoly(img, hole_pts, cv::Scalar(0), cv::LINE_4);
 	}
 
 	for (int i = height + 1; i < voxel_data.size(); i++) {
-		int union_cnt = 0;
-		int inter_cnt = 0;
-
-		for (int r = min_y; r <= max_y; r++) {
-			for (int c = min_x; c <= max_x; c++) {
-				// ignore the pixels within the holes
-				if (img.at<uchar>(r, c) == 128) continue;
-
-				if (img.at<uchar>(r, c) == 255 || voxel_data[i].at<uchar>(r, c) == 255) union_cnt++;
-				if (img.at<uchar>(r, c) == 255 && voxel_data[i].at<uchar>(r, c) == 255) inter_cnt++;
-			}
-		}
-
-		if ((float)inter_cnt / union_cnt < threshold) {
+		double iou = calculateIOU(img, voxel_data[i], bbox);
+		if (iou < threshold) {
 			return i;
 		}
 	}
