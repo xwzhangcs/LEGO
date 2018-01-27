@@ -17,7 +17,7 @@ namespace contour {
 		double min_cost = std::numeric_limits<double>::max();
 		cv::Mat_<double> best_M;
 
-		for (double angle = 0; angle < 90; angle += 20) {
+		for (double angle = 0; angle < 90; angle += 10) {
 			//std::cout << "angle=" << angle << std::endl;
 
 			double theta = angle / 180 * CV_PI;

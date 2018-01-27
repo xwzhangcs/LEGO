@@ -14,8 +14,9 @@ public:
 	OpenCVOptionDialog(QWidget *parent = 0);
 	~OpenCVOptionDialog();
 
-	double getEpsilon();
-	
+	int getEpsilon();
+	double getSlicingThreshold();
+
 public slots:
 	void onOK();
 	void onCancel();

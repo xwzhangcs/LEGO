@@ -26,7 +26,7 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 	light_dir = glm::normalize(glm::vec3(-4, -5, -8));
 
 	// model/view/projection matrices for shadow mapping
-	glm::mat4 light_pMatrix = glm::ortho<float>(-100, 100, -100, 100, 0.1, 200);
+	glm::mat4 light_pMatrix = glm::ortho<float>(-200, 200, -200, 200, 0.1, 400);
 	glm::mat4 light_mvMatrix = glm::lookAt(-light_dir * 50.0f, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 	light_mvpMatrix = light_pMatrix * light_mvMatrix;
 
@@ -317,7 +317,7 @@ void GLWidget3D::showInputVoxel() {
 	update3DGeometry(voxel_data);
 }
 
-void GLWidget3D::simplifyByOpenCV(double epsilon) {
+void GLWidget3D::simplifyByOpenCV(double epsilon, double slicing_threshold) {
 	std::vector<Building> buildings;
 
 	// get size
@@ -326,7 +326,6 @@ void GLWidget3D::simplifyByOpenCV(double epsilon) {
 	// extract contours
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
-	//cv::findContours(img.clone(), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 	cv::findContours(voxel_data[5].clone(), contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 	// traverse all the external contours
@@ -342,24 +341,84 @@ void GLWidget3D::simplifyByOpenCV(double epsilon) {
 
 			hole_id = hierarchy[hole_id][0];
 		}
+		
+		std::vector<cv::Point> contour = contours[i];
 
-		// calculate building by simplifying the contour and holes
-		try {
-			Building building = calculateBuildingByOpenCV(contours[i], holes, size, epsilon);
-			buildings.push_back(building);
-			cnt++;
-		}
-		catch (char* ex) {
-		}
+		calculateBuildingLayers(contour, holes, 5, size, epsilon, slicing_threshold, buildings);
 	}
 
 	update3DGeometry(buildings);
 }
 
+void GLWidget3D::calculateBuildingLayers(std::vector<cv::Point> contour, std::vector<std::vector<cv::Point>> holes, int height, const QSize& size, double epsilon, double slicing_threshold, std::vector<Building>& buildings) {
+	// calculate the bounding box
+	int min_x = std::numeric_limits<int>::max();
+	int max_x = -std::numeric_limits<int>::max();
+	int min_y = std::numeric_limits<int>::max();
+	int max_y = -std::numeric_limits<int>::max();
+	for (int i = 0; i < contour.size(); i++) {
+		min_x = std::min(min_x, contour[i].x);
+		max_x = std::max(max_x, contour[i].x);
+		min_y = std::min(min_y, contour[i].y);
+		max_y = std::max(max_y, contour[i].y);
+	}
+
+	// find the height at which the contour drastically changes
+	int next_height = findDrasticChange(voxel_data, height, contour, holes, slicing_threshold);
+
+	// calculate building by simplifying the contour and holes
+	try {
+		Building building = calculateBuildingByOpenCV(contour, holes, size, height, next_height, epsilon);
+		buildings.push_back(building);
+		
+		if (next_height >= voxel_data.size()) return;
+
+		cv::Mat cropped_img(voxel_data[next_height], cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
+		cv::imwrite("test.png", cropped_img);
+
+		// extract contours
+		std::vector<std::vector<cv::Point>> contours_in_copped_img;
+		std::vector<cv::Vec4i> hierarchy_in_cropped_img;
+		cv::findContours(cropped_img, contours_in_copped_img, hierarchy_in_cropped_img, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+		bool found_next_contour = false;
+		for (int i = 0; i < hierarchy_in_cropped_img.size(); i++) {
+			if (hierarchy_in_cropped_img[i][3] != -1) continue;
+
+			found_next_contour = true;
+			contour = contours_in_copped_img[i];
+
+			// obtain all the holes inside this contour
+			holes.clear();
+			int hole_id = hierarchy_in_cropped_img[i][2];
+			while (hole_id != -1) {
+				holes.push_back(contours_in_copped_img[hole_id]);
+				hole_id = hierarchy_in_cropped_img[hole_id][0];
+			}
+
+			// offset back the contour and holes
+			for (int i = 0; i < contour.size(); i++) {
+				contour[i].x += min_x;
+				contour[i].y += min_y;
+			}
+			for (int i = 0; i < holes.size(); i++) {
+				for (int j = 0; j < holes[i].size(); j++) {
+					holes[i][j].x += min_x;
+					holes[i][j].y += min_y;
+				}
+			}
+
+			calculateBuildingLayers(contour, holes, next_height, size, epsilon, slicing_threshold, buildings);
+		}
+	}
+	catch (char* ex) {
+	}
+}
+
 /**
 * Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
 */
-Building GLWidget3D::calculateBuildingByOpenCV(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size, double epsilon) {
+Building GLWidget3D::calculateBuildingByOpenCV(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, const QSize& size, int bottom_height, int top_height, double epsilon) {
 	std::vector<cv::Point> simplified_contour;
 	cv::approxPolyDP(contour, simplified_contour, epsilon, true);
 
@@ -367,7 +426,8 @@ Building GLWidget3D::calculateBuildingByOpenCV(const std::vector<cv::Point>& con
 
 	// create a building object
 	Building building;
-	building.height = calculateBuildingHeight(contour, holes);
+	building.bottom_height = bottom_height;
+	building.top_height = top_height;
 
 	building.footprint.resize(simplified_contour.size());
 	for (int i = 0; i < simplified_contour.size(); i++) {
@@ -399,7 +459,6 @@ void GLWidget3D::simplifyByOurCustom(int resolution) {
 	// extract contours
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarchy;
-	//cv::findContours(img.clone(), contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 	cv::findContours(voxel_data[5].clone(), contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 	// traverse all the external contours
@@ -444,7 +503,8 @@ Building GLWidget3D::calculateBuildingByOurCustom(const std::vector<cv::Point>& 
 
 	// create a building object
 	Building building;
-	building.height = calculateBuildingHeight(contour, holes);
+	building.bottom_height = 0;
+	building.top_height = calculateBuildingHeight(contour, holes);
 
 	building.footprint.resize(simplified_contour.size());
 	for (int i = 0; i < simplified_contour.size(); i++) {
@@ -541,6 +601,51 @@ glm::dvec2 GLWidget3D::samplePoint(const glutils::BoundingBox& bbox, const std::
 	return glm::dvec2(bbox.center());
 }
 
+int GLWidget3D::findDrasticChange(const std::vector<cv::Mat>& voxel_data, int start_id, const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, double threshold) {
+	// calculate the bounding box
+	int min_x = std::numeric_limits<int>::max();
+	int max_x = -std::numeric_limits<int>::max();
+	int min_y = std::numeric_limits<int>::max();
+	int max_y = -std::numeric_limits<int>::max();
+	for (int i = 0; i < contour.size(); i++) {
+		min_x = std::min(min_x, contour[i].x);
+		max_x = std::max(max_x, contour[i].x);
+		min_y = std::min(min_y, contour[i].y);
+		max_y = std::max(max_y, contour[i].y);
+	}
+
+	// create image of the contour of the current slice
+	cv::Mat img(voxel_data[0].rows, voxel_data[0].cols, CV_8U, cv::Scalar(0));
+	std::vector<std::vector<cv::Point>> contours(1);
+	contours[0] = contour;
+	cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
+	for (int i = 0; i < holes.size(); i++) {
+		std::vector<std::vector<cv::Point>> hole_pts(1);
+		hole_pts[0] = holes[i];
+		cv::fillPoly(img, hole_pts, cv::Scalar(128), cv::LINE_4);
+	}
+
+	int union_cnt = 0;
+	int inter_cnt = 0;
+	for (int i = start_id + 1; i < voxel_data.size(); i++) {
+		for (int r = min_y; r <= max_y; r++) {
+			for (int c = min_x; c <= max_x; c++) {
+				// ignore the pixels within the holes
+				if (img.at<uchar>(r, c) == 128) continue;
+
+				if (img.at<uchar>(r, c) == 255 || voxel_data[i].at<uchar>(r, c) == 255) union_cnt++;
+				if (img.at<uchar>(r, c) == 255 && voxel_data[i].at<uchar>(r, c) == 255) inter_cnt++;
+			}
+		}
+
+		if ((float)inter_cnt / union_cnt < threshold) {
+			return i;
+		}
+	}
+
+	return voxel_data.size();
+}
+
 void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 	renderManager.removeObjects();
 
@@ -570,10 +675,10 @@ void GLWidget3D::update3DGeometry(const std::vector<Building>& buildings) {
 		std::cout << "generate geometry " << i << std::endl;
 
 		if (buildings[i].holes.size() == 0) {
-			glutils::drawPrism(buildings[i].footprint, buildings[i].height, glm::vec4(0.7, 1, 0.7, 1), glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), vertices);
+			glutils::drawPrism(buildings[i].footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 		else {
-			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].height, glm::vec4(0.7, 1, 0.7, 1), glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), vertices);
+			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.7, 1, 0.7, 1), glm::translate(glm::rotate(glm::mat4(), -(float)glutils::M_PI * 0.5f, glm::vec3(1, 0, 0)), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 	}
 

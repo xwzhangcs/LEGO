@@ -18,6 +18,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpinBox>
 
 QT_BEGIN_NAMESPACE
 
@@ -27,25 +28,33 @@ public:
     QLabel *label;
     QPushButton *pushButtonOK;
     QPushButton *pushButtonCancel;
-    QDoubleSpinBox *doubleSpinBoxEpsilon;
+    QLabel *label_2;
+    QDoubleSpinBox *doubleSpinBoxSlicingThreshold;
+    QSpinBox *spinBoxEpsilon;
 
     void setupUi(QDialog *OpenCVOptionDialog)
     {
         if (OpenCVOptionDialog->objectName().isEmpty())
             OpenCVOptionDialog->setObjectName(QStringLiteral("OpenCVOptionDialog"));
-        OpenCVOptionDialog->resize(190, 90);
+        OpenCVOptionDialog->resize(203, 122);
         label = new QLabel(OpenCVOptionDialog);
         label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(30, 10, 47, 21));
+        label->setGeometry(QRect(20, 10, 47, 21));
         pushButtonOK = new QPushButton(OpenCVOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(10, 50, 81, 31));
+        pushButtonOK->setGeometry(QRect(10, 80, 81, 31));
         pushButtonCancel = new QPushButton(OpenCVOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(100, 50, 81, 31));
-        doubleSpinBoxEpsilon = new QDoubleSpinBox(OpenCVOptionDialog);
-        doubleSpinBoxEpsilon->setObjectName(QStringLiteral("doubleSpinBoxEpsilon"));
-        doubleSpinBoxEpsilon->setGeometry(QRect(90, 10, 62, 22));
+        pushButtonCancel->setGeometry(QRect(110, 80, 81, 31));
+        label_2 = new QLabel(OpenCVOptionDialog);
+        label_2->setObjectName(QStringLiteral("label_2"));
+        label_2->setGeometry(QRect(20, 40, 91, 21));
+        doubleSpinBoxSlicingThreshold = new QDoubleSpinBox(OpenCVOptionDialog);
+        doubleSpinBoxSlicingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSlicingThreshold"));
+        doubleSpinBoxSlicingThreshold->setGeometry(QRect(120, 40, 62, 22));
+        spinBoxEpsilon = new QSpinBox(OpenCVOptionDialog);
+        spinBoxEpsilon->setObjectName(QStringLiteral("spinBoxEpsilon"));
+        spinBoxEpsilon->setGeometry(QRect(120, 10, 61, 22));
 
         retranslateUi(OpenCVOptionDialog);
 
@@ -55,9 +64,10 @@ public:
     void retranslateUi(QDialog *OpenCVOptionDialog)
     {
         OpenCVOptionDialog->setWindowTitle(QApplication::translate("OpenCVOptionDialog", "OpenCVOptionDialog", 0));
-        label->setText(QApplication::translate("OpenCVOptionDialog", "epsilon:", 0));
+        label->setText(QApplication::translate("OpenCVOptionDialog", "Epsilon:", 0));
         pushButtonOK->setText(QApplication::translate("OpenCVOptionDialog", "OK", 0));
         pushButtonCancel->setText(QApplication::translate("OpenCVOptionDialog", "Cancel", 0));
+        label_2->setText(QApplication::translate("OpenCVOptionDialog", "Slicing threshold:", 0));
     } // retranslateUi
 
 };

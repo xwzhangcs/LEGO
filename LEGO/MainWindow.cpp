@@ -58,7 +58,7 @@ void MainWindow::onInputVoxel() {
 void MainWindow::onSimplifyByOpenCV() {
 	OpenCVOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOpenCV(dlg.getEpsilon());
+		glWidget->simplifyByOpenCV(dlg.getEpsilon(), dlg.getSlicingThreshold());
 		glWidget->update();
 	}
 }
