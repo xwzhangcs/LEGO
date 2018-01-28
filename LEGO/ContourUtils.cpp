@@ -70,8 +70,6 @@ namespace contour {
 					cv::Mat inflated;
 					cv::dilate(small_aa_polygon_img, small_aa_polygon_img, kernel);
 
-					//cv::imwrite("test.png", small_polygon_img);
-
 					// extract a contour (my custom version)
 					std::vector<cv::Point> simplified_small_aa_contour;
 					findContour(small_aa_polygon_img, simplified_small_aa_contour);
@@ -239,7 +237,7 @@ namespace contour {
 		// create the image of the input contour
 		cv::Mat img;
 		createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, contour, min_x, min_y, img);
-		cv::imwrite("test.png", img);
+		//cv::imwrite("test.png", img);
 
 		// list up the parameters
 		std::map<int, int> x_map;
@@ -283,7 +281,7 @@ namespace contour {
 
 				prop_x_map = x_map;
 				prop_x_map[it->first]--;
-				if ((prev_it != x_map.end() && prop_x_map[it->first] > prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= 0)) {
+				if ((prev_it != x_map.end() && prop_x_map[it->first] > prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
 					cv::Mat img2;
 					createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, min_x, min_y, img2);
@@ -320,7 +318,7 @@ namespace contour {
 
 				prop_y_map = y_map;
 				prop_y_map[it->first]--;
-				if ((prev_it != y_map.end() && prop_y_map[it->first] > prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= 0)) {
+				if ((prev_it != y_map.end() && prop_y_map[it->first] > prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
 					cv::Mat img2;
 					createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, min_x, min_y, img2);
@@ -351,11 +349,8 @@ namespace contour {
 	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, int min_x, int min_y, cv::Mat& result) {
 		result = cv::Mat(height, width, CV_8U, cv::Scalar(0));
 		std::vector<std::vector<cv::Point>> contour_points(1);
-		contour_points[0].resize(contour.size());
-		for (int i = 0; i < contour.size(); i++) {
-			contour_points[0].push_back(cv::Point(contour[i].x - min_x, contour[i].y - min_y));
-		}
-		cv::fillPoly(result, contour_points, cv::Scalar(255));
+		contour_points[0] = contour;
+		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, cv::Point(-min_x, -min_y));
 	}
 
 	double calculateIOU(const cv::Mat& img, const cv::Mat& img2) {
