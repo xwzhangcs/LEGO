@@ -145,14 +145,12 @@ int OurCustomSimplification::findDrasticChange(int height, const std::vector<cv:
 
 	// create image of the contour of the current slice
 	cv::Mat img(size.height(), size.width(), CV_8U, cv::Scalar(0));
-	std::vector<std::vector<cv::Point>> contours(1);
+	std::vector<std::vector<cv::Point>> contours(1 + holes.size());
 	contours[0] = contour;
-	cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
 	for (int i = 0; i < holes.size(); i++) {
-		std::vector<std::vector<cv::Point>> hole_pts(1);
-		hole_pts[0] = holes[i];
-		cv::fillPoly(img, hole_pts, cv::Scalar(0), cv::LINE_4);
+		contours[i + 1] = holes[i];
 	}
+	cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
 
 	for (int i = height + 1; i < voxel_data.size(); i++) {
 		double iou = calculateIOU(img, voxel_data[i], bbox);
