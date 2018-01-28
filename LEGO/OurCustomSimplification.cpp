@@ -55,6 +55,7 @@ void OurCustomSimplification::calculateBuilding(const std::vector<cv::Point>& co
 
 		if (next_height >= voxel_data.size()) return;
 
+		// crop the image of the next height
 		cv::Mat next_img(voxel_data[next_height], bbox);
 
 		// extract contours

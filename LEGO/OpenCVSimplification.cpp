@@ -53,12 +53,13 @@ void OpenCVSimplification::calculateBuilding(const std::vector<cv::Point>& conto
 
 		if (next_height >= voxel_data.size()) return;
 
-		cv::Mat cropped_img(voxel_data[next_height], bbox);
+		// crop the image of the next height
+		cv::Mat next_img(voxel_data[next_height], bbox);
 
 		// extract contours
 		std::vector<std::vector<cv::Point>> next_contours;
 		std::vector<cv::Vec4i> next_hierarchy;
-		cv::findContours(cropped_img.clone(), next_contours, next_hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		cv::findContours(next_img.clone(), next_contours, next_hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 		for (int i = 0; i < next_hierarchy.size(); i++) {
 			if (next_hierarchy[i][3] != -1) continue;

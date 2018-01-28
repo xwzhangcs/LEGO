@@ -39,6 +39,8 @@ namespace contour {
 			}
 		}
 
+		if (min_cost == std::numeric_limits<double>::max()) throw "No simplified polygon was found.";
+
 		return std::make_tuple(best_angle, best_dx, best_dy);
 	}
 
@@ -98,9 +100,16 @@ namespace contour {
 				simplified_small_aa_contour2.push_back(simplified_small_aa_contour[i]);
 			}
 		}
+		for (int i = simplified_small_aa_contour2.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + simplified_small_aa_contour2.size()) % simplified_small_aa_contour2.size();
+			if (simplified_small_aa_contour2[i] == simplified_small_aa_contour2[prev]) {
+				simplified_small_aa_contour2.erase(simplified_small_aa_contour2.begin() + i);
+			}
+		}
 
 		if (simplified_small_aa_contour2.size() < 3) {
-			throw "Ignored due to too small contour.";
+			result.clear();
+			return std::numeric_limits<double>::max();
 		}
 		
 		// offset back and scale up the simplified scale-down polygon
