@@ -18,8 +18,8 @@ public:
 	OurCustomSimplification(const std::vector<cv::Mat>& voxel_data, int resolution, double slicing_threshold);
 
 	void simplify(std::vector<Building>& buildings);
-	void calculateBuildings(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings);
-	Building calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height);
+	void calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, double angle, int dx, int dy, std::vector<Building>& buildings);
+	Building calculateBuildingComponent(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height, double& angle, int& dx, int& dy);
 	int findDrasticChange(int height, const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, double threshold);
 
 };

@@ -6,109 +6,126 @@ namespace contour {
 	/**
  	 * Simplify and regularize a polygon
 	 *
-	 * @param contour	input contour polygon
+	 * @param contour		input contour polygon
 	 * @param result		output regularized polygon
+	 * @param resolution	resolution which defines how much simplified
+	 * @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	 */
-	cv::Mat_<double> simplify(std::vector<cv::Point> contour, std::vector<cv::Point2f>& result, double resolution) {
+	std::tuple<double, int, int> simplify(const std::vector<cv::Point>& contour, std::vector<cv::Point2f>& result, double resolution) {
 		result.clear();
 
-		double area = cv::contourArea(contour);
-
 		double min_cost = std::numeric_limits<double>::max();
-		cv::Mat_<double> best_M;
+		double best_angle;
+		int best_dx;
+		int best_dy;
 
 		for (double angle = 0; angle < 90; angle += 10) {
 			//std::cout << "angle=" << angle << std::endl;
 
-			double theta = angle / 180 * CV_PI;
 			for (int dx = 0; dx < resolution; dx++) {
 				for (int dy = 0; dy < resolution; dy++) {
-					// create a transformation matrix
-					cv::Mat_<double> M = (cv::Mat_<double>(3, 3) << cos(theta), -sin(theta), dx, sin(theta), cos(theta), dy, 0, 0, 1);
+					std::vector<cv::Point2f> simplified_contour;
+					double cost = simplify(contour, simplified_contour, resolution, angle, dx, dy);
 
-					// create inverse transformation matrix
-					cv::Mat_<double> invM = M.inv();
+					if (cost < min_cost) {
+						min_cost = cost;
+						best_angle = angle;
+						best_dx = dx;
+						best_dy = dy;
 
-					// transform the polygon
-					std::vector<cv::Point2f> aa_contour(contour.size());
-					for (int i = 0; i < contour.size(); i++) {
-						cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << contour[i].x, contour[i].y, 1);
-						cv::Mat_<double> p2 = M * p;
-						aa_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
-					}
-
-					// create the integer coordinates of the polygon
-					std::vector<cv::Point> aa_contour_int(aa_contour.size());
-					for (int i = 0; i < aa_contour.size(); i++) {
-						aa_contour_int[i] = cv::Point(aa_contour[i]);
-					}
-
-					// scale down the polygon based on the resolution
-					std::vector<cv::Point> small_aa_polygon(aa_contour.size());
-					for (int i = 0; i < aa_contour.size(); i++) {
-						small_aa_polygon[i] = cv::Point(aa_contour[i].x / resolution, aa_contour[i].y / resolution);
-					}
-					
-					// calculate the bounding box of the scale-down polygon
-					cv::Point min_pt(INT_MAX, INT_MAX);
-					cv::Point max_pt(INT_MIN, INT_MIN);
-					for (int i = 0; i < small_aa_polygon.size(); i++) {
-						min_pt.x = std::min(min_pt.x, small_aa_polygon[i].x - 3);
-						min_pt.y = std::min(min_pt.y, small_aa_polygon[i].y - 3);
-						max_pt.x = std::max(max_pt.x, small_aa_polygon[i].x + 3);
-						max_pt.y = std::max(max_pt.y, small_aa_polygon[i].y + 3);
-					}
-
-					// draw a polygon
-					cv::Mat small_aa_polygon_img(max_pt.y - min_pt.y + 1, max_pt.x - min_pt.x + 1, CV_8U, cv::Scalar(0));
-					std::vector<std::vector<cv::Point>> small_aa_polygons;
-					small_aa_polygons.push_back(small_aa_polygon);
-					cv::fillPoly(small_aa_polygon_img, small_aa_polygons, cv::Scalar(255), cv::LINE_4, 0, -min_pt);
-
-					// dilate the image
-					cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
-					cv::Mat inflated;
-					cv::dilate(small_aa_polygon_img, small_aa_polygon_img, kernel);
-
-					// extract a contour (my custom version)
-					std::vector<cv::Point> simplified_small_aa_contour;
-					findContour(small_aa_polygon_img, simplified_small_aa_contour);
-
-					double a = cv::contourArea(simplified_small_aa_contour) * resolution * resolution;
-					if (simplified_small_aa_contour.size() >= 3 && a > 0) {
-						// offset back and scale up the simplified scale-down polygon
-						std::vector<cv::Point> simplified_aa_contour(simplified_small_aa_contour.size());
-						for (int i = 0; i < simplified_small_aa_contour.size(); i++) {
-							simplified_aa_contour[i] = cv::Point((simplified_small_aa_contour[i].x + min_pt.x) * resolution, (simplified_small_aa_contour[i].y + min_pt.y) * resolution);
-						}
-						
-						// refine the simplified contour
-						std::vector<cv::Point> simplified_aa_contour2 = simplified_aa_contour;
-						double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour));
-
-						// calculate the cost
-						cost += simplified_aa_contour.size() * 0.2;
-
-						if (cost < min_cost) {
-							min_cost = cost;
-							best_M = M;
-
-							// transform back the simplified contour
-							std::vector<cv::Point2f> simplified_contour(simplified_aa_contour.size());
-							for (int i = 0; i < simplified_aa_contour.size(); i++) {
-								cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << (double)simplified_aa_contour[i].x, (double)simplified_aa_contour[i].y, 1.0);
-								cv::Mat_<double> p2 = invM * p;
-								simplified_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
-							}
-
-							result = simplified_contour;
-						}
+						result = simplified_contour;
 					}
 				}
 			}
 		}
 
-		return best_M.clone();
+		return std::make_tuple(best_angle, best_dx, best_dy);
+	}
+
+	/**
+	* Simplify and regularize a polygon using the specified angle, dx, and dy.
+	*
+	* @param contour		input contour polygon
+	* @param result			output regularized polygon
+	* @param resolution		resolution which defines how much simplified
+	* @return				best cost
+	*/
+	double simplify(const std::vector<cv::Point>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy) {
+		double theta = angle / 180 * CV_PI;
+		
+		// create a transformation matrix
+		cv::Mat_<double> M = (cv::Mat_<double>(3, 3) << cos(theta), -sin(theta), dx, sin(theta), cos(theta), dy, 0, 0, 1);
+
+		// create inverse transformation matrix
+		cv::Mat_<double> invM = M.inv();
+
+		// transform the polygon
+		std::vector<cv::Point2f> aa_contour(contour.size());
+		for (int i = 0; i < contour.size(); i++) {
+			cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << contour[i].x, contour[i].y, 1);
+			cv::Mat_<double> p2 = M * p;
+			aa_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
+		}
+
+		// create the integer coordinates of the polygon
+		std::vector<cv::Point> aa_contour_int(aa_contour.size());
+		for (int i = 0; i < aa_contour.size(); i++) {
+			aa_contour_int[i] = cv::Point(aa_contour[i]);
+		}
+
+		// scale down the polygon based on the resolution
+		std::vector<cv::Point> small_aa_polygon(aa_contour.size());
+		for (int i = 0; i < aa_contour.size(); i++) {
+			small_aa_polygon[i] = cv::Point(aa_contour[i].x / resolution, aa_contour[i].y / resolution);
+		}
+
+		// skip the points that are redundant
+		std::vector<cv::Point> simplified_small_aa_contour;
+		for (int i = 0; i < small_aa_polygon.size(); i++) {
+			int prev = (i - 1 + small_aa_polygon.size()) % small_aa_polygon.size();
+			if (small_aa_polygon[i] != small_aa_polygon[prev]) {
+				simplified_small_aa_contour.push_back(small_aa_polygon[i]);
+			}
+		}
+
+		std::vector<cv::Point> simplified_small_aa_contour2;
+		for (int i = 0; i < simplified_small_aa_contour.size(); i++) {
+			int prev = (i - 1 + simplified_small_aa_contour.size()) % simplified_small_aa_contour.size();
+			int next = (i + 1) % simplified_small_aa_contour.size();
+			cv::Point v1 = simplified_small_aa_contour[i] - simplified_small_aa_contour[prev];
+			cv::Point v2 = simplified_small_aa_contour[next] - simplified_small_aa_contour[i];
+			if (std::abs(v1.x * v2.y - v1.y * v2.x) >= 1) {
+				simplified_small_aa_contour2.push_back(simplified_small_aa_contour[i]);
+			}
+		}
+
+		if (simplified_small_aa_contour2.size() < 3) {
+			throw "Ignored due to too small contour.";
+		}
+		
+		// offset back and scale up the simplified scale-down polygon
+		std::vector<cv::Point> simplified_aa_contour(simplified_small_aa_contour2.size());
+		for (int i = 0; i < simplified_small_aa_contour2.size(); i++) {
+			simplified_aa_contour[i] = cv::Point(simplified_small_aa_contour2[i].x * resolution, simplified_small_aa_contour2[i].y * resolution);
+		}
+
+		// refine the simplified contour
+		double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour));
+
+		// calculate the cost
+		cost += simplified_aa_contour.size() * 0.2;
+
+		// transform back the simplified contour
+		std::vector<cv::Point2f> simplified_contour(simplified_aa_contour.size());
+		for (int i = 0; i < simplified_aa_contour.size(); i++) {
+			cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << (double)simplified_aa_contour[i].x, (double)simplified_aa_contour[i].y, 1.0);
+			cv::Mat_<double> p2 = invM * p;
+			simplified_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
+		}
+
+		result = simplified_contour;
+
+		return cost;
 	}
 
 	/**
@@ -237,7 +254,6 @@ namespace contour {
 		// create the image of the input contour
 		cv::Mat img;
 		createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, contour, min_x, min_y, img);
-		//cv::imwrite("test.png", img);
 
 		// list up the parameters
 		std::map<int, int> x_map;

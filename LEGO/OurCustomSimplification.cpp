@@ -30,12 +30,12 @@ void OurCustomSimplification::simplify(std::vector<Building>& buildings) {
 			hole_id = hierarchy[hole_id][0];
 		}
 
-		calculateBuildings(contours[i], holes, 5, buildings);
+		calculateBuilding(contours[i], holes, 5, -1, -1, -1, buildings);
 	}
 	std::cout << "Processing buildings has been finished." << std::endl;
 }
 
-void OurCustomSimplification::calculateBuildings(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings) {
+void OurCustomSimplification::calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, double angle, int dx, int dy, std::vector<Building>& buildings) {
 	// calculate the bounding box
 	cv::Rect bbox = boundingBox(contour);
 
@@ -50,7 +50,7 @@ void OurCustomSimplification::calculateBuildings(const std::vector<cv::Point>& c
 
 	// calculate building by simplifying the contour and holes
 	try {
-		Building building = calculateBuilding(contour, holes, height, next_height);
+		Building building = calculateBuildingComponent(contour, holes, height, next_height, angle, dx, dy);
 		buildings.push_back(building);
 
 		if (next_height >= voxel_data.size()) return;
@@ -95,7 +95,8 @@ void OurCustomSimplification::calculateBuildings(const std::vector<cv::Point>& c
 			}
 
 			if (cnt_outside < next_contour.size() / 2) {
-				calculateBuildings(next_contour, next_holes, next_height, buildings);
+				// for upper layers, recursive call this function to construct building components
+				calculateBuilding(next_contour, next_holes, next_height, angle, dx, dy, buildings);
 			}
 		}
 	}
@@ -106,9 +107,17 @@ void OurCustomSimplification::calculateBuildings(const std::vector<cv::Point>& c
 /**
 * Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
 */
-Building OurCustomSimplification::calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height) {
+Building OurCustomSimplification::calculateBuildingComponent(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height, double& angle, int& dx, int& dy) {
 	std::vector<cv::Point2f> simplified_contour;
-	contour::simplify(contour, simplified_contour, resolution);
+	if (angle == -1) {
+		std::tuple<double, int, int> best_mat = contour::simplify(contour, simplified_contour, resolution);
+		angle = std::get<0>(best_mat);
+		dx = std::get<1>(best_mat);
+		dy = std::get<2>(best_mat);
+	}
+	else {
+		contour::simplify(contour, simplified_contour, resolution, angle, dx, dy);
+	}
 
 	if (simplified_contour.size() < 3) throw "Invalid contour";
 

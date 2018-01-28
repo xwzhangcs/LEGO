@@ -29,11 +29,11 @@ void OpenCVSimplification::simplify(std::vector<Building>& buildings) {
 			hole_id = hierarchy[hole_id][0];
 		}
 
-		calculateBuildings(contours[i], holes, 5, buildings);
+		calculateBuilding(contours[i], holes, 5, buildings);
 	}
 }
 
-void OpenCVSimplification::calculateBuildings(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings) {
+void OpenCVSimplification::calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings) {
 	// calculate the bounding box
 	cv::Rect bbox = boundingBox(contour);
 
@@ -48,7 +48,7 @@ void OpenCVSimplification::calculateBuildings(const std::vector<cv::Point>& cont
 
 	// calculate building by simplifying the contour and holes
 	try {
-		Building building = calculateBuilding(contour, holes, height, next_height);
+		Building building = calculateBuildingComponent(contour, holes, height, next_height);
 		buildings.push_back(building);
 
 		if (next_height >= voxel_data.size()) return;
@@ -93,7 +93,8 @@ void OpenCVSimplification::calculateBuildings(const std::vector<cv::Point>& cont
 			}
 
 			if (cnt_outside < next_contour.size() / 2) {
-				calculateBuildings(next_contour, next_holes, next_height, buildings);
+				// for upper layers, recursive call this function to construct building components
+				calculateBuilding(next_contour, next_holes, next_height, buildings);
 			}
 		}
 	}
@@ -104,7 +105,7 @@ void OpenCVSimplification::calculateBuildings(const std::vector<cv::Point>& cont
 /**
 * Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
 */
-Building OpenCVSimplification::calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height) {
+Building OpenCVSimplification::calculateBuildingComponent(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height) {
 	std::vector<cv::Point> simplified_contour;
 	cv::approxPolyDP(contour, simplified_contour, epsilon, true);
 
