@@ -18,4 +18,6 @@ namespace contour {
 	double calculateIOU(const cv::Mat& img, const cv::Mat& img2);
 	std::vector<cv::Point> proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map);
 
+	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
+	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
 }

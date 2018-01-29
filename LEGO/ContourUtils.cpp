@@ -82,13 +82,7 @@ namespace contour {
 		}
 
 		// skip the points that are redundant
-		std::vector<cv::Point> simplified_small_aa_contour;
-		for (int i = 0; i < small_aa_polygon.size(); i++) {
-			int prev = (i - 1 + small_aa_polygon.size()) % small_aa_polygon.size();
-			if (small_aa_polygon[i] != small_aa_polygon[prev]) {
-				simplified_small_aa_contour.push_back(small_aa_polygon[i]);
-			}
-		}
+		std::vector<cv::Point> simplified_small_aa_contour = removeRedundantPoint(small_aa_polygon);
 
 		std::vector<cv::Point> simplified_small_aa_contour2;
 		for (int i = 0; i < simplified_small_aa_contour.size(); i++) {
@@ -100,12 +94,7 @@ namespace contour {
 				simplified_small_aa_contour2.push_back(simplified_small_aa_contour[i]);
 			}
 		}
-		for (int i = simplified_small_aa_contour2.size() - 1; i >= 0; i--) {
-			int prev = (i - 1 + simplified_small_aa_contour2.size()) % simplified_small_aa_contour2.size();
-			if (simplified_small_aa_contour2[i] == simplified_small_aa_contour2[prev]) {
-				simplified_small_aa_contour2.erase(simplified_small_aa_contour2.begin() + i);
-			}
-		}
+		simplified_small_aa_contour2 = removeRedundantPoint(simplified_small_aa_contour2);
 
 		if (simplified_small_aa_contour2.size() < 3) {
 			result.clear();
@@ -120,6 +109,17 @@ namespace contour {
 
 		// refine the simplified contour
 		double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour));
+
+		// check if the simplified contour has self-intersecting
+		simplified_aa_contour = removeRedundantPoint(simplified_aa_contour);
+		for (int i = 0; i < simplified_aa_contour.size(); i++) {
+			for (int j = i + 1; j < simplified_aa_contour.size(); j++) {
+				if (simplified_aa_contour[i] == simplified_aa_contour[j]) {
+					result.clear();
+					return std::numeric_limits<double>::max();
+				}
+			}
+		}
 
 		// calculate the cost
 		cost += simplified_aa_contour.size() * 0.2;
@@ -291,7 +291,7 @@ namespace contour {
 			for (auto it = x_map.begin(); it != x_map.end(); it++) {
 				std::map<int, int> prop_x_map = x_map;
 				prop_x_map[it->first]++;
-				if ((next_it != x_map.end() && prop_x_map[it->first] < prop_x_map[next_it->first]) || (next_it == x_map.end() && prop_x_map[it->first] <= max_x)) {
+				if ((next_it != x_map.end() && prop_x_map[it->first] <= prop_x_map[next_it->first]) || (next_it == x_map.end() && prop_x_map[it->first] <= max_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
 					cv::Mat img2;
 					createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, min_x, min_y, img2);
@@ -306,7 +306,7 @@ namespace contour {
 
 				prop_x_map = x_map;
 				prop_x_map[it->first]--;
-				if ((prev_it != x_map.end() && prop_x_map[it->first] > prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
+				if ((prev_it != x_map.end() && prop_x_map[it->first] >= prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
 					cv::Mat img2;
 					createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, min_x, min_y, img2);
@@ -325,10 +325,11 @@ namespace contour {
 
 			prev_it = y_map.end();
 			next_it = y_map.begin();
+			next_it++;
 			for (auto it = y_map.begin(); it != y_map.end(); it++) {
 				std::map<int, int> prop_y_map = y_map;
 				prop_y_map[it->first]++;
-				if ((next_it != y_map.end() && prop_y_map[it->first] < prop_y_map[next_it->first]) || (next_it == y_map.end() && prop_y_map[it->first] <= max_y)) {
+				if ((next_it != y_map.end() && prop_y_map[it->first] <= prop_y_map[next_it->first]) || (next_it == y_map.end() && prop_y_map[it->first] <= max_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
 					cv::Mat img2;
 					createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, min_x, min_y, img2);
@@ -343,7 +344,7 @@ namespace contour {
 
 				prop_y_map = y_map;
 				prop_y_map[it->first]--;
-				if ((prev_it != y_map.end() && prop_y_map[it->first] > prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
+				if ((prev_it != y_map.end() && prop_y_map[it->first] >= prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
 					cv::Mat img2;
 					createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, min_x, min_y, img2);
@@ -399,4 +400,36 @@ namespace contour {
 		return prop_contour;
 	}
 
+	/**
+	 * Remove the redundant points that have the same coordinates.
+	 */
+	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon) {
+		std::vector<cv::Point> ans;
+		if (polygon.size() == 0) return ans;
+
+		ans.push_back(polygon[0]);
+		for (int i = 1; i < polygon.size(); i++) {
+			if (polygon[i] != polygon[i - 1]) {
+				ans.push_back(polygon[i]);
+			}
+		}
+		if (ans.size() > 1 && ans.back() == ans.front()) ans.pop_back();
+
+		return ans;
+	}
+
+	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon) {
+		std::vector<cv::Point2f> ans;
+		if (polygon.size() == 0) return ans;
+
+		ans.push_back(polygon[0]);
+		for (int i = 1; i < polygon.size(); i++) {
+			if (polygon[i] != polygon[i - 1]) {
+				ans.push_back(polygon[i]);
+			}
+		}
+		if (ans.size() > 1 && ans.back() == ans.front()) ans.pop_back();
+
+		return ans;
+	}
 }
