@@ -40,8 +40,8 @@ void OpenCVSimplification::calculateBuilding(const std::vector<cv::Point>& conto
 	// have 1px as margin
 	bbox.x = std::max(0, bbox.x - 1);
 	bbox.y = std::max(0, bbox.y - 1);
-	bbox.width = std::min(size.width() - bbox.x - 1, bbox.width + 1);
-	bbox.height = std::min(size.height() - bbox.y - 1, bbox.height + 1);
+	bbox.width = std::min(size.width() - bbox.x - 1, bbox.width + 2);
+	bbox.height = std::min(size.height() - bbox.y - 1, bbox.height + 2);
 
 	// find the height at which the contour drastically changes
 	int next_height = findDrasticChange(height, contour, holes, slicing_threshold);

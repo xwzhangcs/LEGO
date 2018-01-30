@@ -41,6 +41,7 @@ void MainWindow::onOpen() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Load voxel data..."), "", tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) return;
 
+	setWindowTitle("LEGO - " + filename);
 	glWidget->loadVoxelData(filename);
 	glWidget->update();
 }
