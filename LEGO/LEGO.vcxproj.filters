@@ -74,12 +74,6 @@
     <ClCompile Include="ShadowMapping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ContourUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Building.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OpenCVOptionDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -98,16 +92,19 @@
     <ClCompile Include="GeneratedFiles\Release\moc_OurCustomOptionDialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCVSimplification.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="OurCustomSimplification.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OBJWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BuildingSimplification.cpp">
+    <ClCompile Include="..\..\LEGO_Linux\src\Building.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LEGO_Linux\src\ContourUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LEGO_Linux\src\OpenCVSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\LEGO_Linux\src\OurCustomSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -159,28 +156,25 @@
     <ClInclude Include="Vertex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ContourUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Building.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_OpenCVOptionDialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_OurCustomOptionDialog.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="OpenCVSimplification.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="OurCustomSimplification.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OBJWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BuildingSimplification.h">
+    <ClInclude Include="..\..\LEGO_Linux\src\Building.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LEGO_Linux\src\ContourUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LEGO_Linux\src\OpenCVSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\LEGO_Linux\src\OurCustomSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

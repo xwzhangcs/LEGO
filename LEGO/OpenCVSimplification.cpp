@@ -1,162 +1,201 @@
 #include "OpenCVSimplification.h"
+#include "ContourUtils.h"
 
+namespace lego {
 
-OpenCVSimplification::OpenCVSimplification(const std::vector<cv::Mat>& voxel_data, double epsilon, double slicing_threshold) {
-	this->voxel_data = voxel_data;
-	this->epsilon = epsilon;
-	this->slicing_threshold = slicing_threshold;
-	this->size = QSize(voxel_data[0].cols, voxel_data[0].rows);
-}
-
-void OpenCVSimplification::simplify(std::vector<Building>& buildings) {
-	buildings.clear();
-
-	// extract contours
-	std::vector<std::vector<cv::Point>> contours;
-	std::vector<cv::Vec4i> hierarchy;
-	cv::findContours(voxel_data[5].clone(), contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
-
-	// traverse all the external contours
-	for (int i = 0; i < hierarchy.size(); i++) {
-		if (hierarchy[i][3] != -1) continue;
-
-		// obtain all the holes inside this contour
-		std::vector<std::vector<cv::Point>> holes;
-		int hole_id = hierarchy[i][2];
-		while (hole_id != -1) {
-			holes.push_back(contours[hole_id]);
-
-			hole_id = hierarchy[hole_id][0];
-		}
-
-		calculateBuilding(contours[i], holes, 5, buildings);
+	OpenCVSimplification::OpenCVSimplification(const std::vector<cv::Mat>& voxel_data, double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
+		this->voxel_data = voxel_data;
+		this->epsilon = epsilon;
+		this->layering_threshold = layering_threshold;
+		this->snap_vertex_threshold = snap_vertex_threshold;
+		this->snap_edge_threshold = snap_edge_threshold;
+		this->size = cv::Size(voxel_data[0].cols, voxel_data[0].rows);
 	}
-}
 
-void OpenCVSimplification::calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings) {
-	// calculate the bounding box
-	cv::Rect bbox = boundingBox(contour);
+	void OpenCVSimplification::simplify(std::vector<Building>& buildings) {
+		buildings.clear();
 
-	// have 1px as margin
-	bbox.x = std::max(0, bbox.x - 1);
-	bbox.y = std::max(0, bbox.y - 1);
-	bbox.width = std::min(size.width() - bbox.x - 1, bbox.width + 2);
-	bbox.height = std::min(size.height() - bbox.y - 1, bbox.height + 2);
+		std::vector<Polygon> polygons = findContours(voxel_data[5]);
+		for (int i = 0; i < polygons.size(); i++) {
+			calculateBuilding(NULL, polygons[i], 5, buildings);
+		}
+	}
 
-	// find the height at which the contour drastically changes
-	int next_height = findDrasticChange(height, contour, holes, slicing_threshold);
+	void OpenCVSimplification::calculateBuilding(Building* parent, const Polygon& polygon, int height, std::vector<Building>& buildings) {
+		// calculate the bounding box
+		cv::Rect bbox = boundingBox(polygon.contour);
 
-	// calculate building by simplifying the contour and holes
-	try {
-		Building building = calculateBuildingComponent(contour, holes, height, next_height);
-		buildings.push_back(building);
+		// have 1px as margin
+		bbox.x = std::max(0, bbox.x - 1);
+		bbox.y = std::max(0, bbox.y - 1);
+		bbox.width = std::min(size.width - bbox.x - 1, bbox.width + 2);
+		bbox.height = std::min(size.height - bbox.y - 1, bbox.height + 2);
 
-		if (next_height >= voxel_data.size()) return;
+		// find the height at which the contour drastically changes
+		int next_height = findDrasticChange(height, polygon, layering_threshold);
+		
+		// calculate building by simplifying the contour and holes
+		try {
+			Building building = calculateBuildingComponent(parent, polygon, height, next_height);
+			buildings.push_back(building);
 
-		// crop the image of the next height
-		cv::Mat next_img(voxel_data[next_height], bbox);
+			if (next_height >= voxel_data.size()) return;
 
-		// extract contours
-		std::vector<std::vector<cv::Point>> next_contours;
-		std::vector<cv::Vec4i> next_hierarchy;
-		cv::findContours(next_img.clone(), next_contours, next_hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+			// crop the image of the next height
+			cv::Mat next_img = cv::Mat(voxel_data[next_height], bbox).clone();
 
-		for (int i = 0; i < next_hierarchy.size(); i++) {
-			if (next_hierarchy[i][3] != -1) continue;
-			if (next_contours[i].size() < 3) continue;
+			// dilate the image
+			cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
+			cv::Mat inflated;
+			cv::dilate(next_img, next_img, kernel);
 
-			std::vector<cv::Point> next_contour = next_contours[i];
+			// extract contours
+			std::vector<Polygon> polygons = findContours(next_img);
 
-			// obtain all the holes inside this contour
-			std::vector<std::vector<cv::Point>> next_holes;
-			int hole_id = next_hierarchy[i][2];
-			while (hole_id != -1) {
-				next_holes.push_back(next_contours[hole_id]);
-				hole_id = next_hierarchy[hole_id][0];
-			}
+			for (int i = 0; i < polygons.size(); i++) {
+				// offset back the contour and holes
+				polygons[i].translate(bbox.x, bbox.y);
 
-			// offset back the contour and holes
-			for (int i = 0; i < next_contour.size(); i++) {
-				next_contour[i].x += bbox.x;
-				next_contour[i].y += bbox.y;
-			}
-			for (int i = 0; i < next_holes.size(); i++) {
-				for (int j = 0; j < next_holes[i].size(); j++) {
-					next_holes[i][j].x += bbox.x;
-					next_holes[i][j].y += bbox.y;
+				// check if the next contour is mostly within the contour
+				int cnt_total = 0;
+				int cnt_outside = 0;
+				cv::Rect next_bbox = boundingBox(polygons[i].contour);
+				for (int j = 0; j < 100; j++) {
+					cv::Point pt;
+					bool found = false;
+					for (int k = 0; k < 100; k++) {
+						pt = cv::Point(rand() % next_bbox.width + next_bbox.x, rand() % next_bbox.height + next_bbox.y);
+						if (pointPolygonTest(polygons[i].contour, pt, false) >= 0) {
+							found = true;
+							break;
+						}
+					}
+
+					if (found) {
+						cnt_total++;
+						if (pointPolygonTest(polygon.contour, pt, false) < 0) cnt_outside++;
+					}
+				}
+
+				if (cnt_outside < cnt_total / 2) {
+					// for upper layers, recursive call this function to construct building components
+					calculateBuilding(&building, polygons[i], next_height, buildings);
 				}
 			}
-
-			// check if the next contour is mostly within the contour
-			int cnt_outside = 0;
-			for (int j = 0; j < next_contour.size(); j++) {
-				if (pointPolygonTest(contour, next_contour[j], false) < 0) cnt_outside++;
-			}
-
-			if (cnt_outside < next_contour.size() / 2) {
-				// for upper layers, recursive call this function to construct building components
-				calculateBuilding(next_contour, next_holes, next_height, buildings);
-			}
 		}
-	}
-	catch (char* ex) {
-	}
-}
-
-/**
-* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
-*/
-Building OpenCVSimplification::calculateBuildingComponent(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height) {
-	std::vector<cv::Point> simplified_contour;
-	cv::approxPolyDP(contour, simplified_contour, epsilon, true);
-
-	if (simplified_contour.size() < 3) throw "Invalid contour";
-
-	// create a building object
-	Building building;
-	building.bottom_height = bottom_height;
-	building.top_height = top_height;
-
-	building.footprint.resize(simplified_contour.size());
-	for (int i = 0; i < simplified_contour.size(); i++) {
-		building.footprint[i] = glm::dvec2(simplified_contour[i].x - size.width() * 0.5, size.height() * 0.5 - simplified_contour[i].y);
-	}
-
-	// simplify the hole as well
-	building.holes.resize(holes.size());
-	for (int i = 0; i < holes.size(); i++) {
-		std::vector<cv::Point2f> simplified_hole;
-		cv::approxPolyDP(holes[i], simplified_hole, epsilon, true);
-		if (simplified_hole.size() >= 3) {
-			building.holes[i].resize(simplified_hole.size());
-			for (int j = 0; j < simplified_hole.size(); j++) {
-				building.holes[i][j] = glm::dvec2(simplified_hole[j].x - size.width() * 0.5, size.height() * 0.5 - simplified_hole[j].y);
-			}
+		catch (char* ex) {
 		}
 	}
 
-	return building;
-}
+	/**
+	* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
+	*/
+	Building OpenCVSimplification::calculateBuildingComponent(Building* parent, const Polygon& polygon, int bottom_height, int top_height) {
+		// calculate the bounding box
+		cv::Rect bbox = boundingBox(polygon.contour);
 
-int OpenCVSimplification::findDrasticChange(int height, const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, double threshold) {
-	// calculate the bounding box
-	cv::Rect bbox = boundingBox(contour);
+		// have 1px as margin
+		bbox.x = std::max(0, bbox.x - 1);
+		bbox.y = std::max(0, bbox.y - 1);
+		bbox.width = std::min(size.width - bbox.x - 1, bbox.width + 2);
+		bbox.height = std::min(size.height - bbox.y - 1, bbox.height + 2);
 
-	// create image of the contour of the current slice
-	cv::Mat img(size.height(), size.width(), CV_8U, cv::Scalar(0));
-	std::vector<std::vector<cv::Point>> contours(1 + holes.size());
-	contours[0] = contour;
-	for (int i = 0; i < holes.size(); i++) {
-		contours[i + 1] = holes[i];
-	}
-	cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
+		// select the best slice that has the best IOU with all the slices in the layer
+		double best_iou = 0;
+		int best_slice = -1;
+		for (int i = bottom_height; i < top_height; i++) {
+			double iou = 0;
+			for (int j = bottom_height; j < top_height; j++) {
+				// calculate IOU
+				iou += calculateIOU(voxel_data[i], voxel_data[j], bbox);
+			}
 
-	for (int i = height + 1; i < voxel_data.size(); i++) {
-		double iou = calculateIOU(img, voxel_data[i], bbox);
-		if (iou < threshold) {
-			return i;
+			if (iou > best_iou) {
+				best_iou = iou;
+				best_slice = i;
+			}
 		}
+		
+		// extract contours in the specified region
+		cv::Mat img = cv::Mat(voxel_data[best_slice], bbox).clone();
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
+		cv::Mat inflated;
+		cv::dilate(img, img, kernel);
+		std::vector<Polygon> polygons = findContours(img);
+		if (polygons.size() == 0) throw "No building is found.";
+		
+		// We should check which contour is the one to be processed,
+		// but we use the first one for now.
+		polygons[0].translate(bbox.x, bbox.y);
+		Polygon simplified_polygon = simplifyPolygon(polygons[0], epsilon);
+		if (simplified_polygon.contour.size() < 3) throw "Invalid contour";
+		
+		// create a building object
+		Building building;
+		building.bottom_height = bottom_height;
+		building.top_height = top_height;
+
+		building.footprint.resize(simplified_polygon.contour.size());
+		for (int i = 0; i < simplified_polygon.contour.size(); i++) {
+			building.footprint[i] = cv::Point2f(simplified_polygon.contour[i].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.contour[i].y);
+		}
+
+		if (parent != NULL) {
+			snapPolygon(parent->footprint, building.footprint, snap_vertex_threshold, snap_edge_threshold);
+		}
+
+		// simplify the hole as well
+		building.holes.resize(simplified_polygon.holes.size());
+		for (int i = 0; i < simplified_polygon.holes.size(); i++) {
+			building.holes[i].resize(simplified_polygon.holes[i].size());
+			for (int j = 0; j < simplified_polygon.holes[i].size(); j++) {
+				building.holes[i][j] = cv::Point2f(simplified_polygon.holes[i][j].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.holes[i][j].y);
+			}
+		}
+
+		return building;
 	}
 
-	return voxel_data.size();
+	int OpenCVSimplification::findDrasticChange(int height, const Polygon& polygon, double threshold) {
+		// calculate the bounding box
+		cv::Rect bbox = boundingBox(polygon.contour);
+
+		// create image of the contour of the current slice
+		cv::Mat img(size, CV_8U, cv::Scalar(0));
+		std::vector<std::vector<cv::Point>> contours(1 + polygon.holes.size());
+		contours[0] = polygon.contour;
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			contours[i + 1] = polygon.holes[i];
+		}
+		cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
+
+		for (int i = height + 1; i < voxel_data.size(); i++) {
+			double iou = calculateIOU(img, voxel_data[i], bbox);
+			if (iou < threshold) {
+				return i;
+			}
+		}
+
+		return voxel_data.size();
+	}
+
+	Polygon OpenCVSimplification::simplifyPolygon(const Polygon& polygon, double epsilon) {
+		Polygon ans;
+		cv::approxPolyDP(polygon.contour, ans.contour, epsilon, true);
+	
+		// simplify the hole as well
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			std::vector<cv::Point> simplified_hole;
+			cv::approxPolyDP(polygon.holes[i], simplified_hole, epsilon, true);
+			if (simplified_hole.size() >= 3) {
+				ans.holes.push_back(simplified_hole);
+			}
+		}
+
+		// ToDo:
+		// Should we check if the holes are inside the contour?
+
+		return ans;
+	}
+
 }

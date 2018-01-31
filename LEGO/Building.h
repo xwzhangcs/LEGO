@@ -1,18 +1,18 @@
 #pragma once
 
 #include <vector>
-#include <glm/glm.hpp>
+#include <opencv2/opencv.hpp>
 
 class Building {
 public:
-	std::vector<glm::dvec2> footprint;
-	std::vector<std::vector<glm::dvec2>> holes;
-	double bottom_height;
-	double top_height;
+	std::vector<cv::Point2f> footprint;
+	std::vector<std::vector<cv::Point2f>> holes;
+	float bottom_height;
+	float top_height;
 
 public:
 	Building() {}
-	Building(const std::vector<glm::dvec2>& footprint, double bottom_height, double top_height);
+	Building(const std::vector<cv::Point2f>& footprint, float bottom_height, float top_height);
 	~Building();
 };
 

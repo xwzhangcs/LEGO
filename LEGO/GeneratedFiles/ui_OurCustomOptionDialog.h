@@ -29,7 +29,7 @@ public:
     QSpinBox *spinBoxResolution;
     QPushButton *pushButtonCancel;
     QPushButton *pushButtonOK;
-    QDoubleSpinBox *doubleSpinBoxSlicingThreshold;
+    QDoubleSpinBox *doubleSpinBoxLayeringThreshold;
     QLabel *label_2;
 
     void setupUi(QDialog *OurCustomOptionDialog)
@@ -49,9 +49,9 @@ public:
         pushButtonOK = new QPushButton(OurCustomOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
         pushButtonOK->setGeometry(QRect(10, 80, 81, 31));
-        doubleSpinBoxSlicingThreshold = new QDoubleSpinBox(OurCustomOptionDialog);
-        doubleSpinBoxSlicingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSlicingThreshold"));
-        doubleSpinBoxSlicingThreshold->setGeometry(QRect(120, 40, 62, 22));
+        doubleSpinBoxLayeringThreshold = new QDoubleSpinBox(OurCustomOptionDialog);
+        doubleSpinBoxLayeringThreshold->setObjectName(QStringLiteral("doubleSpinBoxLayeringThreshold"));
+        doubleSpinBoxLayeringThreshold->setGeometry(QRect(120, 40, 62, 22));
         label_2 = new QLabel(OurCustomOptionDialog);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(20, 40, 91, 21));
@@ -67,7 +67,7 @@ public:
         label->setText(QApplication::translate("OurCustomOptionDialog", "Resolution:", 0));
         pushButtonCancel->setText(QApplication::translate("OurCustomOptionDialog", "Cancel", 0));
         pushButtonOK->setText(QApplication::translate("OurCustomOptionDialog", "OK", 0));
-        label_2->setText(QApplication::translate("OurCustomOptionDialog", "Slicing threshold:", 0));
+        label_2->setText(QApplication::translate("OurCustomOptionDialog", "Layering threshold:", 0));
     } // retranslateUi
 
 };

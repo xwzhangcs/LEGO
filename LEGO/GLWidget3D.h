@@ -48,8 +48,8 @@ public:
 	void saveOBJ(const QString& filename);
 	void saveImage(const QString& filename);
 	void showInputVoxel();
-	void simplifyByOpenCV(double epsilon, double slicing_threshold);
-	void simplifyByOurCustom(int resolution, double slicing_threshold);
+	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void simplifyByOurCustom(int resolution, double layering_threshold);
 	void update3DGeometry(const std::vector<cv::Mat>& voxel_data);
 	void update3DGeometry(const std::vector<Building>& buildings);
 

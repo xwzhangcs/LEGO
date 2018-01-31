@@ -71,7 +71,7 @@ void MainWindow::onInputVoxel() {
 void MainWindow::onSimplifyByOpenCV() {
 	OpenCVOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOpenCV(dlg.getEpsilon(), dlg.getSlicingThreshold());
+		glWidget->simplifyByOpenCV(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }
@@ -79,7 +79,7 @@ void MainWindow::onSimplifyByOpenCV() {
 void MainWindow::onSimplifyByOurCustom() {
 	OurCustomOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getSlicingThreshold());
+		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getLayeringThreshold());
 		glWidget->update();
 	}
 }

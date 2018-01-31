@@ -4,7 +4,9 @@ OpenCVOptionDialog::OpenCVOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
 	ui.spinBoxEpsilon->setValue(1);
-	ui.doubleSpinBoxSlicingThreshold->setValue(0.7);
+	ui.doubleSpinBoxLayeringThreshold->setValue(0.7);
+	ui.doubleSpinBoxSnapVertexThreshold->setValue(1.0);
+	ui.doubleSpinBoxSnapEdgeThreshold->setValue(0.5);
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
@@ -17,8 +19,16 @@ int OpenCVOptionDialog::getEpsilon() {
 	return ui.spinBoxEpsilon->value();
 }
 
-double OpenCVOptionDialog::getSlicingThreshold() {
-	return ui.doubleSpinBoxSlicingThreshold->value();
+double OpenCVOptionDialog::getLayeringThreshold() {
+	return ui.doubleSpinBoxLayeringThreshold->value();
+}
+
+double OpenCVOptionDialog::getSnapVertexThreshold() {
+	return ui.doubleSpinBoxSnapVertexThreshold->value();
+}
+
+double OpenCVOptionDialog::getSnapEdgeThreshold() {
+	return ui.doubleSpinBoxSnapEdgeThreshold->value();
 }
 
 void OpenCVOptionDialog::onOK() {

@@ -15,7 +15,7 @@ public:
 	~OurCustomOptionDialog();
 	
 	int getResolution();
-	double getSlicingThreshold();
+	double getLayeringThreshold();
 
 public slots:
 	void onOK();

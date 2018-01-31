@@ -15,7 +15,9 @@ public:
 	~OpenCVOptionDialog();
 
 	int getEpsilon();
-	double getSlicingThreshold();
+	double getLayeringThreshold();
+	double getSnapVertexThreshold();
+	double getSnapEdgeThreshold();
 
 public slots:
 	void onOK();

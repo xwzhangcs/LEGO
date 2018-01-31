@@ -2,24 +2,28 @@
 
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include <QSize>
 #include "Building.h"
-#include "BuildingSimplification.h"
+#include "ContourUtils.h"
 
-class OpenCVSimplification : public BuildingSimplification {
-private:
-	std::vector<cv::Mat> voxel_data;
-	double epsilon;
-	double slicing_threshold;
-	QSize size;
+namespace lego {
 
-public:
-	OpenCVSimplification(const std::vector<cv::Mat>& voxel_data, double epsilon, double slicing_threshold);
+	class OpenCVSimplification {
+	private:
+		std::vector<cv::Mat> voxel_data;
+		double epsilon;
+		double layering_threshold;
+		double snap_vertex_threshold;
+		double snap_edge_threshold;
+		cv::Size size;
 
-	void simplify(std::vector<Building>& buildings);
-	void calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, std::vector<Building>& buildings);
-	Building calculateBuildingComponent(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height);
-	int findDrasticChange(int height, const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, double threshold);
+	public:
+		OpenCVSimplification(const std::vector<cv::Mat>& voxel_data, double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 
-};
+		void simplify(std::vector<Building>& buildings);
+		void calculateBuilding(Building* parent, const Polygon& polygon, int height, std::vector<Building>& buildings);
+		Building calculateBuildingComponent(Building* parent, const Polygon& polygon, int bottom_height, int top_height);
+		int findDrasticChange(int height, const Polygon& polygon, double threshold);
+		Polygon simplifyPolygon(const Polygon& polygon, double epsilon);
+	};
 
+}

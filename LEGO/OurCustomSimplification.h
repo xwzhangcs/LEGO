@@ -2,25 +2,32 @@
 
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include <QSize>
 #include "Building.h"
-#include "GLUtils.h"
-#include "BuildingSimplification.h"
+#include "ContourUtils.h"
 
-class OurCustomSimplification : public BuildingSimplification {
-private:
-	std::vector<cv::Mat> voxel_data;
-	double resolution;
-	double slicing_threshold;
-	QSize size;
+namespace lego {
 
-public:
-	OurCustomSimplification(const std::vector<cv::Mat>& voxel_data, int resolution, double slicing_threshold);
+	class OurCustomSimplification {
+	private:
+		std::vector<cv::Mat> voxel_data;
+		double resolution;
+		double layering_threshold;
+		cv::Size size;
 
-	void simplify(std::vector<Building>& buildings);
-	void calculateBuilding(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int height, double angle, int dx, int dy, std::vector<Building>& buildings);
-	Building calculateBuildingComponent(const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, int bottom_height, int top_height, double& angle, int& dx, int& dy);
-	int findDrasticChange(int height, const std::vector<cv::Point>& contour, const std::vector<std::vector<cv::Point>>& holes, double threshold);
+	public:
+		OurCustomSimplification(const std::vector<cv::Mat>& voxel_data, int resolution, double layering_threshold);
 
-};
+		void simplify(std::vector<Building>& buildings);
+		void calculateBuilding(const Polygon& polygon, int height, double angle, int dx, int dy, std::vector<Building>& buildings);
+		Building calculateBuildingComponent(const Polygon& polygon, int bottom_height, int top_height, double& angle, int& dx, int& dy);
+		int findDrasticChange(int height, const Polygon& polygon, double threshold);
 
+		std::tuple<double, int, int> simplify(const std::vector<cv::Point>& contour, std::vector<cv::Point2f>& result, double resolution = 5.0);
+		double simplify(const std::vector<cv::Point>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy);
+
+		double optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour);
+		std::vector<cv::Point> proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map);
+
+	};
+
+}

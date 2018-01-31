@@ -324,19 +324,19 @@ void GLWidget3D::showInputVoxel() {
 	update3DGeometry(voxel_data);
 }
 
-void GLWidget3D::simplifyByOpenCV(double epsilon, double slicing_threshold) {
+void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
 	std::vector<Building> buildings;
 
-	OpenCVSimplification sim(voxel_data, epsilon, slicing_threshold);
+	lego::OpenCVSimplification sim(voxel_data, epsilon, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
 	sim.simplify(buildings);
 
 	update3DGeometry(buildings);
 }
 
-void GLWidget3D::simplifyByOurCustom(int resolution, double slicing_threshold) {
+void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold) {
 	std::vector<Building> buildings;
 
-	OurCustomSimplification sim(voxel_data, resolution, slicing_threshold);
+	lego::OurCustomSimplification sim(voxel_data, resolution, layering_threshold);
 	sim.simplify(buildings);
 
 	update3DGeometry(buildings);
@@ -373,11 +373,23 @@ void GLWidget3D::update3DGeometry(const std::vector<Building>& buildings) {
 	for (int i = 0; i < buildings.size(); i++) {
 		std::cout << "generate geometry " << i << std::endl;
 
+		std::vector<glm::dvec2> footprint(buildings[i].footprint.size());
+		for (int j = 0; j < buildings[i].footprint.size(); j++) {
+			footprint[j] = glm::dvec2(buildings[i].footprint[j].x, buildings[i].footprint[j].y);
+		}
+		std::vector<std::vector<glm::dvec2>> holes(buildings[i].holes.size());
+		for (int j = 0; j < buildings[i].holes.size(); j++) {
+			holes[j].resize(buildings[i].holes[j].size());
+			for (int k = 0; k < buildings[i].holes[j].size(); k++) {
+				holes[j][k] = glm::dvec2(buildings[i].holes[j][k].x, buildings[i].holes[j][k].y);
+			}
+		}
+
 		if (buildings[i].holes.size() == 0) {
-			glutils::drawPrism(buildings[i].footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
+			glutils::drawPrism(footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 		else {
-			glutils::drawPrismWithHoles(buildings[i].footprint, buildings[i].holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
+			glutils::drawPrismWithHoles(footprint, holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
 		}
 	}
 	renderManager.addObject("building", "", vertices, true);

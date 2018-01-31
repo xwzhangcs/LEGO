@@ -62,7 +62,7 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBoxSlicingThreshold">
+  <widget class="QDoubleSpinBox" name="doubleSpinBoxLayeringThreshold">
    <property name="geometry">
     <rect>
      <x>120</x>
@@ -82,7 +82,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Slicing threshold:</string>
+    <string>Layering threshold:</string>
    </property>
   </widget>
  </widget>
