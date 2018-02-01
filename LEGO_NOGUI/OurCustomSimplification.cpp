@@ -137,17 +137,8 @@ namespace simp {
 		// calculate the bounding box
 		cv::Rect bbox = util::boundingBox(polygon.contour);
 
-		// create image of the contour of the current slice
-		cv::Mat img(size, CV_8U, cv::Scalar(0));
-		std::vector<std::vector<cv::Point>> contours(1 + polygon.holes.size());
-		contours[0] = polygon.contour;
-		for (int i = 0; i < polygon.holes.size(); i++) {
-			contours[i + 1] = polygon.holes[i];
-		}
-		cv::fillPoly(img, contours, cv::Scalar(255), cv::LINE_4);
-
 		for (int i = height + 1; i < voxel_data.size(); i++) {
-			double iou = util::calculateIOU(img, voxel_data[i], bbox);
+			double iou = util::calculateIOU(voxel_data[height], voxel_data[i], bbox);
 			if (iou < threshold) {
 				return i;
 			}

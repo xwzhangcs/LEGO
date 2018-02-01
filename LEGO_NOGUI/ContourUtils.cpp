@@ -101,22 +101,25 @@ namespace util {
 	}
 
 	/**
-	* Helper function to extract contours from the input image.
-	* Note that the input image is not modified by this function.
-	*/
+	 * Helper function to extract contours from the input image.
+	 * The image has to be of type CV_8U, and has values either 0 or 255.
+	 * Note that the input image is not modified by this function.
+	 */
 	std::vector<Polygon> findContours(const cv::Mat& img) {
 		std::vector<Polygon> ans;
 
+		// add padding to the image
+		cv::Mat padded(img.rows + 2, img.cols + 2, CV_8U, cv::Scalar(0));
+		img.copyTo(padded(cv::Rect(1, 1, img.cols, img.rows)));
+
 		// dilate the image
 		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
-		cv::Mat inflated_img = img.clone();
-		cv::dilate(inflated_img, inflated_img, kernel);
-
-
+		cv::dilate(padded, padded, kernel);
+		
 		// extract contours
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarchy;
-		cv::findContours(inflated_img, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		cv::findContours(padded, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 		for (int i = 0; i < hierarchy.size(); i++) {
 			if (hierarchy[i][3] != -1) continue;
@@ -131,6 +134,9 @@ namespace util {
 				polygon.holes.push_back(contours[hole_id]);
 				hole_id = hierarchy[hole_id][0];
 			}
+
+			// since we added 1px of padding, we need to adjust the coordinates of the polygon
+			polygon.translate(-1, -1);
 
 			ans.push_back(polygon);
 		}
