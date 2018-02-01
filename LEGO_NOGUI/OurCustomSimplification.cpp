@@ -3,85 +3,77 @@
 
 namespace simp {
 
-	OurCustomSimplification::OurCustomSimplification(const std::vector<cv::Mat>& voxel_data, int resolution, double layering_threshold) {
+	OurCustomSimplification::OurCustomSimplification(const std::vector<cv::Mat>& voxel_data, int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
 		this->voxel_data = voxel_data;
 		this->resolution = resolution;
 		this->layering_threshold = layering_threshold;
+		this->snap_vertex_threshold = snap_vertex_threshold;
+		this->snap_edge_threshold = snap_edge_threshold;
 		this->size = cv::Size(voxel_data[0].cols, voxel_data[0].rows);
 	}
 
 	void OurCustomSimplification::simplify(std::vector<Building>& buildings) {
+		buildings.clear();
+
 		std::vector<util::Polygon> polygons = util::findContours(voxel_data[5]);
 		for (int i = 0; i < polygons.size(); i++) {
-			calculateBuilding(polygons[i], 5, -1, -1, -1, buildings);
+			calculateBuilding(NULL, polygons[i], 5, -1, -1, -1, buildings);
 		}
 
 		std::cout << "Processing buildings has been finished." << std::endl;
 	}
 
-	void OurCustomSimplification::calculateBuilding(const util::Polygon& polygon, int height, double angle, int dx, int dy, std::vector<Building>& buildings) {
+	void OurCustomSimplification::calculateBuilding(Building* parent, const util::Polygon& polygon, int height, double angle, int dx, int dy, std::vector<Building>& buildings) {
 		// calculate the bounding box
 		cv::Rect bbox = util::boundingBox(polygon.contour);
 
 		// have 1px as margin
 		bbox.x = std::max(0, bbox.x - 1);
 		bbox.y = std::max(0, bbox.y - 1);
-		bbox.width = std::min(size.width - bbox.x - 1, bbox.width + 2);
-		bbox.height = std::min(size.height - bbox.y - 1, bbox.height + 2);
+		bbox.width = std::min(size.width - bbox.x, bbox.width + 2);
+		bbox.height = std::min(size.height - bbox.y, bbox.height + 2);
 
 		// find the height at which the contour drastically changes
 		int next_height = findDrasticChange(height, polygon, layering_threshold);
 
 		// calculate building by simplifying the contour and holes
 		try {
-			Building building = calculateBuildingComponent(polygon, height, next_height, angle, dx, dy);
+			Building building = calculateBuildingComponent(parent, polygon, height, next_height, angle, dx, dy);
 			buildings.push_back(building);
 
 			if (next_height >= voxel_data.size()) return;
 
-			// crop the image of the next height
-			cv::Mat next_img(voxel_data[next_height], bbox);
-
 			// extract contours
-			std::vector<std::vector<cv::Point>> next_contours;
-			std::vector<cv::Vec4i> next_hierarchy;
-			cv::findContours(next_img.clone(), next_contours, next_hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+			std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[next_height], bbox));
 
-			for (int i = 0; i < next_hierarchy.size(); i++) {
-				if (next_hierarchy[i][3] != -1) continue;
-				if (next_contours[i].size() < 3) continue;
-
-				std::vector<cv::Point> next_contour = next_contours[i];
-
-				// obtain all the holes inside this contour
-				std::vector<std::vector<cv::Point>> next_holes;
-				int hole_id = next_hierarchy[i][2];
-				while (hole_id != -1) {
-					next_holes.push_back(next_contours[hole_id]);
-					hole_id = next_hierarchy[hole_id][0];
-				}
-
+			for (int i = 0; i < polygons.size(); i++) {
 				// offset back the contour and holes
-				for (int j = 0; j < next_contour.size(); j++) {
-					next_contour[j].x += bbox.x;
-					next_contour[j].y += bbox.y;
-				}
-				for (int j = 0; j < next_holes.size(); j++) {
-					for (int k = 0; k < next_holes[j].size(); k++) {
-						next_holes[j][k].x += bbox.x;
-						next_holes[j][k].y += bbox.y;
+				polygons[i].translate(bbox.x, bbox.y);
+
+				// check if the next contour is mostly within the contour
+				int cnt_total = 0;
+				int cnt_outside = 0;
+				cv::Rect next_bbox = util::boundingBox(polygons[i].contour);
+				for (int j = 0; j < 100; j++) {
+					cv::Point pt;
+					bool found = false;
+					for (int k = 0; k < 100; k++) {
+						pt = cv::Point(rand() % next_bbox.width + next_bbox.x, rand() % next_bbox.height + next_bbox.y);
+						if (pointPolygonTest(polygons[i].contour, pt, false) >= 0) {
+							found = true;
+							break;
+						}
+					}
+
+					if (found) {
+						cnt_total++;
+						if (pointPolygonTest(polygon.contour, pt, false) < 0) cnt_outside++;
 					}
 				}
 
-				// check if the next contour is mostly within the contour
-				int cnt_outside = 0;
-				for (int j = 0; j < next_contour.size(); j++) {
-					if (pointPolygonTest(polygon.contour, next_contour[j], false) < 0) cnt_outside++;
-				}
-
-				if (cnt_outside < next_contour.size() / 2) {
+				if (cnt_outside < cnt_total / 2) {
 					// for upper layers, recursive call this function to construct building components
-					calculateBuilding(polygon, next_height, angle, dx, dy, buildings);
+					calculateBuilding(&building, polygons[i], next_height, angle, dx, dy, buildings);
 				}
 			}
 		}
@@ -92,41 +84,77 @@ namespace simp {
 	/**
 	* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
 	*/
-	Building OurCustomSimplification::calculateBuildingComponent(const util::Polygon& polygon, int bottom_height, int top_height, double& angle, int& dx, int& dy) {
-		std::vector<cv::Point2f> simplified_contour;
-		if (angle == -1) {
-			std::tuple<double, int, int> best_mat = simplify(polygon.contour, simplified_contour, resolution);
-			angle = std::get<0>(best_mat);
-			dx = std::get<1>(best_mat);
-			dy = std::get<2>(best_mat);
-		}
-		else {
-			simplify(polygon.contour, simplified_contour, resolution, angle, dx, dy);
+	Building OurCustomSimplification::calculateBuildingComponent(Building* parent, const util::Polygon& polygon, int bottom_height, int top_height, double& angle, int& dx, int& dy) {
+		// calculate the bounding box
+		cv::Rect bbox = util::boundingBox(polygon.contour);
+
+		// have 1px as margin
+		bbox.x = std::max(0, bbox.x - 1);
+		bbox.y = std::max(0, bbox.y - 1);
+		bbox.width = std::min(size.width - bbox.x - 1, bbox.width + 2);
+		bbox.height = std::min(size.height - bbox.y - 1, bbox.height + 2);
+
+		// select the best slice that has the best IOU with all the slices in the layer
+		double best_iou = 0;
+		int best_slice = -1;
+		for (int i = bottom_height; i < top_height; i++) {
+			double iou = 0;
+			for (int j = bottom_height; j < top_height; j++) {
+				// calculate IOU
+				iou += util::calculateIOU(voxel_data[i], voxel_data[j], bbox);
+			}
+
+			if (iou > best_iou) {
+				best_iou = iou;
+				best_slice = i;
+			}
 		}
 
-		if (simplified_contour.size() < 3) throw "Invalid contour";
+		// extract contours in the specified region
+		std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[best_slice], bbox));
+		if (polygons.size() == 0) throw "No building is found.";
 
+		// select the polygon that is to be used for the building
+		cv::Mat polygon_img;
+		util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point(-bbox.x, -bbox.y), polygon_img);
+		best_iou = 0;
+		int polygon_index = -1;
+		for (int i = 0; i < polygons.size(); i++) {
+			cv::Mat img;
+			util::createImageFromPolygon(bbox.width, bbox.height, polygons[i], cv::Point(), img);
+			float iou = util::calculateIOU(polygon_img, img);
+			if (iou > best_iou) {
+				best_iou = iou;
+				polygon_index = i;
+			}
+		}
+
+		polygons[polygon_index].translate(bbox.x, bbox.y);
+
+		// simplify the selected polygon
+		util::Polygon simplified_polygon = simplifyPolygon(polygons[polygon_index], resolution, angle, dx, dy);
+		if (simplified_polygon.contour.size() < 3) throw "Invalid contour";
+		
 		// create a building object
 		Building building;
 		building.bottom_height = bottom_height;
 		building.top_height = top_height;
 
-		building.footprint.resize(simplified_contour.size());
-		for (int i = 0; i < simplified_contour.size(); i++) {
-			building.footprint[i] = cv::Point2f(simplified_contour[i].x - size.width * 0.5, size.height * 0.5 - simplified_contour[i].y);
+		building.footprint.resize(simplified_polygon.contour.size());
+		for (int i = 0; i < simplified_polygon.contour.size(); i++) {
+			building.footprint[i] = cv::Point2f(simplified_polygon.contour[i].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.contour[i].y);
 		}
 
-		// simplify the hole as well
-		building.holes.resize(polygon.holes.size());
-		for (int i = 0; i < polygon.holes.size(); i++) {
-			std::vector<cv::Point2f> simplified_hole;
-			std::vector<cv::Point2f> simplified_hole2;
-			simplify(polygon.holes[i], simplified_hole, resolution);
-			if (simplified_hole.size() >= 3) {
-				building.holes[i].resize(simplified_hole.size());
-				for (int j = 0; j < simplified_hole.size(); j++) {
-					building.holes[i][j] = cv::Point2f(simplified_hole[j].x - size.width * 0.5, size.height * 0.5 - simplified_hole[j].y);
-				}
+		if (parent != NULL) {
+			util::snapPolygon(parent->footprint, building.footprint, snap_vertex_threshold, snap_edge_threshold);
+		}
+
+		// set holes
+		building.holes.resize(simplified_polygon.holes.size());
+		for (int i = 0; i < simplified_polygon.holes.size(); i++) {
+			building.holes[i].resize(simplified_polygon.holes[i].size());
+			for (int j = 0; j < simplified_polygon.holes[i].size(); j++) {
+				building.holes[i][j] = cv::Point2f(simplified_polygon.holes[i][j].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.holes[i][j].y);
 			}
 		}
 
@@ -142,9 +170,42 @@ namespace simp {
 			if (iou < threshold) {
 				return i;
 			}
+
+			// if the number of contours becomes more than 1, it splits.
+			std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[i], bbox));
+			if (polygons.size() > 1) return i;
 		}
 
 		return voxel_data.size();
+	}
+
+	util::Polygon OurCustomSimplification::simplifyPolygon(const util::Polygon& polygon, double epsilon, double& angle, int& dx, int& dy) {
+		util::Polygon ans;
+
+		//std::vector<cv::Point2f> simplified_contour;
+		if (angle == -1) {
+			std::tuple<double, int, int> best_mat = simplify(polygon.contour, ans.contour, resolution);
+			angle = std::get<0>(best_mat);
+			dx = std::get<1>(best_mat);
+			dy = std::get<2>(best_mat);
+		}
+		else {
+			simplify(polygon.contour, ans.contour, resolution, angle, dx, dy);
+		}
+
+		// simplify the hole as well
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			std::vector<cv::Point2f> simplified_hole;
+			simplify(polygon.holes[i], simplified_hole, resolution);
+			if (simplified_hole.size() >= 3) {
+				ans.holes.push_back(simplified_hole);
+			}
+		}
+
+		// ToDo:
+		// Should we check if the holes are inside the contour?
+
+		return ans;
 	}
 
 	/**
@@ -155,7 +216,7 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<double, int, int> OurCustomSimplification::simplify(const std::vector<cv::Point>& contour, std::vector<cv::Point2f>& result, double resolution) {
+	std::tuple<double, int, int> OurCustomSimplification::simplify(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -196,7 +257,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double OurCustomSimplification::simplify(const std::vector<cv::Point>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy) {
+	double OurCustomSimplification::simplify(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy) {
 		double theta = angle / 180 * CV_PI;
 
 		// create a transformation matrix

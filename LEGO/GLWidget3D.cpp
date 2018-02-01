@@ -332,9 +332,9 @@ void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, dou
 	update3DGeometry(buildings);
 }
 
-void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold) {
+void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
 	buildings.clear();
-	simp::OurCustomSimplification sim(voxel_data, resolution, layering_threshold);
+	simp::OurCustomSimplification sim(voxel_data, resolution, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
 	sim.simplify(buildings);
 
 	update3DGeometry(buildings);

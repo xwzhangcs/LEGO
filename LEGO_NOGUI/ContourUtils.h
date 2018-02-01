@@ -11,19 +11,20 @@ namespace util {
 
 	class Polygon {
 	public:
-		std::vector<cv::Point> contour;
-		std::vector<std::vector<cv::Point>> holes;
+		std::vector<cv::Point2f> contour;
+		std::vector<std::vector<cv::Point2f>> holes;
 
 	public:
 		Polygon() {}
 
-		void translate(int x, int y);
+		void translate(float x, float y);
 	};
 
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
 	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
 
 	cv::Rect boundingBox(const std::vector<cv::Point>& polygon);
+	cv::Rect boundingBox(const std::vector<cv::Point2f>& polygon);
 	double calculateIOU(const cv::Mat& img, const cv::Mat& img2);
 	double calculateIOU(const cv::Mat& img1, const cv::Mat& img2, const cv::Rect& rect);
 	std::vector<Polygon> findContours(const cv::Mat& img);

@@ -79,7 +79,7 @@ void MainWindow::onSimplifyByOpenCV() {
 void MainWindow::onSimplifyByOurCustom() {
 	OurCustomOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getLayeringThreshold());
+		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }

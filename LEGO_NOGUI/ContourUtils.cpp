@@ -3,7 +3,7 @@
 
 namespace util {
 	
-	void Polygon::translate(int x, int y) {
+	void Polygon::translate(float x, float y) {
 		for (int i = 0; i < contour.size(); i++) {
 			contour[i].x += x;
 			contour[i].y += y;
@@ -64,6 +64,21 @@ namespace util {
 		return cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1);
 	}
 
+	cv::Rect boundingBox(const std::vector<cv::Point2f>& polygon) {
+		int min_x = std::numeric_limits<int>::max();
+		int max_x = -std::numeric_limits<int>::max();
+		int min_y = std::numeric_limits<int>::max();
+		int max_y = -std::numeric_limits<int>::max();
+		for (int i = 0; i < polygon.size(); i++) {
+			min_x = std::min(min_x, (int)polygon[i].x);
+			max_x = std::max(max_x, (int)polygon[i].x);
+			min_y = std::min(min_y, (int)polygon[i].y);
+			max_y = std::max(max_y, (int)polygon[i].y);
+		}
+
+		return cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1);
+	}
+
 	/**
 	* Calculate the intersection over union (IOU) inside the specified roi.
 	* The images have to be CV_8U type.
@@ -84,14 +99,14 @@ namespace util {
 	/**
 	* Calculate the intersection over union (IOU) inside the specified roi.
 	* The images have to be CV_8U type.
-	*
+	* Check the IOU only within the specified region, rect.
 	*/
 	double calculateIOU(const cv::Mat& img1, const cv::Mat& img2, const cv::Rect& rect) {
 		int union_cnt = 0;
 		int inter_cnt = 0;
 
-		for (int r = rect.y; r <= rect.y + rect.height; r++) {
-			for (int c = rect.x; c <= rect.x + rect.width; c++) {
+		for (int r = rect.y; r < rect.y + rect.height; r++) {
+			for (int c = rect.x; c < rect.x + rect.width; c++) {
 				if (img1.at<uchar>(r, c) == 255 || img2.at<uchar>(r, c) == 255) union_cnt++;
 				if (img1.at<uchar>(r, c) == 255 && img2.at<uchar>(r, c) == 255) inter_cnt++;
 			}
@@ -126,12 +141,19 @@ namespace util {
 			if (contours[i].size() < 3) continue;
 
 			Polygon polygon;
-			polygon.contour = contours[i];
+			polygon.contour.resize(contours[i].size());
+			for (int j = 0; j < contours[i].size(); j++) {
+				polygon.contour[j] = cv::Point2f(contours[i][j].x, contours[i][j].y);
+			}
 
 			// obtain all the holes inside this contour
 			int hole_id = hierarchy[i][2];
 			while (hole_id != -1) {
-				polygon.holes.push_back(contours[hole_id]);
+				std::vector<cv::Point2f> hole(contours[hole_id].size());
+				for (int j = 0; j < contours[hole_id].size(); j++) {
+					hole[j] = cv::Point2f(contours[hole_id][j].x, contours[hole_id][j].y);
+				}
+				polygon.holes.push_back(hole);
 				hole_id = hierarchy[hole_id][0];
 			}
 
@@ -254,9 +276,16 @@ namespace util {
 	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat& result) {
 		result = cv::Mat(height, width, CV_8U, cv::Scalar(0));
 		std::vector<std::vector<cv::Point>> contour_points(1 + polygon.holes.size());
-		contour_points[0] = polygon.contour;
+
+		contour_points[0].resize(polygon.contour.size());
+		for (int i = 0; i < polygon.contour.size(); i++) {
+			contour_points[0][i] = cv::Point(polygon.contour[i].x, polygon.contour[i].y);
+		}
 		for (int i = 0; i < polygon.holes.size(); i++) {
-			contour_points[i + 1] = polygon.holes[i];
+			contour_points[i + 1].resize(polygon.holes[i].size());
+			for (int j = 0; j < polygon.holes[i].size(); j++) {
+				contour_points[i + 1][j] = cv::Point(polygon.holes[i][j].x, polygon.holes[i][j].y);
+			}
 		}
 		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, offset);
 	}

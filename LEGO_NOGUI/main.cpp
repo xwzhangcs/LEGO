@@ -5,18 +5,18 @@
 #include "PlyWriter.h"
 
 int main(int argc, const char* argv[]) {
-	if (argc < 2) {
-		std::cerr << "Usage: " << argv[0] << " <slice filename>" << std::endl;
+	if (argc < 3) {
+		std::cerr << "Usage: " << argv[0] << " <slice image filename> <output filename>" << std::endl;
 		return -1;
 	}
 
-	QString filename(argv[1]);
+	QString input_filename(argv[1]);
 	std::vector<cv::Mat> voxel_data;
 
 	// get directory
-	QFileInfo finfo(filename);
+	QFileInfo finfo(input_filename);
 	if (!finfo.exists()) {
-		std::cerr << "File " << argv[0] << " was not found." << std::endl;
+		std::cerr << "Input file was not found: " << argv[1] << std::endl;
 		return -1;
 	}
 	QDir dir = finfo.absoluteDir();
@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) {
 	simp::OpenCVSimplification sim(voxel_data, 1, 0.7, 1, 0.5);
 	sim.simplify(buildings);
 
-	util::ply::PlyWriter::write("buildings.ply", buildings);
+	util::ply::PlyWriter::write(argv[2], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
 

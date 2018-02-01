@@ -28,8 +28,8 @@ namespace simp {
 		// have 1px as margin
 		bbox.x = std::max(0, bbox.x - 1);
 		bbox.y = std::max(0, bbox.y - 1);
-		bbox.width = std::min(size.width - bbox.x - 1, bbox.width + 2);
-		bbox.height = std::min(size.height - bbox.y - 1, bbox.height + 2);
+		bbox.width = std::min(size.width - bbox.x, bbox.width + 2);
+		bbox.height = std::min(size.height - bbox.y, bbox.height + 2);
 
 		// find the height at which the contour drastically changes
 		int next_height = findDrasticChange(height, polygon, layering_threshold);
@@ -112,10 +112,25 @@ namespace simp {
 		std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[best_slice], bbox));
 		if (polygons.size() == 0) throw "No building is found.";
 		
-		// We should check which contour is the one to be processed,
-		// but we use the first one for now.
-		polygons[0].translate(bbox.x, bbox.y);
-		util::Polygon simplified_polygon = simplifyPolygon(polygons[0], epsilon);
+		// select the polygon that is to be used for the building
+		cv::Mat polygon_img;
+		util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point(-bbox.x, -bbox.y), polygon_img);
+		best_iou = 0;
+		int polygon_index = -1;
+		for (int i = 0; i < polygons.size(); i++) {
+			cv::Mat img;
+			util::createImageFromPolygon(bbox.width, bbox.height, polygons[i], cv::Point(), img);
+			float iou = util::calculateIOU(polygon_img, img);
+			if (iou > best_iou) {
+				best_iou = iou;
+				polygon_index = i;
+			}
+		}
+
+		polygons[polygon_index].translate(bbox.x, bbox.y);
+
+		// simplify the selected polygon
+		util::Polygon simplified_polygon = simplifyPolygon(polygons[polygon_index], epsilon);
 		if (simplified_polygon.contour.size() < 3) throw "Invalid contour";
 		
 		// create a building object
@@ -132,7 +147,7 @@ namespace simp {
 			util::snapPolygon(parent->footprint, building.footprint, snap_vertex_threshold, snap_edge_threshold);
 		}
 
-		// simplify the hole as well
+		// set holes
 		building.holes.resize(simplified_polygon.holes.size());
 		for (int i = 0; i < simplified_polygon.holes.size(); i++) {
 			building.holes[i].resize(simplified_polygon.holes[i].size());
@@ -153,6 +168,10 @@ namespace simp {
 			if (iou < threshold) {
 				return i;
 			}
+
+			// if the number of contours becomes more than 1, it splits.
+			std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[i], bbox));
+			if (polygons.size() > 1) return i;
 		}
 
 		return voxel_data.size();
@@ -164,7 +183,7 @@ namespace simp {
 	
 		// simplify the hole as well
 		for (int i = 0; i < polygon.holes.size(); i++) {
-			std::vector<cv::Point> simplified_hole;
+			std::vector<cv::Point2f> simplified_hole;
 			cv::approxPolyDP(polygon.holes[i], simplified_hole, epsilon, true);
 			if (simplified_hole.size() >= 3) {
 				ans.holes.push_back(simplified_hole);
