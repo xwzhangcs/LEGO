@@ -15,39 +15,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\LEGO_Linux\src\Building.cpp">
+    <ClCompile Include="Building.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\LEGO_Linux\src\ContourUtils.cpp">
+    <ClCompile Include="ContourUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\LEGO_Linux\src\OpenCVSimplification.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\LEGO_Linux\src\OurCustomSimplification.cpp">
+    <ClCompile Include="OpenCVSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\LEGO_Linux\src\main.cpp">
+    <ClCompile Include="OurCustomSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\LEGO_Linux\src\PlyWriter.cpp">
+    <ClCompile Include="PlyWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\LEGO_Linux\src\Building.h">
+    <ClInclude Include="Building.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\LEGO_Linux\src\ContourUtils.h">
+    <ClInclude Include="ContourUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\LEGO_Linux\src\OpenCVSimplification.h">
+    <ClInclude Include="OpenCVSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\LEGO_Linux\src\OurCustomSimplification.h">
+    <ClInclude Include="OurCustomSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\LEGO_Linux\src\PlyWriter.h">
+    <ClInclude Include="PlyWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

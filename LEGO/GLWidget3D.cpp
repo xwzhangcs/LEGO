@@ -13,7 +13,7 @@
 #include "ContourUtils.h"
 #include "OpenCVSimplification.h"
 #include "OurCustomSimplification.h"
-#include "OBJWriter.h"
+#include "PlyWriter.h"
 
 GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers)) {
 	this->mainWin = parent;
@@ -311,8 +311,8 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 	update3DGeometry(voxel_data);
 }
 
-void GLWidget3D::saveOBJ(const QString& filename) {
-	OBJWriter::write(vertices, filename);
+void GLWidget3D::savePLY(const QString& filename) {
+	util::ply::PlyWriter::write(filename.toUtf8().constData(), buildings);
 }
 
 void GLWidget3D::saveImage(const QString& filename) {
@@ -325,18 +325,16 @@ void GLWidget3D::showInputVoxel() {
 }
 
 void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	std::vector<Building> buildings;
-
-	lego::OpenCVSimplification sim(voxel_data, epsilon, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
+	buildings.clear();
+	simp::OpenCVSimplification sim(voxel_data, epsilon, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
 	sim.simplify(buildings);
 
 	update3DGeometry(buildings);
 }
 
 void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold) {
-	std::vector<Building> buildings;
-
-	lego::OurCustomSimplification sim(voxel_data, resolution, layering_threshold);
+	buildings.clear();
+	simp::OurCustomSimplification sim(voxel_data, resolution, layering_threshold);
 	sim.simplify(buildings);
 
 	update3DGeometry(buildings);
@@ -347,7 +345,7 @@ void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 
 	QSize size(voxel_data[0].cols, voxel_data[0].rows);
 
-	vertices.clear();
+	std::vector<Vertex> vertices;
 	for (int i = 0; i < voxel_data.size(); i++) {
 		for (int y = 0; y < voxel_data[i].rows; y++) {
 			for (int x = 0; x < voxel_data[i].cols; x++) {
@@ -366,10 +364,10 @@ void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
 }
 
-void GLWidget3D::update3DGeometry(const std::vector<Building>& buildings) {
+void GLWidget3D::update3DGeometry(const std::vector<simp::Building>& buildings) {
 	renderManager.removeObjects();
 
-	vertices.clear();
+	std::vector<Vertex> vertices;
 	for (int i = 0; i < buildings.size(); i++) {
 		std::cout << "generate geometry " << i << std::endl;
 

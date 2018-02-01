@@ -32,7 +32,7 @@ public:
     QAction *actionRenderingSSAO;
     QAction *actionRenderingHatching;
     QAction *actionOpen;
-    QAction *actionSaveOBJ;
+    QAction *actionSavePLY;
     QAction *actionSimplifyByOpenCV;
     QAction *actionSimplifyByOurCustom;
     QAction *actionInputVoxel;
@@ -71,11 +71,11 @@ public:
         actionOpen = new QAction(MainWindowClass);
         actionOpen->setObjectName(QStringLiteral("actionOpen"));
         actionOpen->setIcon(icon);
-        actionSaveOBJ = new QAction(MainWindowClass);
-        actionSaveOBJ->setObjectName(QStringLiteral("actionSaveOBJ"));
+        actionSavePLY = new QAction(MainWindowClass);
+        actionSavePLY->setObjectName(QStringLiteral("actionSavePLY"));
         QIcon icon1;
         icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
-        actionSaveOBJ->setIcon(icon1);
+        actionSavePLY->setIcon(icon1);
         actionSimplifyByOpenCV = new QAction(MainWindowClass);
         actionSimplifyByOpenCV->setObjectName(QStringLiteral("actionSimplifyByOpenCV"));
         actionSimplifyByOurCustom = new QAction(MainWindowClass);
@@ -110,7 +110,7 @@ public:
         menuBar->addAction(menuSimplify->menuAction());
         menuBar->addAction(menuRendering->menuAction());
         menuFile->addAction(actionOpen);
-        menuFile->addAction(actionSaveOBJ);
+        menuFile->addAction(actionSavePLY);
         menuFile->addSeparator();
         menuFile->addAction(actionSaveImage);
         menuFile->addSeparator();
@@ -138,8 +138,8 @@ public:
         actionRenderingHatching->setText(QApplication::translate("MainWindowClass", "Hatching", 0));
         actionOpen->setText(QApplication::translate("MainWindowClass", "Open", 0));
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
-        actionSaveOBJ->setText(QApplication::translate("MainWindowClass", "Save OBJ", 0));
-        actionSaveOBJ->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
+        actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", 0));
+        actionSavePLY->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
         actionSimplifyByOpenCV->setText(QApplication::translate("MainWindowClass", "OpenCV", 0));
         actionSimplifyByOurCustom->setText(QApplication::translate("MainWindowClass", "Custom", 0));
         actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", 0));

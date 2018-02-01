@@ -28,7 +28,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
-    <addaction name="actionSaveOBJ"/>
+    <addaction name="actionSavePLY"/>
     <addaction name="separator"/>
     <addaction name="actionSaveImage"/>
     <addaction name="separator"/>
@@ -119,13 +119,13 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionSaveOBJ">
+  <action name="actionSavePLY">
    <property name="icon">
     <iconset>
      <normaloff>Resources/save.png</normaloff>Resources/save.png</iconset>
    </property>
    <property name="text">
-    <string>Save OBJ</string>
+    <string>Save PLY</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>

@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupRendering->addAction(ui.actionRenderingHatching);
 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
-	connect(ui.actionSaveOBJ, SIGNAL(triggered()), this, SLOT(onSaveOBJ()));
+	connect(ui.actionSavePLY, SIGNAL(triggered()), this, SLOT(onSavePLY()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
-	ui.mainToolBar->addAction(ui.actionSaveOBJ);
+	ui.mainToolBar->addAction(ui.actionSavePLY);
 
 	// setup the GL widget
 	glWidget = new GLWidget3D(this);
@@ -46,11 +46,11 @@ void MainWindow::onOpen() {
 	glWidget->update();
 }
 
-void MainWindow::onSaveOBJ() {
-	QString filename = QFileDialog::getSaveFileName(this, tr("Save OBJ file..."), "", tr("OBJ files (*.obj)"));
+void MainWindow::onSavePLY() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save PLY file..."), "", tr("PLY files (*.ply)"));
 	if (filename.isEmpty()) return;
 
-	glWidget->saveOBJ(filename);
+	glWidget->savePLY(filename);
 }
 
 void MainWindow::onSaveImage() {

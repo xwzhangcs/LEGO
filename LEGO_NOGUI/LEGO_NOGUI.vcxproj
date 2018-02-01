@@ -18,6 +18,21 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Building.cpp" />
+    <ClCompile Include="ContourUtils.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="OpenCVSimplification.cpp" />
+    <ClCompile Include="OurCustomSimplification.cpp" />
+    <ClCompile Include="PlyWriter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Building.h" />
+    <ClInclude Include="ContourUtils.h" />
+    <ClInclude Include="OpenCVSimplification.h" />
+    <ClInclude Include="OurCustomSimplification.h" />
+    <ClInclude Include="PlyWriter.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A84953E3-4DFB-4479-9C1B-022F9487F2EA}</ProjectGuid>
     <RootNamespace>LEGO_NOGUI</RootNamespace>
@@ -81,8 +96,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\opencv\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -124,21 +140,6 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\LEGO_Linux\src\Building.cpp" />
-    <ClCompile Include="..\..\LEGO_Linux\src\ContourUtils.cpp" />
-    <ClCompile Include="..\..\LEGO_Linux\src\main.cpp" />
-    <ClCompile Include="..\..\LEGO_Linux\src\OpenCVSimplification.cpp" />
-    <ClCompile Include="..\..\LEGO_Linux\src\OurCustomSimplification.cpp" />
-    <ClCompile Include="..\..\LEGO_Linux\src\PlyWriter.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\LEGO_Linux\src\Building.h" />
-    <ClInclude Include="..\..\LEGO_Linux\src\ContourUtils.h" />
-    <ClInclude Include="..\..\LEGO_Linux\src\OpenCVSimplification.h" />
-    <ClInclude Include="..\..\LEGO_Linux\src\OurCustomSimplification.h" />
-    <ClInclude Include="..\..\LEGO_Linux\src\PlyWriter.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
