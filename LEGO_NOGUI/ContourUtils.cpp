@@ -123,14 +123,15 @@ namespace util {
 	std::vector<Polygon> findContours(const cv::Mat& img) {
 		std::vector<Polygon> ans;
 
-		// add padding to the image
-		cv::Mat padded(img.rows + 2, img.cols + 2, CV_8U, cv::Scalar(0));
-		img.copyTo(padded(cv::Rect(1, 1, img.cols, img.rows)));
-
 		// dilate the image
+		cv::Mat dilated = img.clone();
 		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
-		cv::dilate(padded, padded, kernel);
-		
+		cv::dilate(dilated, dilated, kernel);
+
+		// add padding to the image
+		cv::Mat padded(dilated.rows + 2, dilated.cols + 2, CV_8U, cv::Scalar(0));
+		dilated.copyTo(padded(cv::Rect(1, 1, dilated.cols, dilated.rows)));
+
 		// extract contours
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarchy;
