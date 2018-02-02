@@ -125,8 +125,10 @@ namespace util {
 
 		// dilate the image
 		cv::Mat dilated = img.clone();
+		/*
 		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
 		cv::dilate(dilated, dilated, kernel);
+		*/
 
 		// add padding to the image
 		cv::Mat padded(dilated.rows + 2, dilated.cols + 2, CV_8U, cv::Scalar(0));
