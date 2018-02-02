@@ -1,5 +1,6 @@
 #include "PlyWriter.h"
 #include <fstream>
+#include "ContourUtils.h"
 
 namespace util {
 	
@@ -53,8 +54,10 @@ namespace util {
 			}
 
 			for (auto polygon : polygons) {
-				std::vector<int> bottom_face;
-				std::vector<int> top_face;
+				util::clockwise(polygon);
+
+				std::vector<int> bottom_face(polygon.size());
+				std::vector<int> top_face(polygon.size());
 
 				for (int i = 0; i < polygon.size(); i++) {
 					Point3d pt_bottom(polygon[i].x, polygon[i].y, building.bottom_height);
@@ -69,7 +72,7 @@ namespace util {
 					else {
 						index_bottom = vertices_map[pt_bottom];
 					}
-					bottom_face.push_back(index_bottom);
+					bottom_face[i] = index_bottom;
 
 					int index_top;
 					if (vertices_map.find(pt_top) == vertices_map.end()) {
@@ -80,26 +83,29 @@ namespace util {
 					else {
 						index_top = vertices_map[pt_top];
 					}
-					top_face.push_back(index_top);
+					top_face[polygon.size() - i - 1] = index_top;
 				}
 
 				faces.push_back(bottom_face);
 				faces.push_back(top_face);
 			}
-
+			
 			// side faces
-			for (int i = 0; i < building.footprint.size(); i++) {
-				int next = (i + 1) % building.footprint.size();
-				Point3d p1(building.footprint[i].x, building.footprint[i].y, building.bottom_height);
-				Point3d p2(building.footprint[next].x, building.footprint[next].y, building.bottom_height);
-				Point3d p3(building.footprint[next].x, building.footprint[next].y, building.top_height);
-				Point3d p4(building.footprint[i].x, building.footprint[i].y, building.top_height);
+			std::vector<cv::Point2f> polygon = building.footprint;
+			util::counterClockwise(polygon);
+			for (int i = 0; i < polygon.size(); i++) {
+				int next = (i + 1) % polygon.size();
+				Point3d p1(polygon[i].x, polygon[i].y, building.bottom_height);
+				Point3d p2(polygon[next].x, polygon[next].y, building.bottom_height);
+				Point3d p3(polygon[next].x, polygon[next].y, building.top_height);
+				Point3d p4(polygon[i].x, polygon[i].y, building.top_height);
 
 				faces.push_back({ vertices_map[p1], vertices_map[p2], vertices_map[p3], vertices_map[p4] });
 			}
 
 			// side faces of holes
 			for (auto hole : building.holes) {
+				util::clockwise(hole);
 				for (int i = 0; i < hole.size(); i++) {
 					int next = (i + 1) % hole.size();
 					Point3d p1(hole[i].x, hole[i].y, building.bottom_height);
@@ -135,6 +141,7 @@ namespace util {
 					pol.push_back(cv::Point2f(vit->x(), vit->y()));
 				}
 
+				util::counterClockwise(pol);
 				ans.push_back(pol);
 			}
 
@@ -170,6 +177,7 @@ namespace util {
 						pol.push_back(cv::Point2f(vh->point().x(), vh->point().y()));
 					}
 
+					util::counterClockwise(pol);
 					ans.push_back(pol);
 				}
 			}

@@ -16,6 +16,49 @@ namespace util {
 		}
 	}
 
+	void Polygon::clockwise() {
+		if (!isClockwise(contour)) {
+			std::reverse(contour.begin(), contour.end());
+		}
+		for (int i = 0; i < holes.size(); i++) {
+			if (!isClockwise(holes[i])) {
+				std::reverse(holes[i].begin(), holes[i].end());
+			}
+		}
+	}
+
+	void Polygon::counterClockwise() {
+		if (isClockwise(contour)) {
+			std::reverse(contour.begin(), contour.end());
+		}
+		for (int i = 0; i < holes.size(); i++) {
+			if (isClockwise(holes[i])) {
+				std::reverse(holes[i].begin(), holes[i].end());
+			}
+		}
+	}
+
+	bool isClockwise(const std::vector<cv::Point2f>& polygon) {
+		float S = 0;
+		for (int i = 0; i < polygon.size(); i++) {
+			int next = (i + 1) % polygon.size();
+			S += (polygon[next].x - polygon[i].x) * (polygon[next].y + polygon[i].y);
+		}
+		return S > 0;
+	}
+
+	void clockwise(std::vector<cv::Point2f>& polygon) {
+		if (!isClockwise(polygon)) {
+			std::reverse(polygon.begin(), polygon.end());
+		}
+	}
+
+	void counterClockwise(std::vector<cv::Point2f>& polygon) {
+		if (isClockwise(polygon)) {
+			std::reverse(polygon.begin(), polygon.end());
+		}
+	}
+
 	/**
 	 * Remove the redundant points that have the same coordinates.
 	 */

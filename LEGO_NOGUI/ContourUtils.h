@@ -18,7 +18,13 @@ namespace util {
 		Polygon() {}
 
 		void translate(float x, float y);
+		void clockwise();
+		void counterClockwise();
 	};
+
+	bool isClockwise(const std::vector<cv::Point2f>& polygon);
+	void clockwise(std::vector<cv::Point2f>& polygon);
+	void counterClockwise(std::vector<cv::Point2f>& polygon);
 
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
 	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
