@@ -130,12 +130,12 @@ namespace util {
 				polygon.push_back(Point_2(points[i].x, points[i].y));
 			}
 
-			if (polygon.is_clockwise_oriented()) {
-				polygon.reverse_orientation();
-			}
-
-			// tesselate the concave polygon
 			if (polygon.is_simple()) {
+				if (polygon.is_clockwise_oriented()) {
+					polygon.reverse_orientation();
+				}
+
+				// tesselate the concave polygon
 				Polygon_list partition_polys;
 				Traits       partition_traits;
 				CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
