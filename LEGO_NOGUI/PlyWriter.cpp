@@ -135,18 +135,20 @@ namespace util {
 			}
 
 			// tesselate the concave polygon
-			Polygon_list partition_polys;
-			Traits       partition_traits;
-			CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
+			if (polygon.is_simple()) {
+				Polygon_list partition_polys;
+				Traits       partition_traits;
+				CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
 
-			for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-				std::vector<cv::Point2f> pol;
-				for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-					pol.push_back(cv::Point2f(vit->x(), vit->y()));
+				for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
+					std::vector<cv::Point2f> pol;
+					for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
+						pol.push_back(cv::Point2f(vit->x(), vit->y()));
+					}
+
+					util::counterClockwise(pol);
+					ans.push_back(pol);
 				}
-
-				util::counterClockwise(pol);
-				ans.push_back(pol);
 			}
 
 			return ans;
@@ -161,30 +163,34 @@ namespace util {
 			for (int i = 0; i < points.size(); i++) {
 				polygon.push_back(Point(points[i].x, points[i].y));
 			}
-			cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
-			for (int i = 0; i < holes.size(); i++) {
-				Polygon_2 polygon;
-				for (int j = 0; j < holes[i].size(); j++) {
-					polygon.push_back(Point(holes[i][j].x, holes[i][j].y));
-				}
+
+			if (polygon.is_simple()) {
 				cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
-			}
-
-			//Mark facets that are inside the domain bounded by the polygon
-			mark_domains(cdt);
-
-			for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
-				if (fit->info().in_domain()) {
-					std::vector<cv::Point2f> pol;
-					for (int i = 0; i < 3; i++) {
-						CDT::Vertex_handle vh = fit->vertex(i);
-						pol.push_back(cv::Point2f(vh->point().x(), vh->point().y()));
+				for (int i = 0; i < holes.size(); i++) {
+					Polygon_2 polygon;
+					for (int j = 0; j < holes[i].size(); j++) {
+						polygon.push_back(Point(holes[i][j].x, holes[i][j].y));
 					}
+					cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
+				}
 
-					util::counterClockwise(pol);
-					ans.push_back(pol);
+				//Mark facets that are inside the domain bounded by the polygon
+				mark_domains(cdt);
+
+				for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
+					if (fit->info().in_domain()) {
+						std::vector<cv::Point2f> pol;
+						for (int i = 0; i < 3; i++) {
+							CDT::Vertex_handle vh = fit->vertex(i);
+							pol.push_back(cv::Point2f(vh->point().x(), vh->point().y()));
+						}
+
+						util::counterClockwise(pol);
+						ans.push_back(pol);
+					}
 				}
 			}
+
 			return ans;
 		}
 
