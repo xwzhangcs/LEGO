@@ -375,7 +375,6 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Buildi
 
 	std::vector<Vertex> vertices;
 	for (int i = 0; i < buildings.size(); i++) {
-		std::cout << "generate geometry " << i << std::endl;
 		update3DGeometry(buildings[i], vertices);
 	}
 	renderManager.addObject("building", "", vertices, true);

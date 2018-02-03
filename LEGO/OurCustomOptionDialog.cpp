@@ -4,7 +4,7 @@ OurCustomOptionDialog::OurCustomOptionDialog(QWidget *parent) : QDialog(parent) 
 	ui.setupUi(this);
 
 	ui.spinBoxResolution->setValue(5);
-	ui.doubleSpinBoxLayeringThreshold->setValue(0.7);
+	ui.doubleSpinBoxLayeringThreshold->setValue(0.8);
 	ui.doubleSpinBoxSnapVertexThreshold->setValue(1.0);
 	ui.doubleSpinBoxSnapEdgeThreshold->setValue(0.5);
 
