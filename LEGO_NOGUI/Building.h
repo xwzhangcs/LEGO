@@ -1,20 +1,22 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include <opencv2/opencv.hpp>
+#include "ContourUtils.h"
 
 namespace simp {
 
 	class Building {
 	public:
-		std::vector<cv::Point2f> footprint;
-		std::vector<std::vector<cv::Point2f>> holes;
+		util::Polygon footprint;
 		float bottom_height;
 		float top_height;
+		std::vector<std::shared_ptr<Building>> children;
 
 	public:
 		Building() {}
-		Building(const std::vector<cv::Point2f>& footprint, float bottom_height, float top_height);
+		Building(const util::Polygon& footprint, float bottom_height, float top_height);
 		~Building();
 	};
 

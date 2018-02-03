@@ -16,6 +16,21 @@ namespace util {
 		}
 	}
 
+	void Polygon::transform(cv::Mat m) {
+		for (int i = 0; i < contour.size(); i++) {
+			cv::Mat_<float> p = m * (cv::Mat_<float>(3, 1) << contour[i].x, contour[i].y, 1);
+			contour[i].x = p(0, 0);
+			contour[i].y = p(1, 0);
+		}
+		for (int i = 0; i < holes.size(); i++) {
+			for (int j = 0; j < holes[i].size(); j++) {
+				cv::Mat_<float> p = m * (cv::Mat_<float>(3, 1) << holes[i][j].x, holes[i][j].y, 1);
+				holes[i][j].x = p(0, 0);
+				holes[i][j].y = p(1, 0);
+			}
+		}
+	}
+
 	void Polygon::clockwise() {
 		if (!isClockwise(contour)) {
 			std::reverse(contour.begin(), contour.end());
@@ -60,7 +75,7 @@ namespace util {
 	}
 
 	/**
-	 * Remove the redundant points that have the same coordinates.
+	 * Remove the redundant points that have the same coordinates, and remove the point that are collinear to the adjacent points.
 	 */
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon) {
 		std::vector<cv::Point> ans;
@@ -73,6 +88,17 @@ namespace util {
 			}
 		}
 		if (ans.size() > 1 && ans.back() == ans.front()) ans.pop_back();
+
+		for (int i = 0; i < ans.size(); ) {
+			int prev = (i - 1 + ans.size()) % ans.size();
+			int next = (i + 1) % ans.size();
+			if (std::abs(crossProduct(ans[i] - ans[prev], ans[next] - ans[i])) < 0.0001) {
+				ans.erase(ans.begin() + i);
+			}
+			else {
+				i++;
+			}
+		}
 
 		return ans;
 	}
@@ -88,6 +114,17 @@ namespace util {
 			}
 		}
 		if (ans.size() > 1 && ans.back() == ans.front()) ans.pop_back();
+
+		for (int i = 0; i < ans.size();) {
+			int prev = (i - 1 + ans.size()) % ans.size();
+			int next = (i + 1) % ans.size();
+			if (std::abs(crossProduct(ans[i] - ans[prev], ans[next] - ans[i])) < 0.0001) {
+				ans.erase(ans.begin() + i);
+			}
+			else {
+				i++;
+			}
+		}
 
 		return ans;
 	}
@@ -187,18 +224,12 @@ namespace util {
 			if (contours[i].size() < 3) continue;
 
 			Polygon polygon;
-			polygon.contour.resize(contours[i].size());
-			for (int j = 0; j < contours[i].size(); j++) {
-				polygon.contour[j] = cv::Point2f(contours[i][j].x, contours[i][j].y);
-			}
+			polygon.contour = addCornerToOpenCVContour(contours[i], padded);
 
 			// obtain all the holes inside this contour
 			int hole_id = hierarchy[i][2];
 			while (hole_id != -1) {
-				std::vector<cv::Point2f> hole(contours[hole_id].size());
-				for (int j = 0; j < contours[hole_id].size(); j++) {
-					hole[j] = cv::Point2f(contours[hole_id][j].x, contours[hole_id][j].y);
-				}
+				std::vector<cv::Point2f> hole = addCornerToOpenCVContour(contours[hole_id], padded);
 				polygon.holes.push_back(hole);
 				hole_id = hierarchy[hole_id][0];
 			}
@@ -210,6 +241,29 @@ namespace util {
 		}
 
 		return ans;
+	}
+
+	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat& img) {
+		std::vector<cv::Point2f> ans;
+		
+		for (int i = 0; i < polygon.size(); i++) {
+			ans.push_back(polygon[i]);
+
+			int next = (i + 1) % polygon.size();
+
+			// check if the edge is diagonal
+			if (std::abs(polygon[next].x - polygon[i].x) == 1 && std::abs(polygon[next].y == polygon[i].y) == 1) {
+				// add a right angle corner
+				cv::Point2f p(polygon[next].x, polygon[i].y);
+				if (img.at<uchar>(p.y, p.x) == 255) ans.push_back(p);
+				else {
+					cv::Point2f p(polygon[i].x, polygon[next].y);
+					ans.push_back(p);
+				}
+			}
+		}
+
+		return removeRedundantPoint(ans);
 	}
 
 	/**

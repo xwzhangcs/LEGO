@@ -27,8 +27,8 @@ public:
 	glm::vec3 spot_light_pos;
 
 	// input voxel data
-	std::vector<cv::Mat> voxel_data;
-	std::vector<simp::Building> buildings;
+	std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
+	std::vector<std::shared_ptr<simp::Building>> buildings;
 
 	// rendering engine
 	RenderManager renderManager;
@@ -50,8 +50,9 @@ public:
 	void showInputVoxel();
 	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void update3DGeometry(const std::vector<cv::Mat>& voxel_data);
-	void update3DGeometry(const std::vector<simp::Building>& buildings);
+	void update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data);
+	void update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings);
+	void update3DGeometry(std::shared_ptr<simp::Building> building, std::vector<Vertex>& vertices);
 
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);

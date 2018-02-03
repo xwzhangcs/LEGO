@@ -2,6 +2,8 @@
 #include "OpenCVSimplification.h"
 #include <QDir>
 #include <QString>
+#include "DisjointVoxelData.h"
+#include "BuildingSimplification.h"
 #include "PlyWriter.h"
 
 int main(int argc, const char* argv[]) {
@@ -11,7 +13,7 @@ int main(int argc, const char* argv[]) {
 	}
 
 	QString input_filename(argv[1]);
-	std::vector<cv::Mat> voxel_data;
+	std::vector<cv::Mat_<uchar>> voxel_data;
 
 	// get directory
 	QFileInfo finfo(input_filename);
@@ -28,10 +30,10 @@ int main(int argc, const char* argv[]) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
-	std::vector<simp::Building> buildings;
+	std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data = util::DisjointVoxelData::disjoint(voxel_data, 0.5);
 
-	simp::OpenCVSimplification sim(voxel_data, 1, 0.7, 1, 0.5);
-	sim.simplify(buildings);
+	simp::BuildingSimplification sim(disjointed_voxel_data, 0.7, 2, 1);
+	std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildingsByOpenCV(1);
 
 	util::ply::PlyWriter::write(argv[2], buildings);
 

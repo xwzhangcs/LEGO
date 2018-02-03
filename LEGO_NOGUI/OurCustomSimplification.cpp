@@ -140,21 +140,21 @@ namespace simp {
 		building.bottom_height = bottom_height;
 		building.top_height = top_height;
 
-		building.footprint.resize(simplified_polygon.contour.size());
+		building.footprint.contour.resize(simplified_polygon.contour.size());
 		for (int i = 0; i < simplified_polygon.contour.size(); i++) {
-			building.footprint[i] = cv::Point2f(simplified_polygon.contour[i].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.contour[i].y);
+			building.footprint.contour[i] = cv::Point2f(simplified_polygon.contour[i].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.contour[i].y);
 		}
 
 		if (parent != NULL) {
-			util::snapPolygon(parent->footprint, building.footprint, snap_vertex_threshold, snap_edge_threshold);
+			util::snapPolygon(parent->footprint.contour, building.footprint.contour, snap_vertex_threshold, snap_edge_threshold);
 		}
 
 		// set holes
-		building.holes.resize(simplified_polygon.holes.size());
+		building.footprint.holes.resize(simplified_polygon.holes.size());
 		for (int i = 0; i < simplified_polygon.holes.size(); i++) {
-			building.holes[i].resize(simplified_polygon.holes[i].size());
+			building.footprint.holes[i].resize(simplified_polygon.holes[i].size());
 			for (int j = 0; j < simplified_polygon.holes[i].size(); j++) {
-				building.holes[i][j] = cv::Point2f(simplified_polygon.holes[i][j].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.holes[i][j].y);
+				building.footprint.holes[i][j] = cv::Point2f(simplified_polygon.holes[i][j].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.holes[i][j].y);
 			}
 		}
 

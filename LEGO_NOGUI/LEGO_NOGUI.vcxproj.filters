@@ -33,6 +33,15 @@
     <ClCompile Include="PlyWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DisjointVoxelData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BuildingSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LayerVoxelData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Building.h">
@@ -48,6 +57,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PlyWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DisjointVoxelData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BuildingSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LayerVoxelData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

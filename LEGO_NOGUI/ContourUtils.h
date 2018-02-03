@@ -18,6 +18,7 @@ namespace util {
 		Polygon() {}
 
 		void translate(float x, float y);
+		void transform(cv::Mat m);
 		void clockwise();
 		void counterClockwise();
 	};
@@ -25,7 +26,7 @@ namespace util {
 	bool isClockwise(const std::vector<cv::Point2f>& polygon);
 	void clockwise(std::vector<cv::Point2f>& polygon);
 	void counterClockwise(std::vector<cv::Point2f>& polygon);
-
+	
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
 	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
 
@@ -34,6 +35,7 @@ namespace util {
 	double calculateIOU(const cv::Mat& img, const cv::Mat& img2);
 	double calculateIOU(const cv::Mat& img1, const cv::Mat& img2, const cv::Rect& rect);
 	std::vector<Polygon> findContours(const cv::Mat& img);
+	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat& img);
 	void findContour(const cv::Mat& img, std::vector<cv::Point>& contour);
 	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat& result);
 	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat& result);

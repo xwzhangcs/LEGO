@@ -20,7 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Building.cpp" />
+    <ClCompile Include="BuildingSimplification.cpp" />
     <ClCompile Include="ContourUtils.cpp" />
+    <ClCompile Include="DisjointVoxelData.cpp" />
+    <ClCompile Include="LayerVoxelData.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OpenCVSimplification.cpp" />
     <ClCompile Include="OurCustomSimplification.cpp" />
@@ -28,7 +31,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Building.h" />
+    <ClInclude Include="BuildingSimplification.h" />
     <ClInclude Include="ContourUtils.h" />
+    <ClInclude Include="DisjointVoxelData.h" />
+    <ClInclude Include="LayerVoxelData.h" />
     <ClInclude Include="OpenCVSimplification.h" />
     <ClInclude Include="OurCustomSimplification.h" />
     <ClInclude Include="PlyWriter.h" />

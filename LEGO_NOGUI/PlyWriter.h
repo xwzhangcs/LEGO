@@ -65,10 +65,10 @@ namespace util {
 			PlyWriter() {}
 
 		public:
-			static void write(const char* filename, const std::vector<simp::Building>& buildings);
+			static void write(const char* filename, const std::vector<std::shared_ptr<simp::Building>>& buildings);
 
 		private:
-			static void writeBuilding(const simp::Building& building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
+			static void writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
 
 			static std::vector<std::vector<cv::Point2f>> tessellate(const std::vector<cv::Point2f>& points);
 			static std::vector<std::vector<cv::Point2f>> tessellate(const std::vector<cv::Point2f>& points, const std::vector<std::vector<cv::Point2f>>& holes);

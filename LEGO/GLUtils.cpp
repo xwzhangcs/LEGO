@@ -513,19 +513,21 @@ namespace glutils {
 		}
 	
 		// tesselate the concave polygon
-		Polygon_list partition_polys;
-		Traits       partition_traits;
-		CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
+		if (polygon.is_simple()) {
+			Polygon_list partition_polys;
+			Traits       partition_traits;
+			CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
 
-		for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-			std::vector<glm::vec2> pts;
-			std::vector<glm::vec2> texCoords;
-			for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-				pts.push_back(glm::vec2(vit->x(), vit->y()));
-				texCoords.push_back(glm::vec2((vit->x() - min_x) / (max_x - min_x), (vit->y() - min_y) / (max_y - min_y)));
+			for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
+				std::vector<glm::vec2> pts;
+				std::vector<glm::vec2> texCoords;
+				for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
+					pts.push_back(glm::vec2(vit->x(), vit->y()));
+					texCoords.push_back(glm::vec2((vit->x() - min_x) / (max_x - min_x), (vit->y() - min_y) / (max_y - min_y)));
+				}
+
+				drawPolygon(pts, color, texCoords, mat, vertices, flip);
 			}
-
-			drawPolygon(pts, color, texCoords, mat, vertices, flip);
 		}
 	}
 
@@ -550,19 +552,25 @@ namespace glutils {
 		}
 
 		// tesselate the concave polygon
-		Polygon_list partition_polys;
-		Traits       partition_traits;
-		CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
+		try {
+			if (polygon.is_simple()) {
+				Polygon_list partition_polys;
+				Traits       partition_traits;
+				CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
 
-		for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-			std::vector<glm::vec2> pts;
-			std::vector<glm::vec2> texCoords;
-			for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-				pts.push_back(glm::vec2(vit->x(), vit->y()));
-				texCoords.push_back(glm::vec2((vit->x() - min_x) / (max_x - min_x), (vit->y() - min_y) / (max_y - min_y)));
+				for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
+					std::vector<glm::vec2> pts;
+					std::vector<glm::vec2> texCoords;
+					for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
+						pts.push_back(glm::vec2(vit->x(), vit->y()));
+						texCoords.push_back(glm::vec2((vit->x() - min_x) / (max_x - min_x), (vit->y() - min_y) / (max_y - min_y)));
+					}
+
+					drawPolygon(pts, color, texCoords, mat, vertices, flip);
+				}
 			}
-
-			drawPolygon(pts, color, texCoords, mat, vertices, flip);
+		}
+		catch (...) {
 		}
 	}
 

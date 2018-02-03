@@ -11,8 +11,8 @@
 #include <QProcess>
 #include "GLUtils.h"
 #include "ContourUtils.h"
-#include "OpenCVSimplification.h"
-#include "OurCustomSimplification.h"
+#include "BuildingSimplification.h"
+#include "DisjointVoxelData.h"
 #include "PlyWriter.h"
 
 GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers)) {
@@ -303,12 +303,14 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 
 	// scan all the files in the directory to get a voxel data
 	QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
-	voxel_data.resize(files.size());
+	std::vector<cv::Mat_<uchar>> voxel_data(files.size());
 	for (int i = 0; i < files.size(); i++) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
-	update3DGeometry(voxel_data);
+	disjointed_voxel_data = util::DisjointVoxelData::disjoint(voxel_data, 0.5);
+
+	update3DGeometry(disjointed_voxel_data);
 }
 
 void GLWidget3D::savePLY(const QString& filename) {
@@ -321,36 +323,40 @@ void GLWidget3D::saveImage(const QString& filename) {
 }
 
 void GLWidget3D::showInputVoxel() {
-	update3DGeometry(voxel_data);
+	update3DGeometry(disjointed_voxel_data);
 }
 
 void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings.clear();
-	simp::OpenCVSimplification sim(voxel_data, epsilon, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
-	sim.simplify(buildings);
+	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
+	buildings = sim.simplifyBuildingsByOpenCV(epsilon);
 
 	update3DGeometry(buildings);
 }
 
 void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings.clear();
-	simp::OurCustomSimplification sim(voxel_data, resolution, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
-	sim.simplify(buildings);
+	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
+	buildings = sim.simplifyBuildingsByOurCustom(resolution);
 
 	update3DGeometry(buildings);
 }
 
-void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
+void GLWidget3D::update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data) {
 	renderManager.removeObjects();
 
-	QSize size(voxel_data[0].cols, voxel_data[0].rows);
+	if (disjointed_voxel_data.size() == 0 || disjointed_voxel_data[0].size() == 0) return;
+
+	QSize size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
 
 	std::vector<Vertex> vertices;
-	for (int i = 0; i < voxel_data.size(); i++) {
-		for (int y = 0; y < voxel_data[i].rows; y++) {
-			for (int x = 0; x < voxel_data[i].cols; x++) {
-				if (voxel_data[i].at<uchar>(y, x) != 255) continue;
-				glutils::drawBox(1, 1, 1, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, i + 0.5)), vertices);
+	for (int bid = 0; bid < disjointed_voxel_data.size(); bid++) {
+		glm::vec4 color((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+
+		for (int slice_id = 0; slice_id < disjointed_voxel_data[bid].size(); slice_id++) {
+			for (int y = 0; y < disjointed_voxel_data[bid][slice_id].rows; y++) {
+				for (int x = 0; x < disjointed_voxel_data[bid][slice_id].cols; x++) {
+					if (disjointed_voxel_data[bid][slice_id](y, x) < 128) continue;
+					glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, slice_id + 0.5)), vertices);
+				}
 			}
 		}
 	}
@@ -364,31 +370,13 @@ void GLWidget3D::update3DGeometry(const std::vector<cv::Mat>& voxel_data) {
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
 }
 
-void GLWidget3D::update3DGeometry(const std::vector<simp::Building>& buildings) {
+void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings) {
 	renderManager.removeObjects();
 
 	std::vector<Vertex> vertices;
 	for (int i = 0; i < buildings.size(); i++) {
 		std::cout << "generate geometry " << i << std::endl;
-
-		std::vector<glm::dvec2> footprint(buildings[i].footprint.size());
-		for (int j = 0; j < buildings[i].footprint.size(); j++) {
-			footprint[j] = glm::dvec2(buildings[i].footprint[j].x, buildings[i].footprint[j].y);
-		}
-		std::vector<std::vector<glm::dvec2>> holes(buildings[i].holes.size());
-		for (int j = 0; j < buildings[i].holes.size(); j++) {
-			holes[j].resize(buildings[i].holes[j].size());
-			for (int k = 0; k < buildings[i].holes[j].size(); k++) {
-				holes[j][k] = glm::dvec2(buildings[i].holes[j][k].x, buildings[i].holes[j][k].y);
-			}
-		}
-
-		if (buildings[i].holes.size() == 0) {
-			glutils::drawPrism(footprint, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
-		}
-		else {
-			glutils::drawPrismWithHoles(footprint, holes, buildings[i].top_height - buildings[i].bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, buildings[i].bottom_height)), vertices);
-		}
+		update3DGeometry(buildings[i], vertices);
 	}
 	renderManager.addObject("building", "", vertices, true);
 
@@ -398,6 +386,31 @@ void GLWidget3D::update3DGeometry(const std::vector<simp::Building>& buildings) 
 
 	// update shadow map
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+}
+
+void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, std::vector<Vertex>& vertices) {
+	std::vector<glm::dvec2> footprint(building->footprint.contour.size());
+	for (int j = 0; j < building->footprint.contour.size(); j++) {
+		footprint[j] = glm::dvec2(building->footprint.contour[j].x, building->footprint.contour[j].y);
+	}
+	std::vector<std::vector<glm::dvec2>> holes(building->footprint.holes.size());
+	for (int j = 0; j < building->footprint.holes.size(); j++) {
+		holes[j].resize(building->footprint.holes[j].size());
+		for (int k = 0; k < building->footprint.holes[j].size(); k++) {
+			holes[j][k] = glm::dvec2(building->footprint.holes[j][k].x, building->footprint.holes[j][k].y);
+		}
+	}
+
+	if (building->footprint.holes.size() == 0) {
+		glutils::drawPrism(footprint, building->top_height - building->bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+	}
+	else {
+		glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+	}
+
+	for (int i = 0; i < building->children.size(); i++) {
+		update3DGeometry(building->children[i], vertices);
+	}
 }
 
 void GLWidget3D::keyPressEvent(QKeyEvent *e) {
