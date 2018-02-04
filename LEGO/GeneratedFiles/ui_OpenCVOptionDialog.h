@@ -79,7 +79,7 @@ public:
 
     void retranslateUi(QDialog *OpenCVOptionDialog)
     {
-        OpenCVOptionDialog->setWindowTitle(QApplication::translate("OpenCVOptionDialog", "OpenCVOptionDialog", 0));
+        OpenCVOptionDialog->setWindowTitle(QApplication::translate("OpenCVOptionDialog", "Option Dialog", 0));
         label->setText(QApplication::translate("OpenCVOptionDialog", "Epsilon:", 0));
         pushButtonOK->setText(QApplication::translate("OpenCVOptionDialog", "OK", 0));
         pushButtonCancel->setText(QApplication::translate("OpenCVOptionDialog", "Cancel", 0));

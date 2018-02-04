@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>OurCustomOptionDialog</string>
+   <string>Option Dialog</string>
   </property>
   <widget class="QLabel" name="label">
    <property name="geometry">

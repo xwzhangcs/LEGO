@@ -55,7 +55,7 @@ namespace simp {
 				util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
 				std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 
-				double angle = -1;
+				float angle = -1;
 				int dx = -1;
 				int dy = -1;
 				std::shared_ptr<Building> building = simplifyBuildingByOurCustom(layer, resolution, angle, dx, dy);
@@ -106,7 +106,7 @@ namespace simp {
 	 * @param resolution	simplification level
 	 * @return				simplified building shape
 	 */
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution, double angle, int dx, int dy) {
+	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution, float angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";

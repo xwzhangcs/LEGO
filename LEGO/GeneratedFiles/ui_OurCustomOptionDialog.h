@@ -79,7 +79,7 @@ public:
 
     void retranslateUi(QDialog *OurCustomOptionDialog)
     {
-        OurCustomOptionDialog->setWindowTitle(QApplication::translate("OurCustomOptionDialog", "OurCustomOptionDialog", 0));
+        OurCustomOptionDialog->setWindowTitle(QApplication::translate("OurCustomOptionDialog", "Option Dialog", 0));
         label->setText(QApplication::translate("OurCustomOptionDialog", "Resolution:", 0));
         pushButtonCancel->setText(QApplication::translate("OurCustomOptionDialog", "Cancel", 0));
         pushButtonOK->setText(QApplication::translate("OurCustomOptionDialog", "OK", 0));

@@ -23,7 +23,7 @@ namespace simp {
 
 	private:
 		std::shared_ptr<Building> simplifyBuildingByOpenCV(std::shared_ptr<util::Layer> layer, float epsilon);
-		std::shared_ptr<Building> simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution, double angle, int dx, int dy);
+		std::shared_ptr<Building> simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution, float angle, int dx, int dy);
 
 		int selectRepresentativeSlice(const std::vector<cv::Mat>& slices);
 	};

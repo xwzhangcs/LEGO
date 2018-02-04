@@ -203,37 +203,37 @@ namespace util {
 	std::vector<Polygon> findContours(const cv::Mat& img) {
 		std::vector<Polygon> ans;
 
-		// add padding to the image
-		cv::Mat padded(img.rows + 1, img.cols + 1, CV_8U, cv::Scalar(0));
-		img.copyTo(padded(cv::Rect(0, 0, img.cols, img.rows)));
-
-		// dilate the image
-		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
-		cv::dilate(padded, padded, kernel);
+		// resize x4
+		cv::Mat img2;
+		cv::resize(img, img2, cv::Size(img.cols * 4, img.rows * 4), 0, 0, cv::INTER_NEAREST);
 		
 		// extract contours
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarchy;
-		cv::findContours(padded, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		cv::findContours(img2, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 		for (int i = 0; i < hierarchy.size(); i++) {
 			if (hierarchy[i][3] != -1) continue;
 			if (contours[i].size() < 3) continue;
 
 			Polygon polygon;
-			polygon.contour = addCornerToOpenCVContour(contours[i], padded);
-
+			std::vector<cv::Point2f> contour = addCornerToOpenCVContour(contours[i], img2);
+			polygon.contour.resize(contour.size());
+			for (int j = 0; j < contour.size(); j++) {
+				polygon.contour[j] = cv::Point2f(contour[j].x * 0.25, contour[j].y * 0.25);
+			}
+			
 			if (polygon.contour.size() >= 3) {
 				// obtain all the holes inside this contour
 				int hole_id = hierarchy[i][2];
 				while (hole_id != -1) {
-					std::vector<cv::Point2f> hole = addCornerToOpenCVContour(contours[hole_id], padded);
+					std::vector<cv::Point2f> hole = addCornerToOpenCVContour(contours[hole_id], img2);
+					for (int j = 0; j < hole.size(); j++) {
+						hole[j] = cv::Point2f(hole[j].x * 0.25, hole[j].y * 0.25);
+					}
 					polygon.holes.push_back(hole);
 					hole_id = hierarchy[hole_id][0];
 				}
-
-				// since we added 1px of padding, we need to adjust the coordinates of the polygon
-				polygon.translate(-1, -1);
 
 				ans.push_back(polygon);
 			}

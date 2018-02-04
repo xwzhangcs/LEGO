@@ -11,7 +11,7 @@ namespace simp {
 	* @return			simplified footprint
 	*/
 
-	util::Polygon OurCustomSimplification::simplify(const cv::Mat& slice, int resolution, double& angle, int& dx, int& dy) {
+	util::Polygon OurCustomSimplification::simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy) {
 		// make sure there is a building in the layer
 		std::vector<util::Polygon> polygons = util::findContours(slice);
 		if (polygons.size() == 0) throw "No building is found.";
@@ -19,7 +19,7 @@ namespace simp {
 		util::Polygon ans;
 
 		if (angle == -1) {
-			std::tuple<double, int, int> best_mat = simplifyContour(polygons[0].contour, ans.contour, resolution);
+			std::tuple<float, int, int> best_mat = simplifyContour(polygons[0].contour, ans.contour, resolution);
 			angle = std::get<0>(best_mat);
 			dx = std::get<1>(best_mat);
 			dy = std::get<2>(best_mat);
@@ -52,15 +52,15 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<double, int, int> OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution) {
+	std::tuple<float, int, int> OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, int resolution) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
-		double best_angle;
+		float best_angle;
 		int best_dx;
 		int best_dy;
 
-		for (double angle = 0; angle < 90; angle += 10) {
+		for (float angle = 0; angle < 90; angle += 10) {
 			//std::cout << "angle=" << angle << std::endl;
 
 			for (int dx = 0; dx < resolution; dx++) {
@@ -97,7 +97,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy) {
+	double OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, int resolution, float angle, int dx, int dy) {
 		double theta = angle / 180 * CV_PI;
 
 		// create a transformation matrix
