@@ -206,7 +206,6 @@ namespace util {
 		// resize x2
 		cv::Mat img2;
 		cv::resize(img, img2, cv::Size(img.cols * 2, img.rows * 2), 0, 0, cv::INTER_NEAREST);
-		cv::imwrite("test.png", img2);
 
 		// add padding
 		cv::Mat padded(img2.rows + 1, img2.cols + 1, CV_8U, cv::Scalar(0));
