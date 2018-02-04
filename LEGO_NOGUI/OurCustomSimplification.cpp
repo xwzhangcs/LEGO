@@ -3,200 +3,36 @@
 
 namespace simp {
 
-	OurCustomSimplification::OurCustomSimplification(const std::vector<cv::Mat>& voxel_data, int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-		this->voxel_data = voxel_data;
-		this->resolution = resolution;
-		this->layering_threshold = layering_threshold;
-		this->snap_vertex_threshold = snap_vertex_threshold;
-		this->snap_edge_threshold = snap_edge_threshold;
-		this->size = cv::Size(voxel_data[0].cols, voxel_data[0].rows);
-	}
-
-	void OurCustomSimplification::simplify(std::vector<Building>& buildings) {
-		buildings.clear();
-
-		std::vector<util::Polygon> polygons = util::findContours(voxel_data[5]);
-		for (int i = 0; i < polygons.size(); i++) {
-			calculateBuilding(NULL, polygons[i], 5, -1, -1, -1, buildings);
-		}
-
-		std::cout << "Processing buildings has been finished." << std::endl;
-	}
-
-	void OurCustomSimplification::calculateBuilding(Building* parent, const util::Polygon& polygon, int height, double angle, int dx, int dy, std::vector<Building>& buildings) {
-		// calculate the bounding box
-		cv::Rect bbox = util::boundingBox(polygon.contour);
-
-		// have 1px as margin
-		bbox.x = std::max(0, bbox.x - 1);
-		bbox.y = std::max(0, bbox.y - 1);
-		bbox.width = std::min(size.width - bbox.x, bbox.width + 2);
-		bbox.height = std::min(size.height - bbox.y, bbox.height + 2);
-
-		// find the height at which the contour drastically changes
-		int next_height = findDrasticChange(height, polygon, layering_threshold);
-
-		// calculate building by simplifying the contour and holes
-		try {
-			Building building = calculateBuildingComponent(parent, polygon, height, next_height, angle, dx, dy);
-			buildings.push_back(building);
-
-			if (next_height >= voxel_data.size()) return;
-
-			// extract contours
-			std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[next_height], bbox));
-
-			for (int i = 0; i < polygons.size(); i++) {
-				// offset back the contour and holes
-				polygons[i].translate(bbox.x, bbox.y);
-
-				// check if the next contour is mostly within the contour
-				int cnt_total = 0;
-				int cnt_outside = 0;
-				cv::Rect next_bbox = util::boundingBox(polygons[i].contour);
-				for (int j = 0; j < 100; j++) {
-					cv::Point pt;
-					bool found = false;
-					for (int k = 0; k < 100; k++) {
-						pt = cv::Point(rand() % next_bbox.width + next_bbox.x, rand() % next_bbox.height + next_bbox.y);
-						if (pointPolygonTest(polygons[i].contour, pt, false) >= 0) {
-							found = true;
-							break;
-						}
-					}
-
-					if (found) {
-						cnt_total++;
-						if (pointPolygonTest(polygon.contour, pt, false) < 0) cnt_outside++;
-					}
-				}
-
-				if (cnt_outside < cnt_total / 2) {
-					// for upper layers, recursive call this function to construct building components
-					calculateBuilding(&building, polygons[i], next_height, angle, dx, dy, buildings);
-				}
-			}
-		}
-		catch (const char* ex) {
-		}
-	}
-
 	/**
-	* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
+	* Simplify the footprint of the layer.
+	*
+	* @param slices	slice images of the layer
+	* @param epsilon	simplification parameter
+	* @return			simplified footprint
 	*/
-	Building OurCustomSimplification::calculateBuildingComponent(Building* parent, const util::Polygon& polygon, int bottom_height, int top_height, double& angle, int& dx, int& dy) {
-		// calculate the bounding box
-		cv::Rect bbox = util::boundingBox(polygon.contour);
 
-		// have 1px as margin
-		bbox.x = std::max(0, bbox.x - 1);
-		bbox.y = std::max(0, bbox.y - 1);
-		bbox.width = std::min(size.width - bbox.x - 1, bbox.width + 2);
-		bbox.height = std::min(size.height - bbox.y - 1, bbox.height + 2);
-
-		// select the best slice that has the best IOU with all the slices in the layer
-		double best_iou = 0;
-		int best_slice = -1;
-		for (int i = bottom_height; i < top_height; i++) {
-			double iou = 0;
-			for (int j = bottom_height; j < top_height; j++) {
-				// calculate IOU
-				iou += util::calculateIOU(voxel_data[i], voxel_data[j], bbox);
-			}
-
-			if (iou > best_iou) {
-				best_iou = iou;
-				best_slice = i;
-			}
-		}
-
-		// extract contours in the specified region
-		std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[best_slice], bbox));
+	util::Polygon OurCustomSimplification::simplify(const cv::Mat& slice, int resolution, double& angle, int& dx, int& dy) {
+		// make sure there is a building in the layer
+		std::vector<util::Polygon> polygons = util::findContours(slice);
 		if (polygons.size() == 0) throw "No building is found.";
 
-		// select the polygon that is to be used for the building
-		cv::Mat polygon_img;
-		util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point(-bbox.x, -bbox.y), polygon_img);
-		best_iou = 0;
-		int polygon_index = -1;
-		for (int i = 0; i < polygons.size(); i++) {
-			cv::Mat img;
-			util::createImageFromPolygon(bbox.width, bbox.height, polygons[i], cv::Point(), img);
-			float iou = util::calculateIOU(polygon_img, img);
-			if (iou > best_iou) {
-				best_iou = iou;
-				polygon_index = i;
-			}
-		}
-
-		polygons[polygon_index].translate(bbox.x, bbox.y);
-
-		// simplify the selected polygon
-		util::Polygon simplified_polygon = simplifyPolygon(polygons[polygon_index], resolution, angle, dx, dy);
-		if (simplified_polygon.contour.size() < 3) throw "Invalid contour";
-		
-		// create a building object
-		Building building;
-		building.bottom_height = bottom_height;
-		building.top_height = top_height;
-
-		building.footprint.contour.resize(simplified_polygon.contour.size());
-		for (int i = 0; i < simplified_polygon.contour.size(); i++) {
-			building.footprint.contour[i] = cv::Point2f(simplified_polygon.contour[i].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.contour[i].y);
-		}
-
-		if (parent != NULL) {
-			util::snapPolygon(parent->footprint.contour, building.footprint.contour, snap_vertex_threshold, snap_edge_threshold);
-		}
-
-		// set holes
-		building.footprint.holes.resize(simplified_polygon.holes.size());
-		for (int i = 0; i < simplified_polygon.holes.size(); i++) {
-			building.footprint.holes[i].resize(simplified_polygon.holes[i].size());
-			for (int j = 0; j < simplified_polygon.holes[i].size(); j++) {
-				building.footprint.holes[i][j] = cv::Point2f(simplified_polygon.holes[i][j].x - size.width * 0.5, size.height * 0.5 - simplified_polygon.holes[i][j].y);
-			}
-		}
-
-		return building;
-	}
-
-	int OurCustomSimplification::findDrasticChange(int height, const util::Polygon& polygon, double threshold) {
-		// calculate the bounding box
-		cv::Rect bbox = util::boundingBox(polygon.contour);
-
-		for (int i = height + 1; i < voxel_data.size(); i++) {
-			double iou = util::calculateIOU(voxel_data[height], voxel_data[i], bbox);
-			if (iou < threshold) {
-				return i;
-			}
-
-			// if the number of contours becomes more than 1, it splits.
-			std::vector<util::Polygon> polygons = util::findContours(cv::Mat(voxel_data[i], bbox));
-			if (polygons.size() > 1) return i;
-		}
-
-		return voxel_data.size();
-	}
-
-	util::Polygon OurCustomSimplification::simplifyPolygon(const util::Polygon& polygon, double epsilon, double& angle, int& dx, int& dy) {
 		util::Polygon ans;
 
-		//std::vector<cv::Point2f> simplified_contour;
 		if (angle == -1) {
-			std::tuple<double, int, int> best_mat = simplify(polygon.contour, ans.contour, resolution);
+			std::tuple<double, int, int> best_mat = simplifyContour(polygons[0].contour, ans.contour, resolution);
 			angle = std::get<0>(best_mat);
 			dx = std::get<1>(best_mat);
 			dy = std::get<2>(best_mat);
 		}
 		else {
-			simplify(polygon.contour, ans.contour, resolution, angle, dx, dy);
+			simplifyContour(polygons[0].contour, ans.contour, resolution, angle, dx, dy);
 		}
+		if (ans.contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
 
 		// simplify the hole as well
-		for (int i = 0; i < polygon.holes.size(); i++) {
+		for (int i = 0; i < polygons[0].holes.size(); i++) {
 			std::vector<cv::Point2f> simplified_hole;
-			simplify(polygon.holes[i], simplified_hole, resolution);
+			simplifyContour(polygons[0].holes[i], simplified_hole, resolution);
 			if (simplified_hole.size() >= 3) {
 				ans.holes.push_back(simplified_hole);
 			}
@@ -216,7 +52,7 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<double, int, int> OurCustomSimplification::simplify(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution) {
+	std::tuple<double, int, int> OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -230,15 +66,19 @@ namespace simp {
 			for (int dx = 0; dx < resolution; dx++) {
 				for (int dy = 0; dy < resolution; dy++) {
 					std::vector<cv::Point2f> simplified_contour;
-					double cost = simplify(contour, simplified_contour, resolution, angle, dx, dy);
+					try {
+						double cost = simplifyContour(contour, simplified_contour, resolution, angle, dx, dy);
 
-					if (cost < min_cost) {
-						min_cost = cost;
-						best_angle = angle;
-						best_dx = dx;
-						best_dy = dy;
+						if (cost < min_cost) {
+							min_cost = cost;
+							best_angle = angle;
+							best_dx = dx;
+							best_dy = dy;
 
-						result = simplified_contour;
+							result = simplified_contour;
+						}
+					}
+					catch (...) {
 					}
 				}
 			}
@@ -257,7 +97,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double OurCustomSimplification::simplify(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy) {
+	double OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, double resolution, double angle, int dx, int dy) {
 		double theta = angle / 180 * CV_PI;
 
 		// create a transformation matrix
@@ -285,31 +125,38 @@ namespace simp {
 		for (int i = 0; i < aa_contour.size(); i++) {
 			small_aa_polygon[i] = cv::Point(aa_contour[i].x / resolution, aa_contour[i].y / resolution);
 		}
-
-		// skip the points that are redundant
-		std::vector<cv::Point> simplified_small_aa_contour = util::removeRedundantPoint(small_aa_polygon);
-
-		std::vector<cv::Point> simplified_small_aa_contour2;
-		for (int i = 0; i < simplified_small_aa_contour.size(); i++) {
-			int prev = (i - 1 + simplified_small_aa_contour.size()) % simplified_small_aa_contour.size();
-			int next = (i + 1) % simplified_small_aa_contour.size();
-			cv::Point v1 = simplified_small_aa_contour[i] - simplified_small_aa_contour[prev];
-			cv::Point v2 = simplified_small_aa_contour[next] - simplified_small_aa_contour[i];
-			if (std::abs(v1.x * v2.y - v1.y * v2.x) >= 1) {
-				simplified_small_aa_contour2.push_back(simplified_small_aa_contour[i]);
-			}
+		
+		// calculate the bounding box
+		cv::Point min_pt(INT_MAX, INT_MAX);
+		cv::Point max_pt(INT_MIN, INT_MIN);
+		for (int i = 0; i < small_aa_polygon.size(); i++) {
+			min_pt.x = std::min(min_pt.x, small_aa_polygon[i].x - 3);
+			min_pt.y = std::min(min_pt.y, small_aa_polygon[i].y - 3);
+			max_pt.x = std::max(max_pt.x, small_aa_polygon[i].x + 3);
+			max_pt.y = std::max(max_pt.y, small_aa_polygon[i].y + 3);
 		}
-		simplified_small_aa_contour2 = util::removeRedundantPoint(simplified_small_aa_contour2);
 
-		if (simplified_small_aa_contour2.size() < 3) {
-			result.clear();
-			return std::numeric_limits<double>::max();
-		}
+		cv::Mat img(max_pt.y - min_pt.y + 1, max_pt.x - min_pt.x + 1, CV_8U, cv::Scalar(0));
+
+		// draw a polygon
+		std::vector<std::vector<cv::Point>> polygons;
+		polygons.push_back(small_aa_polygon);
+		cv::fillPoly(img, polygons, cv::Scalar(255), cv::LINE_4, 0, cv::Point(-min_pt.x, -min_pt.y));
+
+		// dilate the image
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
+		cv::Mat inflated;
+		cv::dilate(img, img, kernel);
+
+		// extract a contour (my custom version)
+		std::vector<cv::Point> simplified_small_aa_contour;
+		util::findContour(img, simplified_small_aa_contour);
+		if (simplified_small_aa_contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
 
 		// offset back and scale up the simplified scale-down polygon
-		std::vector<cv::Point> simplified_aa_contour(simplified_small_aa_contour2.size());
-		for (int i = 0; i < simplified_small_aa_contour2.size(); i++) {
-			simplified_aa_contour[i] = cv::Point(simplified_small_aa_contour2[i].x * resolution, simplified_small_aa_contour2[i].y * resolution);
+		std::vector<cv::Point> simplified_aa_contour(simplified_small_aa_contour.size());
+		for (int i = 0; i < simplified_small_aa_contour.size(); i++) {
+			simplified_aa_contour[i] = cv::Point((simplified_small_aa_contour[i].x + min_pt.x) * resolution, (simplified_small_aa_contour[i].y + min_pt.y) * resolution);
 		}
 
 		// refine the simplified contour

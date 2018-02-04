@@ -4,41 +4,25 @@
 namespace simp {
 
 	/**
-	* Calculate the building geometry by simplifying the specified footprint and holes using OpenCV function.
-	*/
-	util::Polygon OpenCVSimplification::simplify(const std::vector<cv::Mat>& slices, float epsilon) {
-		// select the best slice that has the best IOU with all the slices in the layer
-		double best_iou = 0;
-		int best_slice = -1;
-		for (int i = 0; i < slices.size(); i++) {
-			double iou = 0;
-			for (int j = 0; j < slices.size(); j++) {
-				// calculate IOU
-				iou += util::calculateIOU(slices[i], slices[j]);
-			}
-
-			if (iou > best_iou) {
-				best_iou = iou;
-				best_slice = i;
-			}
-		}
-		
-		// extract contours in the specified region
-		std::vector<util::Polygon> polygons = util::findContours(slices[best_slice]);
+	 * Simplify the footprint of the layer.
+	 *
+	 * @param slices	slice images of the layer
+	 * @param epsilon	simplification parameter
+	 * @return			simplified footprint
+	 */
+	util::Polygon OpenCVSimplification::simplify(const cv::Mat& slice, float epsilon) {
+		// make sure there is a building in the layer
+		std::vector<util::Polygon> polygons = util::findContours(slice);
 		if (polygons.size() == 0) throw "No building is found.";
 
-		return simplifyPolygon(polygons[0], epsilon);
-	}
-
-	util::Polygon OpenCVSimplification::simplifyPolygon(const util::Polygon& polygon, double epsilon) {
 		util::Polygon ans;
-		cv::approxPolyDP(polygon.contour, ans.contour, epsilon, true);
-		if (ans.contour.size() < 3) ans.contour = polygon.contour;
+		cv::approxPolyDP(polygons[0].contour, ans.contour, epsilon, true);
+		if (ans.contour.size() < 3) ans.contour = polygons[0].contour;
 	
 		// simplify the hole as well
-		for (int i = 0; i < polygon.holes.size(); i++) {
+		for (int i = 0; i < polygons[0].holes.size(); i++) {
 			std::vector<cv::Point2f> simplified_hole;
-			cv::approxPolyDP(polygon.holes[i], simplified_hole, epsilon, true);
+			cv::approxPolyDP(polygons[0].holes[i], simplified_hole, epsilon, true);
 			if (simplified_hole.size() >= 3) {
 				ans.holes.push_back(simplified_hole);
 			}

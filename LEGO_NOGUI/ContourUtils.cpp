@@ -89,7 +89,7 @@ namespace util {
 		}
 		if (ans.size() > 1 && ans.back() == ans.front()) ans.pop_back();
 
-		for (int i = 0; i < ans.size(); ) {
+		for (int i = 0; i < ans.size() && ans.size() >= 3; ) {
 			int prev = (i - 1 + ans.size()) % ans.size();
 			int next = (i + 1) % ans.size();
 			if (dotProduct(ans[i] - ans[prev], ans[next] - ans[i]) > 0 && std::abs(crossProduct(ans[i] - ans[prev], ans[next] - ans[i])) < 0.0001) {
@@ -115,7 +115,7 @@ namespace util {
 		}
 		if (ans.size() > 1 && ans.back() == ans.front()) ans.pop_back();
 
-		for (int i = 0; i < ans.size();) {
+		for (int i = 0; i < ans.size() && ans.size() >= 3;) {
 			int prev = (i - 1 + ans.size()) % ans.size();
 			int next = (i + 1) % ans.size();
 			if (dotProduct(ans[i] - ans[prev], ans[next] - ans[i]) > 0 && std::abs(crossProduct(ans[i] - ans[prev], ans[next] - ans[i])) < 0.0001) {

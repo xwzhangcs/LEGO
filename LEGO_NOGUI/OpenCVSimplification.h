@@ -12,10 +12,7 @@ namespace simp {
 		OpenCVSimplification() {}
 
 	public:
-		static util::Polygon simplify(const std::vector<cv::Mat>& slices, float epsilon);
-
-	private:
-		static util::Polygon simplifyPolygon(const util::Polygon& polygon, double epsilon);
+		static util::Polygon simplify(const cv::Mat& slice, float epsilon);
 	};
 
 }

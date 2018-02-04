@@ -34,6 +34,7 @@ int main(int argc, const char* argv[]) {
 
 	simp::BuildingSimplification sim(disjointed_voxel_data, 0.8, 1, 0.5);
 	std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildingsByOpenCV(1);
+	//std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildingsByOurCustom(4);
 
 	util::ply::PlyWriter::write(argv[2], buildings);
 

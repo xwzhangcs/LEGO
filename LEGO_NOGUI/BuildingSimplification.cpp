@@ -3,6 +3,7 @@
 #include "ContourUtils.h"
 #include "LayerVoxelData.h"
 #include "OpenCVSimplification.h"
+#include "OurCustomSimplification.h"
 
 namespace simp {
 
@@ -54,7 +55,10 @@ namespace simp {
 				util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
 				std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 
-				std::shared_ptr<Building> building = simplifyBuildingByOpenCV(layer, resolution);
+				double angle = -1;
+				int dx = -1;
+				int dy = -1;
+				std::shared_ptr<Building> building = simplifyBuildingByOurCustom(layer, resolution, angle, dx, dy);
 				buildings.push_back(building);
 			}
 			catch (...) {
@@ -76,7 +80,8 @@ namespace simp {
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
-		util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->slices, epsilon);
+		int slice_id = selectRepresentativeSlice(layer->slices);
+		util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->slices[slice_id], epsilon);
 		cv::Mat_<float> mat = (cv::Mat_<float>(2, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
@@ -101,19 +106,20 @@ namespace simp {
 	 * @param resolution	simplification level
 	 * @return				simplified building shape
 	 */
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution) {
+	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution, double angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
-		util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->slices, resolution);
+		int slice_id = selectRepresentativeSlice(layer->slices);
+		util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->slices[slice_id], resolution, angle, dx, dy);
 		cv::Mat_<float> mat = (cv::Mat_<float>(2, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(layer->children[i], resolution);
+				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(layer->children[i], resolution, angle, dx, dy);
 				util::snapPolygon(building->footprint.contour, child->footprint.contour, snap_vertex_threshold, snap_edge_threshold);
 				building->children.push_back(child);
 			}
@@ -123,5 +129,27 @@ namespace simp {
 
 		return building;
 	}
-	
+
+	/**
+	 * Select the representative slice that has the best IOU with all the slices in the layer.
+	 */
+	int BuildingSimplification::selectRepresentativeSlice(const std::vector<cv::Mat>& slices) {
+		double best_iou = 0;
+		int best_slice = -1;
+		for (int i = 0; i < slices.size(); i++) {
+			double iou = 0;
+			for (int j = 0; j < slices.size(); j++) {
+				// calculate IOU
+				iou += util::calculateIOU(slices[i], slices[j]);
+			}
+
+			if (iou > best_iou) {
+				best_iou = iou;
+				best_slice = i;
+			}
+		}
+
+		return best_slice;
+	}
+
 }
