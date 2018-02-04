@@ -203,24 +203,33 @@ namespace util {
 	std::vector<Polygon> findContours(const cv::Mat& img) {
 		std::vector<Polygon> ans;
 
-		// resize x4
+		// resize x2
 		cv::Mat img2;
-		cv::resize(img, img2, cv::Size(img.cols * 4, img.rows * 4), 0, 0, cv::INTER_NEAREST);
+		cv::resize(img, img2, cv::Size(img.cols * 2, img.rows * 2), 0, 0, cv::INTER_NEAREST);
+		cv::imwrite("test.png", img2);
+
+		// add padding
+		cv::Mat padded(img2.rows + 1, img2.cols + 1, CV_8U, cv::Scalar(0));
+		img2.copyTo(padded(cv::Rect(0, 0, img2.cols, img2.rows)));
+
+		// dilate image
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
+		cv::dilate(padded, padded, kernel);
 		
 		// extract contours
 		std::vector<std::vector<cv::Point>> contours;
 		std::vector<cv::Vec4i> hierarchy;
-		cv::findContours(img2, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+		cv::findContours(padded, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
 
 		for (int i = 0; i < hierarchy.size(); i++) {
 			if (hierarchy[i][3] != -1) continue;
 			if (contours[i].size() < 3) continue;
 
 			Polygon polygon;
-			std::vector<cv::Point2f> contour = addCornerToOpenCVContour(contours[i], img2);
+			std::vector<cv::Point2f> contour = addCornerToOpenCVContour(contours[i], padded);
 			polygon.contour.resize(contour.size());
 			for (int j = 0; j < contour.size(); j++) {
-				polygon.contour[j] = cv::Point2f(contour[j].x * 0.25, contour[j].y * 0.25);
+				polygon.contour[j] = cv::Point2f(contour[j].x * 0.5, contour[j].y * 0.5);
 			}
 			
 			if (polygon.contour.size() >= 3) {
@@ -229,7 +238,7 @@ namespace util {
 				while (hole_id != -1) {
 					std::vector<cv::Point2f> hole = addCornerToOpenCVContour(contours[hole_id], img2);
 					for (int j = 0; j < hole.size(); j++) {
-						hole[j] = cv::Point2f(hole[j].x * 0.25, hole[j].y * 0.25);
+						hole[j] = cv::Point2f(hole[j].x * 0.5, hole[j].y * 0.5);
 					}
 					polygon.holes.push_back(hole);
 					hole_id = hierarchy[hole_id][0];
@@ -257,7 +266,17 @@ namespace util {
 				if (img.at<uchar>(p.y, p.x) == 255) ans.push_back(p);
 				else {
 					cv::Point2f p(polygon[i].x, polygon[next].y);
-					ans.push_back(p);
+					if (img.at<uchar>(p.y, p.x) == 255) ans.push_back(p);
+					else {
+						cv::Point2f p(std::max(polygon[i].x, polygon[next].x), std::min(polygon[i].y, polygon[next].y));
+						if ((p.x != polygon[i].x || p.y != polygon[i].y) && (p.x != polygon[next].x || p.y != polygon[next].y)) {
+							ans.push_back(p);
+						}
+						else {
+							cv::Point2f p(std::min(polygon[i].x, polygon[next].x), std::min(polygon[i].y, polygon[next].y));
+							ans.push_back(p);
+						}
+					}
 				}
 			}
 		}

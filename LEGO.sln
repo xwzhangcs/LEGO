@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LEGO", "LEGO\LEGO.vcxproj",
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LEGO_NOGUI", "LEGO_NOGUI\LEGO_NOGUI.vcxproj", "{A84953E3-4DFB-4479-9C1B-022F9487F2EA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LEGO_Test", "LEGO_Test\LEGO_Test.vcxproj", "{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -41,6 +43,18 @@ Global
 		{A84953E3-4DFB-4479-9C1B-022F9487F2EA}.Release|Win32.Build.0 = Release|Win32
 		{A84953E3-4DFB-4479-9C1B-022F9487F2EA}.Release|x64.ActiveCfg = Release|x64
 		{A84953E3-4DFB-4479-9C1B-022F9487F2EA}.Release|x64.Build.0 = Release|x64
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Debug|Win32.ActiveCfg = Debug|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Debug|Win32.Build.0 = Debug|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Debug|x64.ActiveCfg = Debug|x64
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Debug|x64.Build.0 = Debug|x64
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Release|Win32.ActiveCfg = Release|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Release|Win32.Build.0 = Release|Win32
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Release|x64.ActiveCfg = Release|x64
+		{580F97B3-CFD3-4D64-9DC6-6D75ACF7B012}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
