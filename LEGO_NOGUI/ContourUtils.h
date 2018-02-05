@@ -32,13 +32,13 @@ namespace util {
 
 	cv::Rect boundingBox(const std::vector<cv::Point>& polygon);
 	cv::Rect boundingBox(const std::vector<cv::Point2f>& polygon);
-	double calculateIOU(const cv::Mat& img, const cv::Mat& img2);
-	double calculateIOU(const cv::Mat& img1, const cv::Mat& img2, const cv::Rect& rect);
-	std::vector<Polygon> findContours(const cv::Mat& img);
-	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat& img);
-	void findContour(const cv::Mat& img, std::vector<cv::Point>& contour);
-	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat& result);
-	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat& result);
+	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2);
+	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
+	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img);
+	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img);
+	void findContour(const cv::Mat_<uchar>& img, std::vector<cv::Point>& contour);
+	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result);
+	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat_<uchar>& result);
 
 	void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold);
 	float dotProduct(const cv::Point2f& v1, const cv::Point2f& v2);

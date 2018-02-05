@@ -3,6 +3,28 @@
 
 namespace util {
 
+	/**
+	 * Select the representative slice that has the best IOU with all the slices in the layer.
+	 */
+	cv::Mat_<uchar> Layer::selectRepresentativeSlice() {
+		double best_iou = 0;
+		int best_slice = -1;
+		for (int i = 0; i < slices.size(); i++) {
+			double iou = 0;
+			for (int j = 0; j < slices.size(); j++) {
+				// calculate IOU
+				iou += util::calculateIOU(slices[i], slices[j]);
+			}
+
+			if (iou > best_iou) {
+				best_iou = iou;
+				best_slice = i;
+			}
+		}
+
+		return slices[best_slice];
+	}
+
 	LayerVoxelData::LayerVoxelData(const std::vector<cv::Mat_<uchar>>& voxel_data, float threshold) {
 		this->voxel_data = voxel_data;
 		this->threshold = 255 * threshold;
@@ -33,7 +55,7 @@ namespace util {
 
 		if (height >= voxel_data.size() - 1) return;
 
-		std::vector<cv::Mat> next_slices;
+		std::vector<cv::Mat_<uchar>> next_slices;
 
 		int cluster_id = 1;
 		for (int r = 0; r < voxel_data[height + 1].rows; r++) {
@@ -65,18 +87,35 @@ namespace util {
 		}
 	}
 
-	void LayerVoxelData::createSlice(cv::Mat slice, cv::Mat_<int> cluster, int cluster_id, cv::Mat& next_slice) {
-		next_slice = cv::Mat(slice.size(), CV_8U, cv::Scalar(0));
+	/**
+	 * Create a slice of the specified cluster id based on the cluster data.
+	 *
+	 * @param slice			original slice image
+	 * @param cluster		cluster data
+	 * @param cluster_id	specified cluster id
+	 * @param slice			output slice image
+	 */
+	void LayerVoxelData::createSlice(const cv::Mat_<uchar>& original_slice, cv::Mat_<int> cluster, int cluster_id, cv::Mat_<uchar>& slice) {
+		slice = cv::Mat_<uchar>::zeros(original_slice.size());
 
-		for (int r = 0; r < slice.rows; r++) {
-			for (int c = 0; c < slice.cols; c++) {
+		for (int r = 0; r < original_slice.rows; r++) {
+			for (int c = 0; c < original_slice.cols; c++) {
 				if (cluster(r, c) == cluster_id) {
-					next_slice.at<uchar>(r, c) = slice.at<uchar>(r, c);
+					slice(r, c) = original_slice(r, c);
 				}
 			}
 		}
 	}
 
+	/**
+	 * Traverse the pixels of the slice that have values over a threshold and are not visited yet.
+	 *
+	 * @param cluster		save the clustering information
+	 * @param cluster_id	current cluster id
+	 * @param slice			slice image
+	 * @param r				row of current pixel
+	 * @param c				column of current pixel
+	 */
 	void LayerVoxelData::traverse(cv::Mat_<int>& cluster, int cluster_id, const cv::Mat_<uchar>& slice, int r, int c) {
 		std::queue<std::pair<int, int>> Q;
 		Q.push(std::make_pair(r, c));
@@ -87,7 +126,7 @@ namespace util {
 			int r = t.first;
 			int c = t.second;
 
-			if (slice.at<uchar>(r, c) >= threshold && cluster(r, c) == 0) {
+			if (slice(r, c) >= threshold && cluster(r, c) == 0) {
 				cluster(r, c) = cluster_id;
 
 				if (r > 0) {
@@ -106,11 +145,11 @@ namespace util {
 		}
 	}
 
-	int LayerVoxelData::countVoxel(const cv::Mat& slice) {
+	int LayerVoxelData::countVoxel(const cv::Mat_<uchar>& slice) {
 		int voxel_cnt = 0;
 		for (int r = 0; r < slice.rows; r++) {
 			for (int c = 0; c < slice.cols; c++) {
-				voxel_cnt += slice.at<uchar>(r, c);
+				voxel_cnt += slice(r, c);
 			}
 		}
 		return voxel_cnt;

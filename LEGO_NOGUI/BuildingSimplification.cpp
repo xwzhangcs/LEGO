@@ -80,8 +80,7 @@ namespace simp {
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
-		int slice_id = selectRepresentativeSlice(layer->slices);
-		util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->slices[slice_id], epsilon);
+		util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), epsilon);
 		cv::Mat_<float> mat = (cv::Mat_<float>(2, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
@@ -111,8 +110,7 @@ namespace simp {
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
-		int slice_id = selectRepresentativeSlice(layer->slices);
-		util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->slices[slice_id], resolution, angle, dx, dy);
+		util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->selectRepresentativeSlice(), resolution, angle, dx, dy);
 		cv::Mat_<float> mat = (cv::Mat_<float>(2, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
@@ -128,28 +126,6 @@ namespace simp {
 		}
 
 		return building;
-	}
-
-	/**
-	 * Select the representative slice that has the best IOU with all the slices in the layer.
-	 */
-	int BuildingSimplification::selectRepresentativeSlice(const std::vector<cv::Mat>& slices) {
-		double best_iou = 0;
-		int best_slice = -1;
-		for (int i = 0; i < slices.size(); i++) {
-			double iou = 0;
-			for (int j = 0; j < slices.size(); j++) {
-				// calculate IOU
-				iou += util::calculateIOU(slices[i], slices[j]);
-			}
-
-			if (iou > best_iou) {
-				best_iou = iou;
-				best_slice = i;
-			}
-		}
-
-		return best_slice;
 	}
 
 }

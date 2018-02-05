@@ -217,7 +217,7 @@ namespace simp {
 		}
 
 		// create the image of the input contour
-		cv::Mat img;
+		cv::Mat_<uchar> img;
 		util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, contour, cv::Point(-min_x, -min_y), img);
 
 		// list up the parameters
@@ -249,7 +249,7 @@ namespace simp {
 				prop_x_map[it->first]++;
 				if ((next_it != x_map.end() && prop_x_map[it->first] <= prop_x_map[next_it->first]) || (next_it == x_map.end() && prop_x_map[it->first] <= max_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
-					cv::Mat img2;
+					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
 					double score = util::calculateIOU(img, img2);
 					if (score > best_score) {
@@ -264,7 +264,7 @@ namespace simp {
 				prop_x_map[it->first]--;
 				if ((prev_it != x_map.end() && prop_x_map[it->first] >= prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
-					cv::Mat img2;
+					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
 					double score = util::calculateIOU(img, img2);
 					if (score > best_score) {
@@ -287,7 +287,7 @@ namespace simp {
 				prop_y_map[it->first]++;
 				if ((next_it != y_map.end() && prop_y_map[it->first] <= prop_y_map[next_it->first]) || (next_it == y_map.end() && prop_y_map[it->first] <= max_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
-					cv::Mat img2;
+					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
 					double score = util::calculateIOU(img, img2);
 					if (score > best_score) {
@@ -302,7 +302,7 @@ namespace simp {
 				prop_y_map[it->first]--;
 				if ((prev_it != y_map.end() && prop_y_map[it->first] >= prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
-					cv::Mat img2;
+					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
 					double score = util::calculateIOU(img, img2);
 					if (score > best_score) {

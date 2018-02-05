@@ -50,7 +50,7 @@ namespace util {
 			int r = std::get<1>(t);
 			int c = std::get<2>(t);
 
-			if (voxel_data[slice_id].at<uchar>(r, c) >= 255 * threshold && clustered_voxel_data[slice_id](r, c) == 0) {
+			if (voxel_data[slice_id](r, c) >= 255 * threshold && clustered_voxel_data[slice_id](r, c) == 0) {
 				clustered_voxel_data[slice_id](r, c) = cluster_id;
 
 				if (r > 0) {

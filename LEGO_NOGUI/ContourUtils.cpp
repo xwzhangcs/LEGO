@@ -163,7 +163,7 @@ namespace util {
 	* Calculate the intersection over union (IOU) inside the specified roi.
 	* The images have to be CV_8U type.
 	*/
-	double calculateIOU(const cv::Mat& img, const cv::Mat& img2) {
+	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2) {
 		int union_cnt = 0;
 		int inter_cnt = 0;
 		for (int r = 0; r < img.rows; r++) {
@@ -181,7 +181,7 @@ namespace util {
 	* The images have to be CV_8U type.
 	* Check the IOU only within the specified region, rect.
 	*/
-	double calculateIOU(const cv::Mat& img1, const cv::Mat& img2, const cv::Rect& rect) {
+	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect) {
 		int union_cnt = 0;
 		int inter_cnt = 0;
 
@@ -200,15 +200,15 @@ namespace util {
 	 * The image has to be of type CV_8U, and has values either 0 or 255.
 	 * Note that the input image is not modified by this function.
 	 */
-	std::vector<Polygon> findContours(const cv::Mat& img) {
+	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img) {
 		std::vector<Polygon> ans;
 
 		// resize x2
-		cv::Mat img2;
+		cv::Mat_<uchar> img2;
 		cv::resize(img, img2, cv::Size(img.cols * 2, img.rows * 2), 0, 0, cv::INTER_NEAREST);
 
 		// add padding
-		cv::Mat padded(img2.rows + 1, img2.cols + 1, CV_8U, cv::Scalar(0));
+		cv::Mat_<uchar> padded = cv::Mat_<uchar>::zeros(img2.rows + 1, img2.cols + 1);
 		img2.copyTo(padded(cv::Rect(0, 0, img2.cols, img2.rows)));
 
 		// dilate image
@@ -250,7 +250,7 @@ namespace util {
 		return ans;
 	}
 
-	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat& img) {
+	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img) {
 		std::vector<cv::Point2f> ans;
 		
 		for (int i = 0; i < polygon.size(); i++) {
@@ -291,7 +291,7 @@ namespace util {
 	 * @param img		input single-channel image (0 - background, 255 - footprint)
 	 * @param contour	output contour polygon
 	 */
-	void findContour(const cv::Mat& img, std::vector<cv::Point>& contour) {
+	void findContour(const cv::Mat_<uchar>& img, std::vector<cv::Point>& contour) {
 		contour.clear();
 
 		// find the start point
@@ -383,15 +383,15 @@ namespace util {
 	/**
 	 * Create image from the contour.
 	 */
-	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat& result) {
-		result = cv::Mat(height, width, CV_8U, cv::Scalar(0));
+	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result) {
+		result = cv::Mat_<uchar>::zeros(height, width);
 		std::vector<std::vector<cv::Point>> contour_points(1);
 		contour_points[0] = contour;
 		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, offset);
 	}
 
-	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat& result) {
-		result = cv::Mat(height, width, CV_8U, cv::Scalar(0));
+	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat_<uchar>& result) {
+		result = cv::Mat_<uchar>::zeros(height, width);
 		std::vector<std::vector<cv::Point>> contour_points(1 + polygon.holes.size());
 
 		contour_points[0].resize(polygon.contour.size());
