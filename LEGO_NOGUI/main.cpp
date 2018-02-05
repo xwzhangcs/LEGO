@@ -32,9 +32,9 @@ int main(int argc, const char* argv[]) {
 
 	std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data = util::DisjointVoxelData::disjoint(voxel_data, 0.5);
 
-	simp::BuildingSimplification sim(disjointed_voxel_data, 0.8f, 1, 1);
-	std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildingsByOpenCV(1);
-	//std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildingsByOurCustom(4);
+	simp::BuildingSimplification sim(disjointed_voxel_data, 0.8f, 1, 1, 1, 4);
+	std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_OPENCV);
+	//std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_RIGHTANGLE);
 
 	util::ply::PlyWriter::write(argv[2], buildings);
 

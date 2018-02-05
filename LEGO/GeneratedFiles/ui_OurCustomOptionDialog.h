@@ -41,6 +41,8 @@ public:
         if (OurCustomOptionDialog->objectName().isEmpty())
             OurCustomOptionDialog->setObjectName(QStringLiteral("OurCustomOptionDialog"));
         OurCustomOptionDialog->resize(246, 172);
+        OurCustomOptionDialog->setMinimumSize(QSize(246, 172));
+        OurCustomOptionDialog->setMaximumSize(QSize(246, 172));
         label = new QLabel(OurCustomOptionDialog);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(20, 10, 61, 21));

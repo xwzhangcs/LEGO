@@ -38,6 +38,9 @@ public:
     QAction *actionInputVoxel;
     QAction *actionSaveImage;
     QAction *actionSaveImageHD;
+    QAction *actionSameColor;
+    QAction *actionColoringByBuilding;
+    QAction *actionColoringByLayer;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -86,6 +89,16 @@ public:
         actionSaveImage->setObjectName(QStringLiteral("actionSaveImage"));
         actionSaveImageHD = new QAction(MainWindowClass);
         actionSaveImageHD->setObjectName(QStringLiteral("actionSaveImageHD"));
+        actionSameColor = new QAction(MainWindowClass);
+        actionSameColor->setObjectName(QStringLiteral("actionSameColor"));
+        actionSameColor->setCheckable(true);
+        actionSameColor->setChecked(true);
+        actionColoringByBuilding = new QAction(MainWindowClass);
+        actionColoringByBuilding->setObjectName(QStringLiteral("actionColoringByBuilding"));
+        actionColoringByBuilding->setCheckable(true);
+        actionColoringByLayer = new QAction(MainWindowClass);
+        actionColoringByLayer->setObjectName(QStringLiteral("actionColoringByLayer"));
+        actionColoringByLayer->setCheckable(true);
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -115,6 +128,10 @@ public:
         menuFile->addAction(actionSaveImage);
         menuFile->addSeparator();
         menuFile->addAction(actionExit);
+        menuRendering->addAction(actionSameColor);
+        menuRendering->addAction(actionColoringByBuilding);
+        menuRendering->addAction(actionColoringByLayer);
+        menuRendering->addSeparator();
         menuRendering->addAction(actionRenderingBasic);
         menuRendering->addAction(actionRenderingSSAO);
         menuRendering->addAction(actionRenderingHatching);
@@ -146,6 +163,9 @@ public:
         actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));
         actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "P", 0));
         actionSaveImageHD->setText(QApplication::translate("MainWindowClass", "Save Image HD", 0));
+        actionSameColor->setText(QApplication::translate("MainWindowClass", "Same Color", 0));
+        actionColoringByBuilding->setText(QApplication::translate("MainWindowClass", "Coloring by Building", 0));
+        actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));

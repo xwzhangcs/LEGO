@@ -38,6 +38,10 @@
     <property name="title">
      <string>Rendering</string>
     </property>
+    <addaction name="actionSameColor"/>
+    <addaction name="actionColoringByBuilding"/>
+    <addaction name="actionColoringByLayer"/>
+    <addaction name="separator"/>
     <addaction name="actionRenderingBasic"/>
     <addaction name="actionRenderingSSAO"/>
     <addaction name="actionRenderingHatching"/>
@@ -157,6 +161,33 @@
   <action name="actionSaveImageHD">
    <property name="text">
     <string>Save Image HD</string>
+   </property>
+  </action>
+  <action name="actionSameColor">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Same Color</string>
+   </property>
+  </action>
+  <action name="actionColoringByBuilding">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Coloring by Building</string>
+   </property>
+  </action>
+  <action name="actionColoringByLayer">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Coloring by Layer</string>
    </property>
   </action>
  </widget>

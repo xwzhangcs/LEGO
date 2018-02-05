@@ -24,6 +24,7 @@ public slots:
 	void onInputVoxel();
 	void onSimplifyByOpenCV();
 	void onSimplifyByOurCustom();
+	void onColoringModeChanged();
 	void onRenderingModeChanged();
 };
 

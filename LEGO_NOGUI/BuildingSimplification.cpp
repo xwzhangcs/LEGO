@@ -7,7 +7,7 @@
 
 namespace simp {
 
-	BuildingSimplification::BuildingSimplification(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data, float layering_threshold, float snap_vertex_threshold, float snap_edge_threshold) {
+	BuildingSimplification::BuildingSimplification(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data, float layering_threshold, float snap_vertex_threshold, float snap_edge_threshold, int epsilon, int resolution) {
 		this->disjointed_voxel_data = disjointed_voxel_data;
 		if (disjointed_voxel_data.size() > 0 && disjointed_voxel_data[0].size() > 0) {
 			this->size = cv::Size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
@@ -15,39 +15,11 @@ namespace simp {
 		this->layering_threshold = layering_threshold;
 		this->snap_vertex_threshold = snap_vertex_threshold;
 		this->snap_edge_threshold = snap_edge_threshold;
+		this->epsilon = epsilon;
+		this->resolution = resolution;
 	}
 
-	/**
-	* Simplify all the buildings.
-	*
-	* @param epsilon	simplification level
-	* @return			simplified buildings
-	*/
-	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildingsByOpenCV(float epsilon) {
-		std::vector<std::shared_ptr<Building>> buildings;
-
-		for (int i = 0; i < disjointed_voxel_data.size(); i++) {
-			try {
-				util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
-				std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
-			
-				std::shared_ptr<Building> building = simplifyBuildingByOpenCV(layer, epsilon);
-				buildings.push_back(building);
-			}
-			catch (...) {
-			}
-		}
-
-		return buildings;
-	}
-
-	/**
-	 * Simplify all the buildings.
-	 *
-	 * @param resolution	simplification level
-	 * @return				simplified buildings
-	 */
-	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildingsByOurCustom(int resolution) {
+	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(int algorithm) {
 		std::vector<std::shared_ptr<Building>> buildings;
 
 		for (int i = 0; i < disjointed_voxel_data.size(); i++) {
@@ -55,10 +27,20 @@ namespace simp {
 				util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
 				std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 
-				float angle = -1;
-				int dx = -1;
-				int dy = -1;
-				std::shared_ptr<Building> building = simplifyBuildingByOurCustom(layer, resolution, angle, dx, dy);
+				std::shared_ptr<Building> building;
+				if (algorithm == ALG_OPENCV) {
+					building = simplifyBuildingByOpenCV(layer, epsilon);
+				}
+				else if (algorithm == ALG_RIGHTANGLE) {
+					float angle = -1;
+					int dx = -1;
+					int dy = -1;
+					building = simplifyBuildingByOurCustom(layer, resolution, angle, dx, dy);
+				}
+				else if (algorithm == ALG_CURVE) {
+					// not implemented yet
+				}
+
 				buildings.push_back(building);
 			}
 			catch (...) {

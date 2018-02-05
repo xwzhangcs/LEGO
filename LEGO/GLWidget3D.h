@@ -19,6 +19,10 @@ class GLWidget3D : public QGLWidget {
 	Q_OBJECT
 
 public:
+	static enum { SHOW_INPUT = 0, SHOW_OPENCV, SHOW_RIGHTANGLE };
+	static enum { COLOR_SAME = 0, COLOR_BY_BUILDING, COLOR_BY_LAYER };
+
+public:
 	MainWindow* mainWin;
 
 	// camera
@@ -34,6 +38,8 @@ public:
 
 	// rendering engine
 	RenderManager renderManager;
+	int color_mode;
+	int show_mode;
 	
 	// key status
 	bool shiftPressed;
@@ -52,11 +58,11 @@ public:
 	void showInputVoxel();
 	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data);
+	void update3DGeometry();
 	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
-	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, std::vector<Vertex>& vertices);
+	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);
 	void update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings);
-	void update3DGeometry(std::shared_ptr<simp::Building> building, std::vector<Vertex>& vertices);
+	void update3DGeometry(std::shared_ptr<simp::Building> building, glm::vec4& color, std::vector<Vertex>& vertices);
 
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);

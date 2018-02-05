@@ -8,18 +8,22 @@
 namespace simp {
 	
 	class BuildingSimplification {
+	public:
+		static enum { ALG_OPENCV = 0, ALG_RIGHTANGLE, ALG_CURVE };
+
 	private:
 		cv::Size size;
 		std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
 		float layering_threshold;
 		float snap_vertex_threshold;
 		float snap_edge_threshold;
+		int epsilon;
+		int resolution;
 
 	public:
-		BuildingSimplification(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data, float layering_threshold, float snap_vertex_threshold, float snap_edge_threshold);
+		BuildingSimplification(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data, float layering_threshold, float snap_vertex_threshold, float snap_edge_threshold, int epsilon, int resolution);
 
-		std::vector<std::shared_ptr<Building>> simplifyBuildingsByOpenCV(float epsilon);
-		std::vector<std::shared_ptr<Building>> simplifyBuildingsByOurCustom(int resolution);
+		std::vector<std::shared_ptr<Building>> simplifyBuildings(int algorithm);
 
 	private:
 		std::shared_ptr<Building> simplifyBuildingByOpenCV(std::shared_ptr<util::Layer> layer, float epsilon);

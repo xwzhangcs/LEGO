@@ -41,6 +41,8 @@ public:
         if (OpenCVOptionDialog->objectName().isEmpty())
             OpenCVOptionDialog->setObjectName(QStringLiteral("OpenCVOptionDialog"));
         OpenCVOptionDialog->resize(246, 180);
+        OpenCVOptionDialog->setMinimumSize(QSize(246, 180));
+        OpenCVOptionDialog->setMaximumSize(QSize(246, 180));
         label = new QLabel(OpenCVOptionDialog);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(20, 10, 47, 21));

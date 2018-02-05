@@ -9,6 +9,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
 
 	// group for rendering modes
+	QActionGroup* groupColoring = new QActionGroup(this);
+	groupColoring->addAction(ui.actionSameColor);
+	groupColoring->addAction(ui.actionColoringByBuilding);
+	groupColoring->addAction(ui.actionColoringByLayer);
+
+	// group for rendering modes
 	QActionGroup* groupRendering = new QActionGroup(this);
 	groupRendering->addAction(ui.actionRenderingBasic);
 	groupRendering->addAction(ui.actionRenderingSSAO);
@@ -21,6 +27,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
 	connect(ui.actionSimplifyByOpenCV, SIGNAL(triggered()), this, SLOT(onSimplifyByOpenCV()));
 	connect(ui.actionSimplifyByOurCustom, SIGNAL(triggered()), this, SLOT(onSimplifyByOurCustom()));
+	connect(ui.actionSameColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
+	connect(ui.actionColoringByBuilding, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
+	connect(ui.actionColoringByLayer, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingSSAO, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingHatching, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
@@ -82,6 +91,20 @@ void MainWindow::onSimplifyByOurCustom() {
 		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
+}
+
+void MainWindow::onColoringModeChanged() {
+	if (ui.actionSameColor->isChecked()) {
+		glWidget->color_mode = GLWidget3D::COLOR_SAME;
+	}
+	else if (ui.actionColoringByBuilding->isChecked()) {
+		glWidget->color_mode = GLWidget3D::COLOR_BY_BUILDING;
+	}
+	else if (ui.actionColoringByLayer->isChecked()) {
+		glWidget->color_mode = GLWidget3D::COLOR_BY_LAYER;
+	}
+	glWidget->update3DGeometry();
+	glWidget->update();
 }
 
 void MainWindow::onRenderingModeChanged() {

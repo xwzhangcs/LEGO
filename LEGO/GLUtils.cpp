@@ -746,7 +746,7 @@ namespace glutils {
 		}
 	}
 
-	void drawBox(float length_x, float length_y, float length_z, glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
+	void drawBox(float length_x, float length_y, float length_z, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
 		glm::vec3 p1(mat * glm::vec4(-length_x * 0.5, -length_y * 0.5, -length_z * 0.5, 1));
 		glm::vec3 p2(mat * glm::vec4(length_x * 0.5, -length_y * 0.5, -length_z * 0.5, 1));
 		glm::vec3 p3(mat * glm::vec4(length_x * 0.5, length_y * 0.5, -length_z * 0.5, 1));

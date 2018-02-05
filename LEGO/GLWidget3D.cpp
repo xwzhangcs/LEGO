@@ -35,6 +35,9 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 
 	// spot light
 	spot_light_pos = glm::vec3(2, 2.5, 3);
+
+	color_mode = COLOR_SAME;
+	show_mode = SHOW_INPUT;
 }
 
 /**
@@ -320,8 +323,8 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 		catch (...) {}
 	}
 	
-	//update3DGeometry(disjointed_voxel_data);
-	update3DGeometry(layers);
+	show_mode = SHOW_INPUT;
+	update3DGeometry();
 }
 
 void GLWidget3D::savePLY(const QString& filename) {
@@ -334,51 +337,32 @@ void GLWidget3D::saveImage(const QString& filename) {
 }
 
 void GLWidget3D::showInputVoxel() {
-	update3DGeometry(disjointed_voxel_data);
+	update3DGeometry(layers);
 }
 
 void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
-	buildings = sim.simplifyBuildingsByOpenCV(epsilon);
+	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold, epsilon, 4);
+	buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_OPENCV);
 
-	update3DGeometry(buildings);
+	show_mode = SHOW_OPENCV;
+	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold);
-	buildings = sim.simplifyBuildingsByOurCustom(resolution);
+	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold, 1, resolution);
+	buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_RIGHTANGLE);
 
-	update3DGeometry(buildings);
+	show_mode = SHOW_RIGHTANGLE;
+	update3DGeometry();
 }
 
-void GLWidget3D::update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data) {
-	renderManager.removeObjects();
-
-	if (disjointed_voxel_data.size() > 0 && disjointed_voxel_data[0].size() > 0) {
-		cv::Size size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
-
-		std::vector<Vertex> vertices;
-		for (int bid = 0; bid < disjointed_voxel_data.size(); bid++) {
-			glm::vec4 color((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
-
-			for (int slice_id = 0; slice_id < disjointed_voxel_data[bid].size(); slice_id++) {
-				for (int y = 0; y < disjointed_voxel_data[bid][slice_id].rows; y++) {
-					for (int x = 0; x < disjointed_voxel_data[bid][slice_id].cols; x++) {
-						if (disjointed_voxel_data[bid][slice_id](y, x) < 128) continue;
-						glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width * 0.5, size.height * 0.5 - y - 0.5, slice_id + 0.5)), vertices);
-					}
-				}
-			}
-		}
-		renderManager.addObject("building", "", vertices, true);
+void GLWidget3D::update3DGeometry() {
+	if (show_mode == SHOW_INPUT) {
+		update3DGeometry(layers);
 	}
-
-	std::vector<Vertex> vertices2;
-	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::mat4(), vertices2);
-	renderManager.addObject("ground", "", vertices2, true);
-
-	// update shadow map
-	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+	else {
+		update3DGeometry(buildings);
+	}
 }
 
 void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers) {
@@ -386,10 +370,14 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Layer>
 
 	if (layers.size() > 0 && layers[0]->slices.size() > 0) {
 		cv::Size size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
+		glm::vec4 color(0.7, 1, 0.7, 1);
 
 		std::vector<Vertex> vertices;
 		for (int i = 0; i < layers.size(); i++) {
-			update3DGeometry(layers[i], size, vertices);
+			if (color_mode == COLOR_BY_BUILDING) {
+				color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+			}
+			update3DGeometry(layers[i], size, color, vertices);
 		}
 		renderManager.addObject("building", "", vertices, true);
 	}
@@ -402,8 +390,10 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Layer>
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
 }
 
-void GLWidget3D::update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, std::vector<Vertex>& vertices) {
-	glm::vec4 color((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+void GLWidget3D::update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices) {
+	if (color_mode == COLOR_BY_LAYER) {
+		color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+	}
 
 	for (int slice_id = 0; slice_id < layer->slices.size(); slice_id++) {
 		for (int y = 0; y < layer->slices[slice_id].rows; y++) {
@@ -415,16 +405,21 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::
 	}
 
 	for (int i = 0; i < layer->children.size(); i++) {
-		update3DGeometry(layer->children[i], size, vertices);
+		update3DGeometry(layer->children[i], size, color, vertices);
 	}
 }
 
 void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings) {
 	renderManager.removeObjects();
 
+	glm::vec4 color(0.7, 1, 0.7, 1);
+
 	std::vector<Vertex> vertices;
 	for (int i = 0; i < buildings.size(); i++) {
-		update3DGeometry(buildings[i], vertices);
+		if (color_mode == COLOR_BY_BUILDING) {
+			color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+		}
+		update3DGeometry(buildings[i], color, vertices);
 	}
 	renderManager.addObject("building", "", vertices, true);
 
@@ -437,7 +432,11 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Buildi
 }
 
 
-void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, std::vector<Vertex>& vertices) {
+void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm::vec4& color, std::vector<Vertex>& vertices) {
+	if (color_mode == COLOR_BY_LAYER) {
+		color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+	}
+
 	std::vector<glm::dvec2> footprint(building->footprint.contour.size());
 	for (int j = 0; j < building->footprint.contour.size(); j++) {
 		footprint[j] = glm::dvec2(building->footprint.contour[j].x, building->footprint.contour[j].y);
@@ -451,14 +450,14 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, std:
 	}
 
 	if (building->footprint.holes.size() == 0) {
-		glutils::drawPrism(footprint, building->top_height - building->bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+		glutils::drawPrism(footprint, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
 	}
 	else {
-		glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, glm::vec4(0.8, 1, 0.8, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+		glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
 	}
 
 	for (int i = 0; i < building->children.size(); i++) {
-		update3DGeometry(building->children[i], vertices);
+		update3DGeometry(building->children[i], color, vertices);
 	}
 }
 
