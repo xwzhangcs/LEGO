@@ -310,7 +310,18 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 
 	disjointed_voxel_data = util::DisjointVoxelData::disjoint(voxel_data, 0.5);
 
-	update3DGeometry(disjointed_voxel_data);
+	layers.clear();
+	for (int i = 0; i < disjointed_voxel_data.size(); i++) {
+		try {
+			util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
+			std::shared_ptr<util::Layer> layer = lvd.layering(0.8);
+			layers.push_back(layer);
+		}
+		catch (...) {}
+	}
+	
+	//update3DGeometry(disjointed_voxel_data);
+	update3DGeometry(layers);
 }
 
 void GLWidget3D::savePLY(const QString& filename) {
@@ -343,24 +354,24 @@ void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold, 
 void GLWidget3D::update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data) {
 	renderManager.removeObjects();
 
-	if (disjointed_voxel_data.size() == 0 || disjointed_voxel_data[0].size() == 0) return;
+	if (disjointed_voxel_data.size() > 0 && disjointed_voxel_data[0].size() > 0) {
+		cv::Size size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
 
-	QSize size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
+		std::vector<Vertex> vertices;
+		for (int bid = 0; bid < disjointed_voxel_data.size(); bid++) {
+			glm::vec4 color((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
 
-	std::vector<Vertex> vertices;
-	for (int bid = 0; bid < disjointed_voxel_data.size(); bid++) {
-		glm::vec4 color((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
-
-		for (int slice_id = 0; slice_id < disjointed_voxel_data[bid].size(); slice_id++) {
-			for (int y = 0; y < disjointed_voxel_data[bid][slice_id].rows; y++) {
-				for (int x = 0; x < disjointed_voxel_data[bid][slice_id].cols; x++) {
-					if (disjointed_voxel_data[bid][slice_id](y, x) < 128) continue;
-					glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width() * 0.5, size.height() * 0.5 - y - 0.5, slice_id + 0.5)), vertices);
+			for (int slice_id = 0; slice_id < disjointed_voxel_data[bid].size(); slice_id++) {
+				for (int y = 0; y < disjointed_voxel_data[bid][slice_id].rows; y++) {
+					for (int x = 0; x < disjointed_voxel_data[bid][slice_id].cols; x++) {
+						if (disjointed_voxel_data[bid][slice_id](y, x) < 128) continue;
+						glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width * 0.5, size.height * 0.5 - y - 0.5, slice_id + 0.5)), vertices);
+					}
 				}
 			}
 		}
+		renderManager.addObject("building", "", vertices, true);
 	}
-	renderManager.addObject("building", "", vertices, true);
 
 	std::vector<Vertex> vertices2;
 	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::mat4(), vertices2);
@@ -368,6 +379,44 @@ void GLWidget3D::update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>
 
 	// update shadow map
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+}
+
+void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers) {
+	renderManager.removeObjects();
+
+	if (layers.size() > 0 && layers[0]->slices.size() > 0) {
+		cv::Size size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
+
+		std::vector<Vertex> vertices;
+		for (int i = 0; i < layers.size(); i++) {
+			update3DGeometry(layers[i], size, vertices);
+		}
+		renderManager.addObject("building", "", vertices, true);
+	}
+
+	std::vector<Vertex> vertices2;
+	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, 0)), vertices2);
+	renderManager.addObject("ground", "", vertices2, true);
+
+	// update shadow map
+	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+}
+
+void GLWidget3D::update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, std::vector<Vertex>& vertices) {
+	glm::vec4 color((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
+
+	for (int slice_id = 0; slice_id < layer->slices.size(); slice_id++) {
+		for (int y = 0; y < layer->slices[slice_id].rows; y++) {
+			for (int x = 0; x < layer->slices[slice_id].cols; x++) {
+				if (layer->slices[slice_id](y, x) < 128) continue;
+				glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width * 0.5, size.height * 0.5 - y - 0.5, layer->bottom_height + slice_id + 0.5)), vertices);
+			}
+		}
+	}
+
+	for (int i = 0; i < layer->children.size(); i++) {
+		update3DGeometry(layer->children[i], size, vertices);
+	}
 }
 
 void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings) {
@@ -386,6 +435,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Buildi
 	// update shadow map
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
 }
+
 
 void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, std::vector<Vertex>& vertices) {
 	std::vector<glm::dvec2> footprint(building->footprint.contour.size());

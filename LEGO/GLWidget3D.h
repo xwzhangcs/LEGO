@@ -11,6 +11,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "Building.h"
 #include "GLUtils.h"
+#include "LayerVoxelData.h"
 
 class MainWindow;
 
@@ -28,6 +29,7 @@ public:
 
 	// input voxel data
 	std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
+	std::vector<std::shared_ptr<util::Layer>> layers;
 	std::vector<std::shared_ptr<simp::Building>> buildings;
 
 	// rendering engine
@@ -51,6 +53,8 @@ public:
 	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void update3DGeometry(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data);
+	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
+	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, std::vector<Vertex>& vertices);
 	void update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings);
 	void update3DGeometry(std::shared_ptr<simp::Building> building, std::vector<Vertex>& vertices);
 
