@@ -12,6 +12,7 @@
 #include "Building.h"
 #include "GLUtils.h"
 #include "LayerVoxelData.h"
+#include "DisjointVoxelData.h"
 
 class MainWindow;
 
@@ -32,7 +33,8 @@ public:
 	glm::vec3 spot_light_pos;
 
 	// input voxel data
-	std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
+	util::DisjointVoxelData disjoint_voxel_data;
+	//std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
 	std::vector<std::shared_ptr<util::Layer>> layers;
 	std::vector<std::shared_ptr<simp::Building>> buildings;
 

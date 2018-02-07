@@ -7,35 +7,31 @@
 
 namespace simp {
 
-	BuildingSimplification::BuildingSimplification(const std::vector<std::vector<cv::Mat_<uchar>>>& disjointed_voxel_data, float layering_threshold, float snap_vertex_threshold, float snap_edge_threshold, int epsilon, int resolution) {
-		this->disjointed_voxel_data = disjointed_voxel_data;
-		if (disjointed_voxel_data.size() > 0 && disjointed_voxel_data[0].size() > 0) {
-			this->size = cv::Size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
-		}
-		this->layering_threshold = layering_threshold;
-		this->snap_vertex_threshold = snap_vertex_threshold;
-		this->snap_edge_threshold = snap_edge_threshold;
-		this->epsilon = epsilon;
-		this->resolution = resolution;
-	}
-
-	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(int algorithm) {
-		std::vector<std::shared_ptr<Building>> buildings;
-
+	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int algorithm, float layering_threshold, float snap_vertex_threshold, float snap_edge_threshold, int epsilon, int resolution) {
+		std::vector<std::shared_ptr<simp::Building>> buildings;
 		for (int i = 0; i < disjointed_voxel_data.size(); i++) {
 			try {
-				util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
+				std::vector<cv::Mat_<uchar>> voxel_data = disjointed_voxel_data.getDisjointedVoxelData(i);
+
+				util::LayerVoxelData lvd(voxel_data, 0.5);
+
+				// obtain the XY dimension of the voxel data
+				cv::Size size;
+				if (voxel_data.size() > 0) {
+					size = cv::Size(voxel_data[0].cols, voxel_data[0].rows);
+				}
+
 				std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 
 				std::shared_ptr<Building> building;
 				if (algorithm == ALG_OPENCV) {
-					building = simplifyBuildingByOpenCV(layer, epsilon);
+					building = simplifyBuildingByOpenCV(size, layer, snap_vertex_threshold, snap_edge_threshold, epsilon);
 				}
 				else if (algorithm == ALG_RIGHTANGLE) {
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
-					building = simplifyBuildingByOurCustom(layer, resolution, angle, dx, dy);
+					building = simplifyBuildingByOurCustom(size, layer, snap_vertex_threshold, snap_edge_threshold, resolution, angle, dx, dy);
 				}
 				else if (algorithm == ALG_CURVE) {
 					// not implemented yet
@@ -43,8 +39,7 @@ namespace simp {
 
 				buildings.push_back(building);
 			}
-			catch (...) {
-			}
+			catch (...) {}
 		}
 
 		return buildings;
@@ -57,7 +52,7 @@ namespace simp {
 	 * @param epsilon	simplification level
 	 * @return			simplified building shape
 	 */
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOpenCV(std::shared_ptr<util::Layer> layer, float epsilon) {
+	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOpenCV(const cv::Size& size, std::shared_ptr<util::Layer> layer, float snap_vertex_threshold, float snap_edge_threshold, float epsilon) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -69,7 +64,7 @@ namespace simp {
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<Building> child = simplifyBuildingByOpenCV(layer->children[i], epsilon);
+				std::shared_ptr<Building> child = simplifyBuildingByOpenCV(size, layer->children[i], snap_vertex_threshold, snap_edge_threshold, epsilon);
 				util::snapPolygon(building->footprint.contour, child->footprint.contour, snap_vertex_threshold, snap_edge_threshold);
 				building->children.push_back(child);
 			}
@@ -87,7 +82,7 @@ namespace simp {
 	 * @param resolution	simplification level
 	 * @return				simplified building shape
 	 */
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(std::shared_ptr<util::Layer> layer, int resolution, float angle, int dx, int dy) {
+	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(const cv::Size& size, std::shared_ptr<util::Layer> layer, float snap_vertex_threshold, float snap_edge_threshold, int resolution, float angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -99,7 +94,7 @@ namespace simp {
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(layer->children[i], resolution, angle, dx, dy);
+				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(size, layer->children[i], snap_vertex_threshold, snap_edge_threshold, resolution, angle, dx, dy);
 				util::snapPolygon(building->footprint.contour, child->footprint.contour, snap_vertex_threshold, snap_edge_threshold);
 				building->children.push_back(child);
 			}

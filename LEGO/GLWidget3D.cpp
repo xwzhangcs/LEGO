@@ -311,12 +311,15 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
-	disjointed_voxel_data = util::DisjointVoxelData::disjoint(voxel_data, 0.5);
-
+	disjoint_voxel_data.disjoint(voxel_data, 0.5);
+	
+	//disjointed_voxel_data.resize(disjoint_voxel_data.size());
 	layers.clear();
-	for (int i = 0; i < disjointed_voxel_data.size(); i++) {
+	for (int i = 0; i < disjoint_voxel_data.size(); i++) {
+		std::vector<cv::Mat_<uchar>> voxel_data = disjoint_voxel_data.getDisjointedVoxelData(i);
+
 		try {
-			util::LayerVoxelData lvd(disjointed_voxel_data[i], 0.5);
+			util::LayerVoxelData lvd(voxel_data, 0.5);
 			std::shared_ptr<util::Layer> layer = lvd.layering(0.8);
 			layers.push_back(layer);
 		}
@@ -341,16 +344,14 @@ void GLWidget3D::showInputVoxel() {
 }
 
 void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold, epsilon, 4);
-	buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_OPENCV);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, layering_threshold, snap_vertex_threshold, snap_edge_threshold, epsilon, 4);
 
 	show_mode = SHOW_OPENCV;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	simp::BuildingSimplification sim(disjointed_voxel_data, layering_threshold, snap_vertex_threshold, snap_edge_threshold, 1, resolution);
-	buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_RIGHTANGLE);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_RIGHTANGLE, layering_threshold, snap_vertex_threshold, snap_edge_threshold, 1, resolution);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
@@ -369,7 +370,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Layer>
 	renderManager.removeObjects();
 
 	if (layers.size() > 0 && layers[0]->slices.size() > 0) {
-		cv::Size size(disjointed_voxel_data[0][0].cols, disjointed_voxel_data[0][0].rows);
+		cv::Size size(disjoint_voxel_data.voxel_data[0].cols, disjoint_voxel_data.voxel_data[0].rows);
 		glm::vec4 color(0.7, 1, 0.7, 1);
 
 		std::vector<Vertex> vertices;

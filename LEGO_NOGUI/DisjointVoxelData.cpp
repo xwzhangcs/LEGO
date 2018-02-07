@@ -2,9 +2,14 @@
 
 namespace util {
 
-	std::vector<std::vector<cv::Mat_<uchar>>> DisjointVoxelData::disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data, float threshold) {
+	DisjointVoxelData::DisjointVoxelData() {
+	}
+	
+	void DisjointVoxelData::disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data, float threshold) {
+		this->voxel_data = voxel_data;
+
 		// initialize clustering data
-		std::vector<cv::Mat_<int>> clustered_voxel_data(voxel_data.size());
+		clustered_voxel_data.resize(voxel_data.size());
 		for (int i = 0; i < voxel_data.size(); i++) {
 			clustered_voxel_data[i] = cv::Mat_<int>::zeros(voxel_data[i].size());
 		}
@@ -21,16 +26,18 @@ namespace util {
 			}
 		}
 
-		std::vector<std::vector<cv::Mat_<uchar>>> ans(cluster_id - 1);
-		for (int i = 0; i < ans.size(); i++) {
-			ans[i].resize(voxel_data.size());
-			for (int slice_id = 0; slice_id < voxel_data.size(); slice_id++) {
-				ans[i][slice_id] = cv::Mat(voxel_data[slice_id].size(), CV_8U, cv::Scalar(0));
-				for (int r = 0; r < clustered_voxel_data[slice_id].rows; r++) {
-					for (int c = 0; c < clustered_voxel_data[slice_id].cols; c++) {
-						if (clustered_voxel_data[slice_id](r, c) == i + 1) {
-							ans[i][slice_id](r, c) = voxel_data[slice_id](r, c);
-						}
+		num_buildings = cluster_id - 1;
+	}
+
+	std::vector<cv::Mat_<uchar>> DisjointVoxelData::getDisjointedVoxelData(int building_id) const {
+		std::vector<cv::Mat_<uchar>> ans(voxel_data.size());
+
+		for (int slice_id = 0; slice_id < ans.size(); slice_id++) {
+			ans[slice_id] = cv::Mat(voxel_data[slice_id].size(), CV_8U, cv::Scalar(0));
+			for (int r = 0; r < clustered_voxel_data[slice_id].rows; r++) {
+				for (int c = 0; c < clustered_voxel_data[slice_id].cols; c++) {
+					if (clustered_voxel_data[slice_id](r, c) == building_id + 1) {
+						ans[slice_id](r, c) = voxel_data[slice_id](r, c);
 					}
 				}
 			}

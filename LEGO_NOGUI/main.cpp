@@ -30,12 +30,10 @@ int main(int argc, const char* argv[]) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
-	std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data = util::DisjointVoxelData::disjoint(voxel_data, 0.5);
+	util::DisjointVoxelData dvd;
+	dvd.disjoint(voxel_data, 0.5);
 
-	simp::BuildingSimplification sim(disjointed_voxel_data, 0.8f, 1, 1, 1, 4);
-	std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_OPENCV);
-	//std::vector<std::shared_ptr<simp::Building>> buildings = sim.simplifyBuildings(simp::BuildingSimplification::ALG_RIGHTANGLE);
-
+	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, simp::BuildingSimplification::ALG_OPENCV, 0.8, 1.0, 1.0, 1, 4);
 	util::ply::PlyWriter::write(argv[2], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
