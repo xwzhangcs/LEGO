@@ -15,9 +15,9 @@ namespace util {
 				writeBuilding(buildings[i], vertices_map, vertices, faces);
 			}
 
-			std::ofstream out(filename);
+			std::ofstream out(filename, std::ios::binary);
 			out << "ply" << std::endl;
-			out << "format ascii 1.0" << std::endl;
+			out << "format binary_little_endian 1.0" << std::endl;
 			out << "element vertex " << vertices.size() << std::endl;
 			out << "property double x" << std::endl;
 			out << "property double y" << std::endl;
@@ -28,16 +28,18 @@ namespace util {
 			
 			// write vertices
 			for (int i = 0; i < vertices.size(); i++) {
-				out << vertices[i].x << " " << vertices[i].y << " " << vertices[i].z << std::endl;
+				out.write((char*)&vertices[i].x, sizeof(double));
+				out.write((char*)&vertices[i].y, sizeof(double));
+				out.write((char*)&vertices[i].z, sizeof(double));
 			}
 
 			// write faces
 			for (int i = 0; i < faces.size(); i++) {
-				out << faces[i].size();
+				uchar s = faces[i].size();
+				out.write((char*)&s, sizeof(uchar));
 				for (int j = 0; j < faces[i].size(); j++) {
-					out << " " << faces[i][j];
+					out.write((char*)&faces[i][j], sizeof(int));
 				}
-				out << std::endl;
 			}
 
 			out.close();
