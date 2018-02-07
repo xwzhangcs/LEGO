@@ -9,7 +9,7 @@ namespace simp {
 	
 	class BuildingSimplification {
 	public:
-		static enum { ALG_OPENCV = 0, ALG_RIGHTANGLE, ALG_CURVE };
+		enum ALGORITHM { ALG_OPENCV = 0, ALG_RIGHTANGLE, ALG_CURVE };
 
 	private:
 		cv::Size size;
