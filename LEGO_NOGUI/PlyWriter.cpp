@@ -48,11 +48,19 @@ namespace util {
 		void PlyWriter::writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces) {
 			std::vector<std::vector<cv::Point2f>> polygons;
 
-			if (building->footprint.holes.size() == 0) {
-				polygons = tessellate(building->footprint.contour);
+			if (building->footprint.rectangles.size() == 0) {
+				if (building->footprint.holes.size() == 0) {
+					polygons = tessellate(building->footprint.contour);
+				}
+				else {
+					polygons = tessellate(building->footprint.contour, building->footprint.holes);
+				}
 			}
 			else {
-				polygons = tessellate(building->footprint.contour, building->footprint.holes);
+				for (int i = 0; i < building->footprint.rectangles.size(); i++) {
+					std::vector<cv::Point2f> points = building->footprint.rectangles[i].getActualPoints();
+					polygons.push_back(points);
+				}
 			}
 
 			for (auto polygon : polygons) {
@@ -93,8 +101,8 @@ namespace util {
 			}
 			
 			// side faces
-			std::vector<cv::Point2f> polygon = building->footprint.contour;
-			util::counterClockwise(polygon);
+			util::Ring polygon = building->footprint.contour.getActualPoints();
+			polygon.counterClockwise();
 			for (int i = 0; i < polygon.size(); i++) {
 				int next = (i + 1) % polygon.size();
 				Point3d p1(polygon[i].x, polygon[i].y, building->bottom_height);
@@ -106,8 +114,9 @@ namespace util {
 			}
 
 			// side faces of holes
-			for (auto hole : building->footprint.holes) {
-				util::clockwise(hole);
+			for (int hid = 0; hid < building->footprint.holes.size(); hid++) {
+				Ring hole = building->footprint.holes[hid].getActualPoints();
+				hole.clockwise();
 				for (int i = 0; i < hole.size(); i++) {
 					int next = (i + 1) % hole.size();
 					Point3d p1(hole[i].x, hole[i].y, building->bottom_height);
@@ -124,7 +133,7 @@ namespace util {
 			}
 		}
 
-		std::vector<std::vector<cv::Point2f>> PlyWriter::tessellate(const std::vector<cv::Point2f>& points) {
+		std::vector<std::vector<cv::Point2f>> PlyWriter::tessellate(const Ring& points) {
 			std::vector<std::vector<cv::Point2f>> ans;
 
 			Polygon_2 polygon;
@@ -156,7 +165,7 @@ namespace util {
 			return ans;
 		}
 
-		std::vector<std::vector<cv::Point2f>> PlyWriter::tessellate(const std::vector<cv::Point2f>& points, const std::vector<std::vector<cv::Point2f>>& holes) {
+		std::vector<std::vector<cv::Point2f>> PlyWriter::tessellate(const Ring& points, const std::vector<Ring>& holes) {
 			std::vector<std::vector<cv::Point2f>> ans;
 
 			//Insert the polygons into a constrained triangulation

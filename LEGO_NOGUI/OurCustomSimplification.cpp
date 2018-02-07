@@ -31,15 +31,21 @@ namespace simp {
 
 		// simplify the hole as well
 		for (int i = 0; i < polygons[0].holes.size(); i++) {
-			std::vector<cv::Point2f> simplified_hole;
-			simplifyContour(polygons[0].holes[i], simplified_hole, resolution);
+			util::Ring simplified_hole;
+			simplifyContour(polygons[0].holes[i], simplified_hole, resolution, angle, dx, dy);
 			if (simplified_hole.size() >= 3) {
 				ans.holes.push_back(simplified_hole);
 			}
 		}
 
+		// The transfomration matrix should be same for the external contour and the internal holes
+		ans.mat = ans.contour.mat;
+
 		// ToDo:
 		// Should we check if the holes are inside the contour?
+
+		// tesselate the polygon
+		decomposePolygonIntoRectangles(ans);
 
 		return ans;
 	}
@@ -52,7 +58,7 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<float, int, int> OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, int resolution) {
+	std::tuple<float, int, int> OurCustomSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -65,7 +71,7 @@ namespace simp {
 
 			for (int dx = 0; dx < resolution; dx++) {
 				for (int dy = 0; dy < resolution; dy++) {
-					std::vector<cv::Point2f> simplified_contour;
+					util::Ring simplified_contour;
 					try {
 						double cost = simplifyContour(contour, simplified_contour, resolution, angle, dx, dy);
 
@@ -97,20 +103,20 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double OurCustomSimplification::simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, int resolution, float angle, int dx, int dy) {
+	double OurCustomSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy) {
 		double theta = angle / 180 * CV_PI;
 
 		// create a transformation matrix
-		cv::Mat_<double> M = (cv::Mat_<double>(3, 3) << cos(theta), -sin(theta), dx, sin(theta), cos(theta), dy, 0, 0, 1);
+		cv::Mat_<float> M = (cv::Mat_<float>(3, 3) << cos(theta), -sin(theta), dx, sin(theta), cos(theta), dy, 0, 0, 1);
 
 		// create inverse transformation matrix
-		cv::Mat_<double> invM = M.inv();
+		cv::Mat_<float> invM = M.inv();
 
 		// transform the polygon
 		std::vector<cv::Point2f> aa_contour(contour.size());
 		for (int i = 0; i < contour.size(); i++) {
-			cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << contour[i].x, contour[i].y, 1);
-			cv::Mat_<double> p2 = M * p;
+			cv::Mat_<float> p = (cv::Mat_<float>(3, 1) << contour[i].x, contour[i].y, 1);
+			cv::Mat_<float> p2 = M * p;
 			aa_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
 		}
 
@@ -177,12 +183,20 @@ namespace simp {
 		cost += simplified_aa_contour.size() * 0.2;
 
 		// transform back the simplified contour
+		util::Ring simplified_contour;
+		for (int i = 0; i < simplified_aa_contour.size(); i++) {
+			simplified_contour.points.push_back(simplified_aa_contour[i]);
+		}
+		simplified_contour.mat = invM;
+
+		/*
 		std::vector<cv::Point2f> simplified_contour(simplified_aa_contour.size());
 		for (int i = 0; i < simplified_aa_contour.size(); i++) {
 			cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << (double)simplified_aa_contour[i].x, (double)simplified_aa_contour[i].y, 1.0);
 			cv::Mat_<double> p2 = invM * p;
 			simplified_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
 		}
+		*/
 
 		result = simplified_contour;
 
@@ -334,6 +348,106 @@ namespace simp {
 			prop_contour[i] = cv::Point(x_map[contour[i].x], y_map[contour[i].y]);
 		}
 		return prop_contour;
+	}
+
+	void OurCustomSimplification::decomposePolygonIntoRectangles(util::Polygon& polygon) {
+		// list up all xy coordinates
+		std::map<float, bool> x_map;
+		std::map<float, bool> y_map;
+		for (int i = 0; i < polygon.contour.size(); i++) {
+			x_map[polygon.contour[i].x] = true;
+			y_map[polygon.contour[i].y] = true;
+		}
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			for (int j = 0; j < polygon.holes[i].size(); j++) {
+				x_map[polygon.holes[i][j].x] = true;
+				y_map[polygon.holes[i][j].y] = true;
+			}
+		}
+
+		// create vector of xy coordinates
+		std::vector<float> x_coords;
+		for (auto it = x_map.begin(); it != x_map.end(); it++) {
+			x_coords.push_back(it->first);
+		}
+		std::vector<float> y_coords;
+		for (auto it = y_map.begin(); it != y_map.end(); it++) {
+			y_coords.push_back(it->first);
+		}
+
+		/*
+		polygon.rectangles.clear();
+		for (int i = 0; i < x_coords.size() - 1; i++) {
+			for (int j = 0; j < y_coords.size() - 1; j++) {
+				if (util::withinPolygon(cv::Point2f((x_coords[i] + x_coords[i + 1]) * 0.5, (y_coords[j] + y_coords[j + 1]) * 0.5), polygon)) {
+					polygon.rectangles.push_back(util::Rectangle(polygon.mat, cv::Point2f(x_coords[i], y_coords[j]), cv::Point2f(x_coords[i + 1], y_coords[j + 1])));
+				}
+			}
+		}
+		*/
+
+		std::vector<std::vector<bool>> grid(y_coords.size() - 1, std::vector<bool>(x_coords.size() - 1, false));
+		int cell_count = 0;
+		for (int i = 0; i < x_coords.size() - 1; i++) {
+			for (int j = 0; j < y_coords.size() - 1; j++) {
+				if (util::withinPolygon(cv::Point2f((x_coords[i] + x_coords[i + 1]) * 0.5, (y_coords[j] + y_coords[j + 1]) * 0.5), polygon)) {
+					grid[j][i] = true;
+					cell_count++;
+				}
+			}
+		}
+
+		polygon.rectangles.clear();
+
+		while (cell_count > 0) {
+			int x, y, width, height;
+			findMaximumRectangle(grid, x_coords, y_coords, x, y, width, height);
+			
+			// update grid
+			for (int r = y; r < y + height; r++) {
+				for (int c = x; c < x + width; c++) {
+					grid[r][c] = false;
+				}
+			}
+			cell_count -= width * height;
+
+			polygon.rectangles.push_back(util::Rectangle(polygon.mat, cv::Point2f(x_coords[x], y_coords[y]), cv::Point2f(x_coords[x + width], y_coords[y + height])));
+		}
+	}
+
+	void OurCustomSimplification::findMaximumRectangle(const std::vector<std::vector<bool>>& grid, const std::vector<float>& x_coords, const std::vector<float>& y_coords, int& x, int& y, int& width, int& height) {
+		float max_area = 0;
+		
+		for (int r = 0; r < grid.size(); r++) {
+			for (int c = 0; c < grid[r].size(); c++) {
+
+				for (int r2 = r; r2 < grid.size(); r2++) {
+					if (!grid[r2][c]) break;
+
+					for (int c2 = c; c2 < grid[r2].size(); c2++) {
+						// check the validity
+						bool valid = true;
+						for (int r3 = r; r3 <= r2; r3++) {
+							if (!grid[r3][c2]) {
+								valid = false;
+								break;
+							}
+						}
+
+						if (!valid) break;
+
+						float area = (x_coords[c2 + 1] - x_coords[c]) * (y_coords[r2 + 1] - y_coords[r]);
+						if (area > max_area) {
+							max_area = area;
+							x = c;
+							y = r;
+							width = c2 - c + 1;
+							height = r2 - r + 1;
+						}
+					}
+				}
+			}
+		}
 	}
 
 }

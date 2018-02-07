@@ -1,55 +1,178 @@
 #include "ContourUtils.h"
 #include <iostream>
+#include <boost/polygon/polygon.hpp>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
 
 namespace util {
 	
-	void Polygon::translate(float x, float y) {
-		for (int i = 0; i < contour.size(); i++) {
-			contour[i].x += x;
-			contour[i].y += y;
-		}
-		for (int i = 0; i < holes.size(); i++) {
-			for (int j = 0; j < holes[i].size(); j++) {
-				holes[i][j].x += x;
-				holes[i][j].y += y;
-			}
+	Rectangle::Rectangle() {
+		mat = cv::Mat_<float>::eye(3, 3);
+	}
+
+	Rectangle::Rectangle(const cv::Mat_<float>& mat, const cv::Point2f& min_pt, const cv::Point2f& max_pt) {
+		this->mat = mat;
+		this->min_pt = min_pt;
+		this->max_pt = max_pt;
+	}
+
+	std::vector<cv::Point2f> Rectangle::getActualPoints() {
+		std::vector<cv::Point2f> ans;
+
+		cv::Mat_<float> p0 = (cv::Mat_<float>(3, 1) << min_pt.x, min_pt.y, 1);
+		cv::Mat_<float> q0 = mat * p0;
+		cv::Mat_<float> p1 = (cv::Mat_<float>(3, 1) << max_pt.x, min_pt.y, 1);
+		cv::Mat_<float> q1 = mat * p1;
+		cv::Mat_<float> p2 = (cv::Mat_<float>(3, 1) << max_pt.x, max_pt.y, 1);
+		cv::Mat_<float> q2 = mat * p2;
+		cv::Mat_<float> p3 = (cv::Mat_<float>(3, 1) << min_pt.x, max_pt.y, 1);
+		cv::Mat_<float> q3 = mat * p3;
+
+		ans.push_back(cv::Point2f(q0(0, 0), q0(1, 0)));
+		ans.push_back(cv::Point2f(q1(0, 0), q1(1, 0)));
+		ans.push_back(cv::Point2f(q2(0, 0), q2(1, 0)));
+		ans.push_back(cv::Point2f(q3(0, 0), q3(1, 0)));
+
+		return ans;
+	}
+
+	Ring::Ring() {
+		mat = cv::Mat_<float>::eye(3, 3);
+	}
+
+	const cv::Point2f& Ring::front() const {
+		return points.front();
+	}
+
+	cv::Point2f& Ring::front() {
+		return points.front();
+	}
+
+	const cv::Point2f& Ring::back() const {
+		return points.back();
+	}
+
+	cv::Point2f& Ring::back() {
+		return points.back();
+	}
+
+	std::vector<cv::Point2f>::iterator Ring::begin() {
+		return points.begin();
+	}
+
+	std::vector<cv::Point2f>::iterator Ring::end() {
+		return points.end();
+	}
+
+	size_t Ring::size() const {
+		return points.size();
+	}
+
+	void Ring::clear() {
+		points.clear();
+	}
+
+	void Ring::resize(size_t s) {
+		points.resize(s);
+	}
+
+	const cv::Point2f& Ring::operator[](int index) const {
+		return points[index];
+	}
+
+	cv::Point2f& Ring::operator[](int index) {
+		return points[index];
+	}
+
+	void Ring::push_back(const cv::Point2f& pt) {
+		points.push_back(pt);
+	}
+
+	void Ring::pop_back() {
+		points.pop_back();
+	}
+
+	void Ring::erase(std::vector<cv::Point2f>::iterator position) {
+		points.erase(position);
+	}
+
+	void Ring::translate(float x, float y) {
+		for (int i = 0; i < points.size(); i++) {
+			points[i].x += x;
+			points[i].y += y;
 		}
 	}
 
-	void Polygon::transform(cv::Mat m) {
-		for (int i = 0; i < contour.size(); i++) {
-			cv::Mat_<float> p = m * (cv::Mat_<float>(3, 1) << contour[i].x, contour[i].y, 1);
-			contour[i].x = p(0, 0);
-			contour[i].y = p(1, 0);
+	void Ring::transform(const cv::Mat_<float>& m) {
+		mat = m * mat;
+		/*
+		for (int i = 0; i < points.size(); i++) {
+			cv::Mat_<float> p = m * (cv::Mat_<float>(3, 1) << points[i].x, points[i].y, 1);
+			points[i].x = p(0, 0);
+			points[i].y = p(1, 0);
 		}
+		*/
+	}
+
+	void Ring::clockwise() {
+		if (!isClockwise(points)) {
+			std::reverse(points.begin(), points.end());
+		}
+	}
+
+	void Ring::counterClockwise() {
+		if (isClockwise(points)) {
+			std::reverse(points.begin(), points.end());
+		}
+	}
+
+	cv::Point2f Ring::getActualPoint(int index) {
+		cv::Mat_<float> pt = (cv::Mat_<float>(3, 1) << points[index].x, points[index].y, 1);
+		cv::Mat_<float> pt2 = mat * pt;
+
+		cv::Point2f ans;
+		ans.x = pt2(0, 0);
+		ans.y = pt2(1, 0);
+		return ans;
+	}
+
+	Ring Ring::getActualPoints() {
+		Ring ans;
+		ans.points.resize(points.size());
+		for (int i = 0; i < points.size(); i++) {
+			cv::Mat_<float> pt = (cv::Mat_<float>(3, 1) << points[i].x, points[i].y, 1);
+			cv::Mat_<float> pt2 = mat * pt;
+			ans.points[i].x = pt2(0, 0);
+			ans.points[i].y = pt2(1, 0);
+		}
+		return ans;
+	}
+
+	void Polygon::translate(float x, float y) {
+		contour.translate(x, y);
 		for (int i = 0; i < holes.size(); i++) {
-			for (int j = 0; j < holes[i].size(); j++) {
-				cv::Mat_<float> p = m * (cv::Mat_<float>(3, 1) << holes[i][j].x, holes[i][j].y, 1);
-				holes[i][j].x = p(0, 0);
-				holes[i][j].y = p(1, 0);
-			}
+			holes[i].translate(x, y);
+		}
+	}
+
+	void Polygon::transform(const cv::Mat_<float>& m) {
+		contour.transform(m);
+		for (int i = 0; i < holes.size(); i++) {
+			holes[i].transform(m);
 		}
 	}
 
 	void Polygon::clockwise() {
-		if (!isClockwise(contour)) {
-			std::reverse(contour.begin(), contour.end());
-		}
+		contour.clockwise();
 		for (int i = 0; i < holes.size(); i++) {
-			if (!isClockwise(holes[i])) {
-				std::reverse(holes[i].begin(), holes[i].end());
-			}
+			holes[i].clockwise();
 		}
 	}
 
 	void Polygon::counterClockwise() {
-		if (isClockwise(contour)) {
-			std::reverse(contour.begin(), contour.end());
-		}
+		contour.counterClockwise();
 		for (int i = 0; i < holes.size(); i++) {
-			if (isClockwise(holes[i])) {
-				std::reverse(holes[i].begin(), holes[i].end());
-			}
+			holes[i].counterClockwise();
 		}
 	}
 
@@ -103,8 +226,8 @@ namespace util {
 		return ans;
 	}
 
-	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon) {
-		std::vector<cv::Point2f> ans;
+	Ring removeRedundantPoint(const Ring& polygon) {
+		Ring ans;
 		if (polygon.size() == 0) return ans;
 
 		ans.push_back(polygon[0]);
@@ -157,6 +280,26 @@ namespace util {
 		}
 
 		return cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1);
+	}
+
+	bool withinPolygon(const cv::Point2f& pt, const Polygon& polygon) {
+		if (!withinPolygon(pt, polygon.contour)) return false;
+
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			if (withinPolygon(pt, polygon.holes[i])) return false;
+		}
+
+		return true;
+	}
+
+	bool withinPolygon(const cv::Point2f& pt, const Ring& ring) {
+		boost::geometry::model::ring<boost::geometry::model::d2::point_xy<float>> contour;
+		for (int i = 0; i < ring.size(); ++i) {
+			contour.push_back(boost::geometry::model::d2::point_xy<float>(ring[i].x, ring[i].y));
+		}
+		boost::geometry::correct(contour);
+
+		return boost::geometry::within(boost::geometry::model::d2::point_xy<float>(pt.x, pt.y), contour);
 	}
 
 	/**
@@ -225,7 +368,7 @@ namespace util {
 			if (contours[i].size() < 3) continue;
 
 			Polygon polygon;
-			std::vector<cv::Point2f> contour = addCornerToOpenCVContour(contours[i], padded);
+			Ring contour = addCornerToOpenCVContour(contours[i], padded);
 			polygon.contour.resize(contour.size());
 			for (int j = 0; j < contour.size(); j++) {
 				polygon.contour[j] = cv::Point2f(contour[j].x * 0.5, contour[j].y * 0.5);
@@ -235,7 +378,7 @@ namespace util {
 				// obtain all the holes inside this contour
 				int hole_id = hierarchy[i][2];
 				while (hole_id != -1) {
-					std::vector<cv::Point2f> hole = addCornerToOpenCVContour(contours[hole_id], img2);
+					Ring hole = addCornerToOpenCVContour(contours[hole_id], img2);
 					for (int j = 0; j < hole.size(); j++) {
 						hole[j] = cv::Point2f(hole[j].x * 0.5, hole[j].y * 0.5);
 					}
@@ -250,8 +393,8 @@ namespace util {
 		return ans;
 	}
 
-	std::vector<cv::Point2f> addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img) {
-		std::vector<cv::Point2f> ans;
+	Ring addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img) {
+		Ring ans;
 		
 		for (int i = 0; i < polygon.size(); i++) {
 			ans.push_back(polygon[i]);

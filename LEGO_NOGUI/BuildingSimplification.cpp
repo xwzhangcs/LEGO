@@ -58,14 +58,14 @@ namespace simp {
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
 		util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), epsilon);
-		cv::Mat_<float> mat = (cv::Mat_<float>(2, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2);
+		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
 				std::shared_ptr<Building> child = simplifyBuildingByOpenCV(size, layer->children[i], snap_vertex_threshold, snap_edge_threshold, epsilon);
-				util::snapPolygon(building->footprint.contour, child->footprint.contour, snap_vertex_threshold, snap_edge_threshold);
+				util::snapPolygon(building->footprint.contour.points, child->footprint.contour.points, snap_vertex_threshold, snap_edge_threshold);
 				building->children.push_back(child);
 			}
 			catch (...) {
@@ -88,14 +88,14 @@ namespace simp {
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
 		util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->selectRepresentativeSlice(), resolution, angle, dx, dy);
-		cv::Mat_<float> mat = (cv::Mat_<float>(2, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2);
+		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
 				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(size, layer->children[i], snap_vertex_threshold, snap_edge_threshold, resolution, angle, dx, dy);
-				util::snapPolygon(building->footprint.contour, child->footprint.contour, snap_vertex_threshold, snap_edge_threshold);
+				util::snapPolygon(building->footprint.contour.points, child->footprint.contour.points, snap_vertex_threshold, snap_edge_threshold);
 				building->children.push_back(child);
 			}
 			catch (...) {

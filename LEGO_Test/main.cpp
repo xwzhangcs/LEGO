@@ -14,14 +14,14 @@ void testFindContour(const char* filename) {
 	else {
 		for (int i = 0; i < polygons.size(); i++) {
 			std::cout << "Polygon " << i + 1 << ":" << std::endl;
-			for (auto pt : polygons[i].contour) {
-				std::cout << "(" << pt.x << "," << pt.y << ") ";
+			for (int j = 0; j < polygons[i].contour.size(); j++) {
+				std::cout << "(" << polygons[i].contour[j].x << "," << polygons[i].contour[j].y << ") ";
 			}
 			std::cout << std::endl;
 			for (int j = 0; j < polygons[i].holes.size(); j++) {
 				std::cout << "  hole " << j + 1 << ":" << std::endl << "  ";
-				for (auto pt : polygons[i].holes[j]) {
-					std::cout << "(" << pt.x << "," << pt.y << ") ";
+				for (int k = 0; k < polygons[i].holes[j].size(); k++) {
+					std::cout << "(" << polygons[i].holes[j][k].x << "," << polygons[i].holes[j][k].y << ") ";
 				}
 				std::cout << std::endl;
 			}

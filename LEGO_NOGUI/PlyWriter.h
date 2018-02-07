@@ -70,8 +70,8 @@ namespace util {
 		private:
 			static void writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
 
-			static std::vector<std::vector<cv::Point2f>> tessellate(const std::vector<cv::Point2f>& points);
-			static std::vector<std::vector<cv::Point2f>> tessellate(const std::vector<cv::Point2f>& points, const std::vector<std::vector<cv::Point2f>>& holes);
+			static std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points);
+			static std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points, const std::vector<Ring>& holes);
 			static void mark_domains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border);
 			static void mark_domains(CDT& cdt);
 		};

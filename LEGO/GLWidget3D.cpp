@@ -438,23 +438,38 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm:
 		color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
 	}
 
-	std::vector<glm::dvec2> footprint(building->footprint.contour.size());
-	for (int j = 0; j < building->footprint.contour.size(); j++) {
-		footprint[j] = glm::dvec2(building->footprint.contour[j].x, building->footprint.contour[j].y);
-	}
-	std::vector<std::vector<glm::dvec2>> holes(building->footprint.holes.size());
-	for (int j = 0; j < building->footprint.holes.size(); j++) {
-		holes[j].resize(building->footprint.holes[j].size());
-		for (int k = 0; k < building->footprint.holes[j].size(); k++) {
-			holes[j][k] = glm::dvec2(building->footprint.holes[j][k].x, building->footprint.holes[j][k].y);
+	if (building->footprint.rectangles.size() == 0) {
+		std::vector<glm::dvec2> footprint(building->footprint.contour.size());
+		for (int j = 0; j < building->footprint.contour.size(); j++) {
+			cv::Point2f pt = building->footprint.contour.getActualPoint(j);
+			footprint[j] = glm::dvec2(pt.x, pt.y);
+		}
+		std::vector<std::vector<glm::dvec2>> holes(building->footprint.holes.size());
+		for (int j = 0; j < building->footprint.holes.size(); j++) {
+			holes[j].resize(building->footprint.holes[j].size());
+			for (int k = 0; k < building->footprint.holes[j].size(); k++) {
+				cv::Point2f pt = building->footprint.holes[j].getActualPoint(k);
+				holes[j][k] = glm::dvec2(pt.x, pt.y);
+			}
+		}
+
+		if (building->footprint.holes.size() == 0) {
+			glutils::drawPrism(footprint, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+		}
+		else {
+			glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
 		}
 	}
-
-	if (building->footprint.holes.size() == 0) {
-		glutils::drawPrism(footprint, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
-	}
 	else {
-		glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+		for (int i = 0; i < building->footprint.rectangles.size(); i++) {
+			//
+			std::vector<cv::Point2f> points = building->footprint.rectangles[i].getActualPoints();
+			std::vector<glm::dvec2> pol(points.size());
+			for (int j = 0; j < points.size(); j++) {
+				pol[j] = glm::dvec2(points[j].x, points[j].y);
+			}
+			glutils::drawPrism(pol, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+		}
 	}
 
 	for (int i = 0; i < building->children.size(); i++) {

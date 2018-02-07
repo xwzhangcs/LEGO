@@ -16,13 +16,13 @@ namespace simp {
 		if (polygons.size() == 0) throw "No building is found.";
 
 		util::Polygon ans;
-		cv::approxPolyDP(polygons[0].contour, ans.contour, epsilon, true);
+		cv::approxPolyDP(polygons[0].contour.points, ans.contour.points, epsilon, true);
 		if (ans.contour.size() < 3) ans.contour = polygons[0].contour;
 	
 		// simplify the hole as well
 		for (int i = 0; i < polygons[0].holes.size(); i++) {
-			std::vector<cv::Point2f> simplified_hole;
-			cv::approxPolyDP(polygons[0].holes[i], simplified_hole, epsilon, true);
+			util::Ring simplified_hole;
+			cv::approxPolyDP(polygons[0].holes[i].points, simplified_hole.points, epsilon, true);
 			if (simplified_hole.size() >= 3) {
 				ans.holes.push_back(simplified_hole);
 			}

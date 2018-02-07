@@ -15,12 +15,14 @@ namespace simp {
 		static util::Polygon simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy);
 
 	private:
-		static std::tuple<float, int, int> simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, int resolution = 5.0);
-		static double simplifyContour(const std::vector<cv::Point2f>& contour, std::vector<cv::Point2f>& result, int resolution, float angle, int dx, int dy);
+		static std::tuple<float, int, int> simplifyContour(const util::Ring& contour, util::Ring& result, int resolution = 5.0);
+		static double simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy);
 
 		static double optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour);
 		static std::vector<cv::Point> proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map);
 
+		static void decomposePolygonIntoRectangles(util::Polygon& polygon);
+		static void findMaximumRectangle(const std::vector<std::vector<bool>>& grid, const std::vector<float>& x_coords, const std::vector<float>& y_coords, int& x, int& y, int& width, int& height);
 	};
 
 }
