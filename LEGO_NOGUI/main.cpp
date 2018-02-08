@@ -33,7 +33,7 @@ int main(int argc, const char* argv[]) {
 	util::DisjointVoxelData dvd;
 	dvd.disjoint(voxel_data, 0.5);
 
-	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, simp::BuildingSimplification::ALG_OPENCV, 0.8, 1.0, 1.0, 1, 4);
+	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, simp::BuildingSimplification::ALG_OPENCV, 0.8, 1.0, 1.0, 1, 4, 2);
 	util::ply::PlyWriter::write(argv[2], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;

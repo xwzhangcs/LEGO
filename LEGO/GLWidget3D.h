@@ -20,7 +20,7 @@ class GLWidget3D : public QGLWidget {
 	Q_OBJECT
 
 public:
-	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_OPENCV, SHOW_RIGHTANGLE };
+	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_ALL, SHOW_OPENCV, SHOW_RIGHTANGLE, SHOW_CURVE };
 	enum COLOR_MODE { COLOR_SAME = 0, COLOR_BY_BUILDING, COLOR_BY_LAYER };
 
 public:
@@ -58,8 +58,10 @@ public:
 	void savePLY(const QString& filename);
 	void saveImage(const QString& filename);
 	void showInputVoxel();
+	void simplifyByAll();
 	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
 	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);

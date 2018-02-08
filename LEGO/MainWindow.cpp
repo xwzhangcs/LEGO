@@ -5,9 +5,18 @@
 #include <QMessageBox>
 #include "OpenCVOptionDialog.h"
 #include "OurCustomOptionDialog.h"
+#include "CurveOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
+
+	// group for simplification modes
+	QActionGroup* groupSimplify = new QActionGroup(this);
+	groupSimplify->addAction(ui.actionInputVoxel);
+	groupSimplify->addAction(ui.actionSimplifyByAll);
+	groupSimplify->addAction(ui.actionSimplifyByOpenCV);
+	groupSimplify->addAction(ui.actionSimplifyByOurCustom);
+	groupSimplify->addAction(ui.actionSimplifyByCurve);
 
 	// group for rendering modes
 	QActionGroup* groupColoring = new QActionGroup(this);
@@ -26,8 +35,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
+	connect(ui.actionSimplifyByAll, SIGNAL(triggered()), this, SLOT(onSimplifyByAll()));
 	connect(ui.actionSimplifyByOpenCV, SIGNAL(triggered()), this, SLOT(onSimplifyByOpenCV()));
 	connect(ui.actionSimplifyByOurCustom, SIGNAL(triggered()), this, SLOT(onSimplifyByOurCustom()));
+	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
 	connect(ui.actionSameColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionColoringByBuilding, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionColoringByLayer, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
@@ -85,6 +96,14 @@ void MainWindow::onInputVoxel() {
 	glWidget->update();
 }
 
+void MainWindow::onSimplifyByAll() {
+	OpenCVOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->simplifyByAll();
+		glWidget->update();
+	}
+}
+
 void MainWindow::onSimplifyByOpenCV() {
 	OpenCVOptionDialog dlg;
 	if (dlg.exec()) {
@@ -97,6 +116,14 @@ void MainWindow::onSimplifyByOurCustom() {
 	OurCustomOptionDialog dlg;
 	if (dlg.exec()) {
 		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
+		glWidget->update();
+	}
+}
+
+void MainWindow::onSimplifyByCurve() {
+	CurveOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }

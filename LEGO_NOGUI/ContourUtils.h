@@ -56,6 +56,7 @@ namespace util {
 		PrimitiveShape() {}
 
 	public:
+		virtual boost::shared_ptr<PrimitiveShape> clone() = 0;
 		virtual std::vector<cv::Point2f> getActualPoints() = 0;
 	};
 
@@ -65,8 +66,8 @@ namespace util {
 		cv::Point2f max_pt;
 
 	public:
-		//PrimitiveRectangle();
 		PrimitiveRectangle(const cv::Mat_<float>& mat, const cv::Point2f& min_pt, const cv::Point2f& max_pt);
+		boost::shared_ptr<PrimitiveShape> clone();
 		std::vector<cv::Point2f> getActualPoints();
 	};
 
@@ -76,6 +77,8 @@ namespace util {
 
 	public:
 		PrimitiveTriangle(const cv::Mat_<float>& mat);
+		PrimitiveTriangle(const cv::Mat_<float>& mat, const std::vector<cv::Point2f>& points);
+		boost::shared_ptr<PrimitiveShape> clone();
 		std::vector<cv::Point2f> getActualPoints();
 	};
 
@@ -122,6 +125,7 @@ namespace util {
 	public:
 		Polygon() {}
 
+		Polygon clone();
 		void translate(float x, float y);
 		void transform(const cv::Mat_<float>& m);
 		void clockwise();

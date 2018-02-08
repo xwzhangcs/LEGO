@@ -41,6 +41,8 @@ public:
     QAction *actionSameColor;
     QAction *actionColoringByBuilding;
     QAction *actionColoringByLayer;
+    QAction *actionSimplifyByCurve;
+    QAction *actionSimplifyByAll;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -81,10 +83,14 @@ public:
         actionSavePLY->setIcon(icon1);
         actionSimplifyByOpenCV = new QAction(MainWindowClass);
         actionSimplifyByOpenCV->setObjectName(QStringLiteral("actionSimplifyByOpenCV"));
+        actionSimplifyByOpenCV->setCheckable(true);
         actionSimplifyByOurCustom = new QAction(MainWindowClass);
         actionSimplifyByOurCustom->setObjectName(QStringLiteral("actionSimplifyByOurCustom"));
+        actionSimplifyByOurCustom->setCheckable(true);
         actionInputVoxel = new QAction(MainWindowClass);
         actionInputVoxel->setObjectName(QStringLiteral("actionInputVoxel"));
+        actionInputVoxel->setCheckable(true);
+        actionInputVoxel->setChecked(true);
         actionSaveImage = new QAction(MainWindowClass);
         actionSaveImage->setObjectName(QStringLiteral("actionSaveImage"));
         actionSaveImageHD = new QAction(MainWindowClass);
@@ -99,6 +105,12 @@ public:
         actionColoringByLayer = new QAction(MainWindowClass);
         actionColoringByLayer->setObjectName(QStringLiteral("actionColoringByLayer"));
         actionColoringByLayer->setCheckable(true);
+        actionSimplifyByCurve = new QAction(MainWindowClass);
+        actionSimplifyByCurve->setObjectName(QStringLiteral("actionSimplifyByCurve"));
+        actionSimplifyByCurve->setCheckable(true);
+        actionSimplifyByAll = new QAction(MainWindowClass);
+        actionSimplifyByAll->setObjectName(QStringLiteral("actionSimplifyByAll"));
+        actionSimplifyByAll->setCheckable(true);
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -136,8 +148,11 @@ public:
         menuRendering->addAction(actionRenderingSSAO);
         menuRendering->addAction(actionRenderingHatching);
         menuSimplify->addAction(actionInputVoxel);
+        menuSimplify->addSeparator();
+        menuSimplify->addAction(actionSimplifyByAll);
         menuSimplify->addAction(actionSimplifyByOpenCV);
         menuSimplify->addAction(actionSimplifyByOurCustom);
+        menuSimplify->addAction(actionSimplifyByCurve);
 
         retranslateUi(MainWindowClass);
 
@@ -166,6 +181,8 @@ public:
         actionSameColor->setText(QApplication::translate("MainWindowClass", "Same Color", 0));
         actionColoringByBuilding->setText(QApplication::translate("MainWindowClass", "Coloring by Building", 0));
         actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", 0));
+        actionSimplifyByCurve->setText(QApplication::translate("MainWindowClass", "Curve", 0));
+        actionSimplifyByAll->setText(QApplication::translate("MainWindowClass", "All", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));

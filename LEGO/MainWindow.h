@@ -22,8 +22,10 @@ public slots:
 	void onSavePLY();
 	void onSaveImage();
 	void onInputVoxel();
+	void onSimplifyByAll();
 	void onSimplifyByOpenCV();
 	void onSimplifyByOurCustom();
+	void onSimplifyByCurve();
 	void onColoringModeChanged();
 	void onRenderingModeChanged();
 };

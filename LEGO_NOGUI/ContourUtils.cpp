@@ -16,6 +16,11 @@ namespace util {
 		this->max_pt = max_pt;
 	}
 
+	boost::shared_ptr<PrimitiveShape> PrimitiveRectangle::clone() {
+		boost::shared_ptr<PrimitiveShape> ans = boost::shared_ptr<PrimitiveShape>(new PrimitiveRectangle(mat, min_pt, max_pt));
+		return ans;
+	}
+
 	std::vector<cv::Point2f> PrimitiveRectangle::getActualPoints() {
 		std::vector<cv::Point2f> ans(4);
 
@@ -38,6 +43,16 @@ namespace util {
 
 	PrimitiveTriangle::PrimitiveTriangle(const cv::Mat_<float>& mat) {
 		this->mat = mat;
+	}
+
+	PrimitiveTriangle::PrimitiveTriangle(const cv::Mat_<float>& mat, const std::vector<cv::Point2f>& points) {
+		this->mat = mat;
+		this->points = points;
+	}
+
+	boost::shared_ptr<PrimitiveShape> PrimitiveTriangle::clone() {
+		boost::shared_ptr<PrimitiveShape> ans = boost::shared_ptr<PrimitiveShape>(new PrimitiveTriangle(mat, points));
+		return ans;
 	}
 
 	std::vector<cv::Point2f> PrimitiveTriangle::getActualPoints() {
@@ -160,6 +175,20 @@ namespace util {
 			ans.points[i].x = pt2(0, 0);
 			ans.points[i].y = pt2(1, 0);
 		}
+		return ans;
+	}
+
+	Polygon Polygon::clone() {
+		Polygon ans;
+		ans.mat = mat;
+		ans.contour = contour;
+		ans.holes = holes;
+
+		ans.primitive_shapes.resize(primitive_shapes.size());
+		for (int i = 0; i < primitive_shapes.size(); i++) {
+			ans.primitive_shapes[i] = primitive_shapes[i]->clone();
+		}
+
 		return ans;
 	}
 

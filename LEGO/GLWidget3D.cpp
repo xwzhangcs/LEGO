@@ -344,17 +344,31 @@ void GLWidget3D::showInputVoxel() {
 	update3DGeometry(layers);
 }
 
+void GLWidget3D::simplifyByAll() {
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_ALL, 0.8, 0, 0, 0, 0, 0);
+
+	show_mode = SHOW_ALL;
+	update3DGeometry();
+}
+
 void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, layering_threshold, snap_vertex_threshold, snap_edge_threshold, epsilon, 4);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, layering_threshold, snap_vertex_threshold, snap_edge_threshold, epsilon, 0, 0);
 
 	show_mode = SHOW_OPENCV;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_RIGHTANGLE, layering_threshold, snap_vertex_threshold, snap_edge_threshold, 1, resolution);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_RIGHTANGLE, layering_threshold, snap_vertex_threshold, snap_edge_threshold, 0, resolution, 0);
 
 	show_mode = SHOW_RIGHTANGLE;
+	update3DGeometry();
+}
+
+void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_CURVE, layering_threshold, snap_vertex_threshold, snap_edge_threshold, epsilon, 0, curve_threshold);
+
+	show_mode = SHOW_CURVE;
 	update3DGeometry();
 }
 

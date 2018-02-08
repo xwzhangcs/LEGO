@@ -36,6 +36,8 @@ namespace simp {
 		// ToDo:
 		// Should we check if the holes are inside the contour?
 
+		decomposePolygon(ans);
+
 		return ans;
 	}
 
