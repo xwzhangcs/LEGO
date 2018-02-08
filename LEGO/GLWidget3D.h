@@ -20,8 +20,8 @@ class GLWidget3D : public QGLWidget {
 	Q_OBJECT
 
 public:
-	static enum { SHOW_INPUT = 0, SHOW_OPENCV, SHOW_RIGHTANGLE };
-	static enum { COLOR_SAME = 0, COLOR_BY_BUILDING, COLOR_BY_LAYER };
+	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_OPENCV, SHOW_RIGHTANGLE };
+	enum COLOR_MODE { COLOR_SAME = 0, COLOR_BY_BUILDING, COLOR_BY_LAYER };
 
 public:
 	MainWindow* mainWin;

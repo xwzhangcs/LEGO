@@ -44,9 +44,6 @@ namespace simp {
 		// ToDo:
 		// Should we check if the holes are inside the contour?
 
-		// tesselate the polygon
-		decomposePolygonIntoRectangles(ans);
-
 		return ans;
 	}
 
@@ -188,15 +185,6 @@ namespace simp {
 			simplified_contour.points.push_back(simplified_aa_contour[i]);
 		}
 		simplified_contour.mat = invM;
-
-		/*
-		std::vector<cv::Point2f> simplified_contour(simplified_aa_contour.size());
-		for (int i = 0; i < simplified_aa_contour.size(); i++) {
-			cv::Mat_<double> p = (cv::Mat_<double>(3, 1) << (double)simplified_aa_contour[i].x, (double)simplified_aa_contour[i].y, 1.0);
-			cv::Mat_<double> p2 = invM * p;
-			simplified_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
-		}
-		*/
 
 		result = simplified_contour;
 
@@ -350,7 +338,7 @@ namespace simp {
 		return prop_contour;
 	}
 
-	void OurCustomSimplification::decomposePolygonIntoRectangles(util::Polygon& polygon) {
+	void OurCustomSimplification::decomposePolygon(util::Polygon& polygon) {
 		// list up all xy coordinates
 		std::map<float, bool> x_map;
 		std::map<float, bool> y_map;
@@ -375,17 +363,6 @@ namespace simp {
 			y_coords.push_back(it->first);
 		}
 
-		/*
-		polygon.rectangles.clear();
-		for (int i = 0; i < x_coords.size() - 1; i++) {
-			for (int j = 0; j < y_coords.size() - 1; j++) {
-				if (util::withinPolygon(cv::Point2f((x_coords[i] + x_coords[i + 1]) * 0.5, (y_coords[j] + y_coords[j + 1]) * 0.5), polygon)) {
-					polygon.rectangles.push_back(util::Rectangle(polygon.mat, cv::Point2f(x_coords[i], y_coords[j]), cv::Point2f(x_coords[i + 1], y_coords[j + 1])));
-				}
-			}
-		}
-		*/
-
 		std::vector<std::vector<bool>> grid(y_coords.size() - 1, std::vector<bool>(x_coords.size() - 1, false));
 		int cell_count = 0;
 		for (int i = 0; i < x_coords.size() - 1; i++) {
@@ -397,7 +374,7 @@ namespace simp {
 			}
 		}
 
-		polygon.rectangles.clear();
+		polygon.primitive_shapes.clear();
 
 		while (cell_count > 0) {
 			int x, y, width, height;
@@ -411,7 +388,7 @@ namespace simp {
 			}
 			cell_count -= width * height;
 
-			polygon.rectangles.push_back(util::Rectangle(polygon.mat, cv::Point2f(x_coords[x], y_coords[y]), cv::Point2f(x_coords[x + width], y_coords[y + height])));
+			polygon.primitive_shapes.push_back(boost::shared_ptr<util::PrimitiveShape>(new util::PrimitiveRectangle(polygon.mat, cv::Point2f(x_coords[x], y_coords[y]), cv::Point2f(x_coords[x + width], y_coords[y + height]))));
 		}
 	}
 

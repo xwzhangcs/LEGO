@@ -340,6 +340,7 @@ void GLWidget3D::saveImage(const QString& filename) {
 }
 
 void GLWidget3D::showInputVoxel() {
+	show_mode = SHOW_INPUT;
 	update3DGeometry(layers);
 }
 
@@ -438,7 +439,7 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm:
 		color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
 	}
 
-	if (building->footprint.rectangles.size() == 0) {
+	if (building->footprint.primitive_shapes.size() == 0) {
 		std::vector<glm::dvec2> footprint(building->footprint.contour.size());
 		for (int j = 0; j < building->footprint.contour.size(); j++) {
 			cv::Point2f pt = building->footprint.contour.getActualPoint(j);
@@ -461,9 +462,9 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm:
 		}
 	}
 	else {
-		for (int i = 0; i < building->footprint.rectangles.size(); i++) {
+		for (int i = 0; i < building->footprint.primitive_shapes.size(); i++) {
 			//
-			std::vector<cv::Point2f> points = building->footprint.rectangles[i].getActualPoints();
+			std::vector<cv::Point2f> points = building->footprint.primitive_shapes[i]->getActualPoints();
 			std::vector<glm::dvec2> pol(points.size());
 			for (int j = 0; j < points.size(); j++) {
 				pol[j] = glm::dvec2(points[j].x, points[j].y);

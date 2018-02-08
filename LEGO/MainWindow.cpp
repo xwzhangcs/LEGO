@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QFileDialog>
 #include <QDateTime>
+#include <QMessageBox>
 #include "OpenCVOptionDialog.h"
 #include "OurCustomOptionDialog.h"
 
@@ -56,6 +57,13 @@ void MainWindow::onOpen() {
 }
 
 void MainWindow::onSavePLY() {
+	if (glWidget->show_mode == GLWidget3D::SHOW_INPUT) {
+		QMessageBox msg;
+		msg.setText("Simplify the buildings.");
+		msg.exec();
+		return;
+	}
+
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save PLY file..."), "", tr("PLY files (*.ply)"));
 	if (filename.isEmpty()) return;
 

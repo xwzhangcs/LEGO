@@ -6,18 +6,18 @@
 
 namespace util {
 	
-	Rectangle::Rectangle() {
+	/*PrimitiveRectangle::PrimitiveRectangle() {
 		mat = cv::Mat_<float>::eye(3, 3);
-	}
+	}*/
 
-	Rectangle::Rectangle(const cv::Mat_<float>& mat, const cv::Point2f& min_pt, const cv::Point2f& max_pt) {
+	PrimitiveRectangle::PrimitiveRectangle(const cv::Mat_<float>& mat, const cv::Point2f& min_pt, const cv::Point2f& max_pt) {
 		this->mat = mat;
 		this->min_pt = min_pt;
 		this->max_pt = max_pt;
 	}
 
-	std::vector<cv::Point2f> Rectangle::getActualPoints() {
-		std::vector<cv::Point2f> ans;
+	std::vector<cv::Point2f> PrimitiveRectangle::getActualPoints() {
+		std::vector<cv::Point2f> ans(4);
 
 		cv::Mat_<float> p0 = (cv::Mat_<float>(3, 1) << min_pt.x, min_pt.y, 1);
 		cv::Mat_<float> q0 = mat * p0;
@@ -28,11 +28,26 @@ namespace util {
 		cv::Mat_<float> p3 = (cv::Mat_<float>(3, 1) << min_pt.x, max_pt.y, 1);
 		cv::Mat_<float> q3 = mat * p3;
 
-		ans.push_back(cv::Point2f(q0(0, 0), q0(1, 0)));
-		ans.push_back(cv::Point2f(q1(0, 0), q1(1, 0)));
-		ans.push_back(cv::Point2f(q2(0, 0), q2(1, 0)));
-		ans.push_back(cv::Point2f(q3(0, 0), q3(1, 0)));
+		ans[0] = cv::Point2f(q0(0, 0), q0(1, 0));
+		ans[1] = cv::Point2f(q1(0, 0), q1(1, 0));
+		ans[2] = cv::Point2f(q2(0, 0), q2(1, 0));
+		ans[3] = cv::Point2f(q3(0, 0), q3(1, 0));
 
+		return ans;
+	}
+
+	PrimitiveTriangle::PrimitiveTriangle(const cv::Mat_<float>& mat) {
+		this->mat = mat;
+	}
+
+	std::vector<cv::Point2f> PrimitiveTriangle::getActualPoints() {
+		std::vector<cv::Point2f> ans(points.size());
+
+		for (int i = 0; i < points.size(); i++) {
+			cv::Mat_<float> p = (cv::Mat_<float>(3, 1) << points[i].x, points[i].y, 1);
+			cv::Mat_<float> q = mat * p;
+			ans[i] = cv::Point2f(q(0, 0), q(1, 0));
+		}
 		return ans;
 	}
 
@@ -623,6 +638,127 @@ namespace util {
 		else {
 			pt = a + (b - a) * r;
 			return std::abs(crossProduct(c - a, b - a)) / sqrt(r_denomenator);
+		}
+	}
+
+	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points) {
+		std::vector<std::vector<cv::Point2f>> ans;
+
+		Polygon_2 polygon;
+		for (int i = 0; i < points.size(); ++i) {
+			polygon.push_back(Point_2(points[i].x, points[i].y));
+		}
+
+		if (polygon.is_simple()) {
+			if (polygon.is_clockwise_oriented()) {
+				polygon.reverse_orientation();
+			}
+
+			// tesselate the concave polygon
+			Polygon_list partition_polys;
+			Traits       partition_traits;
+			CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
+
+			for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
+				std::vector<cv::Point2f> pol;
+				for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
+					pol.push_back(cv::Point2f(vit->x(), vit->y()));
+				}
+
+				util::counterClockwise(pol);
+				ans.push_back(pol);
+			}
+		}
+
+		return ans;
+	}
+
+	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points, const std::vector<Ring>& holes) {
+		std::vector<std::vector<cv::Point2f>> ans;
+
+		//Insert the polygons into a constrained triangulation
+		CDT cdt;
+		Polygon_2 polygon;
+		for (int i = 0; i < points.size(); i++) {
+			polygon.push_back(Point(points[i].x, points[i].y));
+		}
+
+		if (polygon.is_simple()) {
+			cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
+			for (int i = 0; i < holes.size(); i++) {
+				Polygon_2 polygon;
+				for (int j = 0; j < holes[i].size(); j++) {
+					polygon.push_back(Point(holes[i][j].x, holes[i][j].y));
+				}
+				cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
+			}
+
+			//Mark facets that are inside the domain bounded by the polygon
+			mark_domains(cdt);
+
+			for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
+				if (fit->info().in_domain()) {
+					std::vector<cv::Point2f> pol;
+					for (int i = 0; i < 3; i++) {
+						CDT::Vertex_handle vh = fit->vertex(i);
+						pol.push_back(cv::Point2f(vh->point().x(), vh->point().y()));
+					}
+
+					util::counterClockwise(pol);
+					ans.push_back(pol);
+				}
+			}
+		}
+
+		return ans;
+	}
+
+	void mark_domains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border) {
+		if (start->info().nesting_level != -1){
+			return;
+		}
+		std::list<CDT::Face_handle> queue;
+		queue.push_back(start);
+		while (!queue.empty()){
+			CDT::Face_handle fh = queue.front();
+			queue.pop_front();
+			if (fh->info().nesting_level == -1){
+				fh->info().nesting_level = index;
+				for (int i = 0; i < 3; i++){
+					CDT::Edge e(fh, i);
+					CDT::Face_handle n = fh->neighbor(i);
+					if (n->info().nesting_level == -1){
+						if (ct.is_constrained(e)) {
+							border.push_back(e);
+
+
+						}
+						else queue.push_back(n);
+					}
+				}
+			}
+		}
+	}
+
+	//explore set of facets connected with non constrained edges,
+	//and attribute to each such set a nesting level.
+	//We start from facets incident to the infinite vertex, with a nesting
+	//level of 0. Then we recursively consider the non-explored facets incident 
+	//to constrained edges bounding the former set and increase the nesting level by 1.
+	//Facets in the domain are those with an odd nesting level.
+	void mark_domains(CDT& cdt) {
+		for (CDT::All_faces_iterator it = cdt.all_faces_begin(); it != cdt.all_faces_end(); ++it){
+			it->info().nesting_level = -1;
+		}
+		std::list<CDT::Edge> border;
+		mark_domains(cdt, cdt.infinite_face(), 0, border);
+		while (!border.empty()){
+			CDT::Edge e = border.front();
+			border.pop_front();
+			CDT::Face_handle n = e.first->neighbor(e.second);
+			if (n->info().nesting_level == -1){
+				mark_domains(cdt, n, e.first->info().nesting_level + 1, border);
+			}
 		}
 	}
 

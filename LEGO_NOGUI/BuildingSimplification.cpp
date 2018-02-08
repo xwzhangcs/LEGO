@@ -61,11 +61,13 @@ namespace simp {
 		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
+		OpenCVSimplification::decomposePolygon(building->footprint);
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
 				std::shared_ptr<Building> child = simplifyBuildingByOpenCV(size, layer->children[i], snap_vertex_threshold, snap_edge_threshold, epsilon);
 				util::snapPolygon(building->footprint.contour.points, child->footprint.contour.points, snap_vertex_threshold, snap_edge_threshold);
+				OpenCVSimplification::decomposePolygon(child->footprint);
 				building->children.push_back(child);
 			}
 			catch (...) {
@@ -91,11 +93,13 @@ namespace simp {
 		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		simplified_polygon.transform(mat);
 		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
+		OurCustomSimplification::decomposePolygon(building->footprint);
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
 				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(size, layer->children[i], snap_vertex_threshold, snap_edge_threshold, resolution, angle, dx, dy);
 				util::snapPolygon(building->footprint.contour.points, child->footprint.contour.points, snap_vertex_threshold, snap_edge_threshold);
+				OurCustomSimplification::decomposePolygon(child->footprint);
 				building->children.push_back(child);
 			}
 			catch (...) {

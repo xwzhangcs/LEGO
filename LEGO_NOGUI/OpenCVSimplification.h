@@ -13,6 +13,7 @@ namespace simp {
 
 	public:
 		static util::Polygon simplify(const cv::Mat& slice, float epsilon);
+		static void decomposePolygon(util::Polygon& polygon);
 	};
 
 }
