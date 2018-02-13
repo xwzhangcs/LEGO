@@ -34,7 +34,7 @@ public:
     QAction *actionOpen;
     QAction *actionSavePLY;
     QAction *actionSimplifyByOpenCV;
-    QAction *actionSimplifyByOurCustom;
+    QAction *actionSimplifyByRightAngle;
     QAction *actionInputVoxel;
     QAction *actionSaveImage;
     QAction *actionSaveImageHD;
@@ -43,6 +43,8 @@ public:
     QAction *actionColoringByLayer;
     QAction *actionSimplifyByCurve;
     QAction *actionSimplifyByAll;
+    QAction *actionOpenCVTest;
+    QAction *actionRightAngleTest;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -84,9 +86,9 @@ public:
         actionSimplifyByOpenCV = new QAction(MainWindowClass);
         actionSimplifyByOpenCV->setObjectName(QStringLiteral("actionSimplifyByOpenCV"));
         actionSimplifyByOpenCV->setCheckable(true);
-        actionSimplifyByOurCustom = new QAction(MainWindowClass);
-        actionSimplifyByOurCustom->setObjectName(QStringLiteral("actionSimplifyByOurCustom"));
-        actionSimplifyByOurCustom->setCheckable(true);
+        actionSimplifyByRightAngle = new QAction(MainWindowClass);
+        actionSimplifyByRightAngle->setObjectName(QStringLiteral("actionSimplifyByRightAngle"));
+        actionSimplifyByRightAngle->setCheckable(true);
         actionInputVoxel = new QAction(MainWindowClass);
         actionInputVoxel->setObjectName(QStringLiteral("actionInputVoxel"));
         actionInputVoxel->setCheckable(true);
@@ -111,6 +113,10 @@ public:
         actionSimplifyByAll = new QAction(MainWindowClass);
         actionSimplifyByAll->setObjectName(QStringLiteral("actionSimplifyByAll"));
         actionSimplifyByAll->setCheckable(true);
+        actionOpenCVTest = new QAction(MainWindowClass);
+        actionOpenCVTest->setObjectName(QStringLiteral("actionOpenCVTest"));
+        actionRightAngleTest = new QAction(MainWindowClass);
+        actionRightAngleTest->setObjectName(QStringLiteral("actionRightAngleTest"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -151,8 +157,11 @@ public:
         menuSimplify->addSeparator();
         menuSimplify->addAction(actionSimplifyByAll);
         menuSimplify->addAction(actionSimplifyByOpenCV);
-        menuSimplify->addAction(actionSimplifyByOurCustom);
+        menuSimplify->addAction(actionSimplifyByRightAngle);
         menuSimplify->addAction(actionSimplifyByCurve);
+        menuSimplify->addSeparator();
+        menuSimplify->addAction(actionOpenCVTest);
+        menuSimplify->addAction(actionRightAngleTest);
 
         retranslateUi(MainWindowClass);
 
@@ -173,7 +182,7 @@ public:
         actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", 0));
         actionSavePLY->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
         actionSimplifyByOpenCV->setText(QApplication::translate("MainWindowClass", "OpenCV", 0));
-        actionSimplifyByOurCustom->setText(QApplication::translate("MainWindowClass", "Custom", 0));
+        actionSimplifyByRightAngle->setText(QApplication::translate("MainWindowClass", "Right Angle", 0));
         actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", 0));
         actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));
         actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "P", 0));
@@ -183,6 +192,8 @@ public:
         actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", 0));
         actionSimplifyByCurve->setText(QApplication::translate("MainWindowClass", "Curve", 0));
         actionSimplifyByAll->setText(QApplication::translate("MainWindowClass", "All", 0));
+        actionOpenCVTest->setText(QApplication::translate("MainWindowClass", "OpenCV Test", 0));
+        actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));

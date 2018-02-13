@@ -145,6 +145,7 @@ namespace util {
 	bool withinPolygon(const cv::Point2f& pt, const Ring& ring);
 	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2);
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
+	double calculateArea(const cv::Mat_<uchar>& img);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img);
 	Ring addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img);
 	void findContour(const cv::Mat_<uchar>& img, std::vector<cv::Point>& contour);

@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupSimplify->addAction(ui.actionInputVoxel);
 	groupSimplify->addAction(ui.actionSimplifyByAll);
 	groupSimplify->addAction(ui.actionSimplifyByOpenCV);
-	groupSimplify->addAction(ui.actionSimplifyByOurCustom);
+	groupSimplify->addAction(ui.actionSimplifyByRightAngle);
 	groupSimplify->addAction(ui.actionSimplifyByCurve);
 
 	// group for rendering modes
@@ -37,8 +37,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
 	connect(ui.actionSimplifyByAll, SIGNAL(triggered()), this, SLOT(onSimplifyByAll()));
 	connect(ui.actionSimplifyByOpenCV, SIGNAL(triggered()), this, SLOT(onSimplifyByOpenCV()));
-	connect(ui.actionSimplifyByOurCustom, SIGNAL(triggered()), this, SLOT(onSimplifyByOurCustom()));
+	connect(ui.actionSimplifyByRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByRightAngle()));
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
+	connect(ui.actionOpenCVTest, SIGNAL(triggered()), this, SLOT(onOpenCVTest()));
+	connect(ui.actionRightAngleTest, SIGNAL(triggered()), this, SLOT(onRightAngleTest()));
 	connect(ui.actionSameColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionColoringByBuilding, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionColoringByLayer, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
@@ -112,10 +114,10 @@ void MainWindow::onSimplifyByOpenCV() {
 	}
 }
 
-void MainWindow::onSimplifyByOurCustom() {
+void MainWindow::onSimplifyByRightAngle() {
 	OurCustomOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOurCustom(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
+		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }
@@ -126,6 +128,14 @@ void MainWindow::onSimplifyByCurve() {
 		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
+}
+
+void MainWindow::onOpenCVTest() {
+	glWidget->opencvTest();
+}
+
+void MainWindow::onRightAngleTest() {
+	glWidget->rightAngleTest();
 }
 
 void MainWindow::onColoringModeChanged() {

@@ -54,8 +54,11 @@
     <addaction name="separator"/>
     <addaction name="actionSimplifyByAll"/>
     <addaction name="actionSimplifyByOpenCV"/>
-    <addaction name="actionSimplifyByOurCustom"/>
+    <addaction name="actionSimplifyByRightAngle"/>
     <addaction name="actionSimplifyByCurve"/>
+    <addaction name="separator"/>
+    <addaction name="actionOpenCVTest"/>
+    <addaction name="actionRightAngleTest"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -146,12 +149,12 @@
     <string>OpenCV</string>
    </property>
   </action>
-  <action name="actionSimplifyByOurCustom">
+  <action name="actionSimplifyByRightAngle">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Custom</string>
+    <string>Right Angle</string>
    </property>
   </action>
   <action name="actionInputVoxel">
@@ -219,6 +222,16 @@
    </property>
    <property name="text">
     <string>All</string>
+   </property>
+  </action>
+  <action name="actionOpenCVTest">
+   <property name="text">
+    <string>OpenCV Test</string>
+   </property>
+  </action>
+  <action name="actionRightAngleTest">
+   <property name="text">
+    <string>Right Angle Test</string>
    </property>
   </action>
  </widget>

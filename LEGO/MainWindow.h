@@ -24,8 +24,10 @@ public slots:
 	void onInputVoxel();
 	void onSimplifyByAll();
 	void onSimplifyByOpenCV();
-	void onSimplifyByOurCustom();
+	void onSimplifyByRightAngle();
 	void onSimplifyByCurve();
+	void onOpenCVTest();
+	void onRightAngleTest();
 	void onColoringModeChanged();
 	void onRenderingModeChanged();
 };

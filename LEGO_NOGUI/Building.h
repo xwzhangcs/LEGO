@@ -12,6 +12,7 @@ namespace simp {
 		util::Polygon footprint;
 		float bottom_height;
 		float top_height;
+		std::vector<float> costs;	// error, error_denominator, #primitives
 		std::vector<std::shared_ptr<Building>> children;
 
 	public:

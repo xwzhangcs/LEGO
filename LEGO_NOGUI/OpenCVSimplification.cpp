@@ -17,7 +17,14 @@ namespace simp {
 
 		util::Polygon ans;
 		cv::approxPolyDP(polygons[0].contour.points, ans.contour.points, epsilon, true);
-		if (ans.contour.size() < 3) ans.contour = polygons[0].contour;
+		if (ans.contour.size() < 3) {
+			float epsilon2 = epsilon - 0.3;
+			while (epsilon2 >= 0 && ans.contour.size() < 3) {
+				cv::approxPolyDP(polygons[0].contour.points, ans.contour.points, epsilon2, true);
+				epsilon2 -= 0.3;
+			}
+			if (ans.contour.size() < 3) throw "No building is found";
+		}
 	
 		// simplify the hole as well
 		for (int i = 0; i < polygons[0].holes.size(); i++) {

@@ -40,7 +40,7 @@ namespace util {
 			static void write(const char* filename, const std::vector<std::shared_ptr<simp::Building>>& buildings);
 
 		private:
-			static void writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
+			static int writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
 			static int findClosestVertexIndex(const Point3d& p, const std::map<Point3d, int>& points);
 		};
 

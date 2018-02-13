@@ -60,8 +60,10 @@ public:
 	void showInputVoxel();
 	void simplifyByAll();
 	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void simplifyByOurCustom(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void opencvTest();
+	void rightAngleTest();
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
 	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);

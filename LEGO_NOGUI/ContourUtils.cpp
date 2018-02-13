@@ -382,6 +382,16 @@ namespace util {
 		return (float)inter_cnt / union_cnt;
 	}
 
+	double calculateArea(const cv::Mat_<uchar>& img) {
+		double area = 0.0;
+		for (int r = 0; r < img.rows; r++) {
+			for (int c = 0; c < img.cols; c++) {
+				area += img(r, c);
+			}
+		}
+		return area / 255;
+	}
+
 	/**
 	 * Helper function to extract contours from the input image.
 	 * The image has to be of type CV_8U, and has values either 0 or 255.

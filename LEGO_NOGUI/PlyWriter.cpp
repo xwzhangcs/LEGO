@@ -11,9 +11,12 @@ namespace util {
 			std::vector<Point3d> vertices;
 			std::vector<std::vector<int>> faces;
 
+			int num_polygons = 0;
 			for (int i = 0; i < buildings.size(); i++) {
-				writeBuilding(buildings[i], vertices_map, vertices, faces);
+				num_polygons += writeBuilding(buildings[i], vertices_map, vertices, faces);
 			}
+			std::cout << "#polygons = " << num_polygons << std::endl;
+			std::cout << "#vertices = " << vertices.size() << std::endl;
 
 			std::ofstream out(filename, std::ios::binary);
 			out << "ply" << std::endl;
@@ -45,7 +48,7 @@ namespace util {
 			out.close();
 		}
 
-		void PlyWriter::writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces) {
+		int PlyWriter::writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces) {
 			std::vector<std::vector<cv::Point2f>> polygons;
 
 			if (building->footprint.primitive_shapes.size() == 0) {
@@ -100,6 +103,7 @@ namespace util {
 				faces.push_back(top_face);
 			}
 			
+			/*
 			// side faces
 			util::Ring polygon = building->footprint.contour.getActualPoints();
 			polygon.counterClockwise();
@@ -139,10 +143,37 @@ namespace util {
 					faces.push_back(indices);
 				}
 			}
+			*/
 
-			for (int i = 0; i < building->children.size(); i++) {
-				writeBuilding(building->children[i], vertices_map, vertices, faces);
+			/////////////////////////////////////////////////////
+			// Previously used the contour polygon and holes to generate side faces,
+			// but updated to use the primitive shapes for generating side faces
+			for (auto polygon : polygons) {
+				util::counterClockwise(polygon);
+
+				for (int i = 0; i < polygon.size(); i++) {
+					int next = (i + 1) % polygon.size();
+					std::vector<Point3d> pts(4);
+					pts[0] = Point3d(polygon[i].x, polygon[i].y, building->bottom_height);
+					pts[1] = Point3d(polygon[next].x, polygon[next].y, building->bottom_height);
+					pts[2] = Point3d(polygon[next].x, polygon[next].y, building->top_height);
+					pts[3] = Point3d(polygon[i].x, polygon[i].y, building->top_height);
+
+					std::vector<int> indices(4);
+					for (int i = 0; i < 4; i++) {
+						indices[i] = findClosestVertexIndex(pts[i], vertices_map);
+					}
+
+					faces.push_back(indices);
+				}
 			}
+
+			int num_polygons = polygons.size();
+			for (int i = 0; i < building->children.size(); i++) {
+				num_polygons += writeBuilding(building->children[i], vertices_map, vertices, faces);
+			}
+
+			return num_polygons;
 		}
 
 		int PlyWriter::findClosestVertexIndex(const Point3d& p, const std::map<Point3d, int>& points) {
