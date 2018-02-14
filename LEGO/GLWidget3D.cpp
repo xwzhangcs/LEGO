@@ -410,9 +410,9 @@ void GLWidget3D::opencvTest() {
 		const int num_layering_samples = 5;
 		const int num_epsilon_samples = 5;
 		for (int layering_idx = 0; layering_idx <= num_layering_samples; layering_idx++) {
-			float layering_threshold = layering_idx * 0.8 / num_layering_samples + 0.1;
+			float layering_threshold = layering_idx * 1.0 / num_layering_samples + 0.0;
 			for (int epsilon_idx = 0; epsilon_idx <= num_epsilon_samples; epsilon_idx++) {
-				float epsilon = (float)epsilon_idx * 10 / num_epsilon_samples + 0.5;
+				float epsilon = (float)epsilon_idx * 10 / num_epsilon_samples + 0.0;
 
 				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, alpha, layering_threshold, epsilon, 0, 0);
 

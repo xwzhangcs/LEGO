@@ -581,27 +581,44 @@ namespace util {
 	 * Create image from the contour.
 	 */
 	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result) {
-		result = cv::Mat_<uchar>::zeros(height, width);
+		result = cv::Mat_<uchar>::zeros(height * 2, width * 2);
 		std::vector<std::vector<cv::Point>> contour_points(1);
-		contour_points[0] = contour;
+
+		contour_points[0].resize(contour.size());
+		for (int i = 0; i < contour.size(); i++) {
+			contour_points[0][i] = cv::Point(contour[i].x * 2, contour[i].y * 2);
+		}
+
 		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, offset);
+
+		// erode image
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);
+		cv::erode(result, result, kernel);
+
+		cv::resize(result, result, cv::Size(width, height), 0, 0, cv::INTER_NEAREST);
 	}
 
 	void createImageFromPolygon(int width, int height, const Polygon& polygon, const cv::Point& offset, cv::Mat_<uchar>& result) {
-		result = cv::Mat_<uchar>::zeros(height, width);
+		result = cv::Mat_<uchar>::zeros(height * 2, width * 2);
 		std::vector<std::vector<cv::Point>> contour_points(1 + polygon.holes.size());
 
 		contour_points[0].resize(polygon.contour.size());
 		for (int i = 0; i < polygon.contour.size(); i++) {
-			contour_points[0][i] = cv::Point(polygon.contour[i].x, polygon.contour[i].y);
+			contour_points[0][i] = cv::Point(polygon.contour[i].x * 2, polygon.contour[i].y * 2);
 		}
 		for (int i = 0; i < polygon.holes.size(); i++) {
 			contour_points[i + 1].resize(polygon.holes[i].size());
 			for (int j = 0; j < polygon.holes[i].size(); j++) {
-				contour_points[i + 1][j] = cv::Point(polygon.holes[i][j].x, polygon.holes[i][j].y);
+				contour_points[i + 1][j] = cv::Point(polygon.holes[i][j].x * 2, polygon.holes[i][j].y * 2);
 			}
 		}
 		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, offset);
+
+		// erode image
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);
+		cv::erode(result, result, kernel);
+
+		cv::resize(result, result, cv::Size(width, height), 0, 0, cv::INTER_NEAREST);
 	}
 
 	void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold) {
