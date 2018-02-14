@@ -31,9 +31,14 @@ namespace util {
 	}
 
 	std::shared_ptr<Layer> LayerVoxelData::layering(float layering_threshold) {
-		int height = 5;
-
-		int voxel_count = countVoxel(voxel_data[height]);
+		// find the bottom slice
+		int height = 0;
+		int voxel_count = 0;
+		while (height < voxel_data.size()) {
+			voxel_count = countVoxel(voxel_data[height]);
+			if (voxel_count > 0) break;
+			height++;
+		}
 		if (voxel_count == 0) throw "No voxel at the bottom.";
 
 		std::shared_ptr<Layer> layer = std::shared_ptr<Layer>(new Layer(height, height));

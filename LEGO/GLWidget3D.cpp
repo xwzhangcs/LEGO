@@ -311,6 +311,15 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
+	// find the ground level
+	double max_area = 0;
+	for (int i = 0; i < voxel_data.size(); i++) {
+		max_area = std::max(max_area, util::calculateArea(voxel_data[i]));
+	}
+	for (ground_level = 0; ground_level < voxel_data.size(); ground_level++) {
+		if (util::calculateArea(voxel_data[ground_level]) > max_area * 0.5) break;
+	}
+
 	disjoint_voxel_data.disjoint(voxel_data, 0.5);
 	
 	//disjointed_voxel_data.resize(disjoint_voxel_data.size());
@@ -451,7 +460,9 @@ void GLWidget3D::rightAngleTest() {
 		for (int layering_idx = 0; layering_idx <= num_layering_samples; layering_idx++) {
 			float layering_threshold = layering_idx * 0.8 / num_layering_samples + 0.1;
 			for (int resolution_idx = 0; resolution_idx <= num_resolution_samples; resolution_idx++) {
-				int resolution = (float)resolution_idx * 10 / num_resolution_samples + 2;
+				int resolution = (float)resolution_idx * 5 / num_resolution_samples + 2;
+
+				std::cout << "layering_idx = " << layering_idx << ", " << "resolution_idx = " << resolution_idx << std::endl;
 
 				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_RIGHTANGLE, alpha, layering_threshold, 0, resolution, 0);
 
@@ -509,7 +520,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Layer>
 	}
 
 	std::vector<Vertex> vertices2;
-	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, 0)), vertices2);
+	glutils::drawBox(300, 300, 1, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, 0)), vertices2);
 	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
@@ -525,7 +536,7 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::
 		for (int y = 0; y < layer->slices[slice_id].rows; y++) {
 			for (int x = 0; x < layer->slices[slice_id].cols; x++) {
 				if (layer->slices[slice_id](y, x) < 128) continue;
-				glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width * 0.5, size.height * 0.5 - y - 0.5, layer->bottom_height + slice_id + 0.5)), vertices);
+				glutils::drawBox(1, 1, 1, color, glm::translate(glm::mat4(), glm::vec3(x + 0.5 - size.width * 0.5, size.height * 0.5 - y - 0.5, layer->bottom_height + slice_id - ground_level + 0.5)), vertices);
 			}
 		}
 	}
@@ -550,7 +561,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Buildi
 	renderManager.addObject("building", "", vertices, true);
 
 	std::vector<Vertex> vertices2;
-	glutils::drawBox(300, 300, 10, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, 0)), vertices2);
+	glutils::drawBox(300, 300, 1, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, 0)), vertices2);
 	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
@@ -582,7 +593,7 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm:
 			glutils::drawPrism(footprint, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
 		}
 		else {
-			glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+			glutils::drawPrismWithHoles(footprint, holes, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height - ground_level)), vertices);
 		}
 	}
 	else {
@@ -593,7 +604,7 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm:
 			for (int j = 0; j < points.size(); j++) {
 				pol[j] = glm::dvec2(points[j].x, points[j].y);
 			}
-			glutils::drawPrism(pol, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height)), vertices);
+			glutils::drawPrism(pol, building->top_height - building->bottom_height, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height - ground_level)), vertices);
 		}
 	}
 

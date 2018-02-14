@@ -37,6 +37,7 @@ public:
 	//std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
 	std::vector<std::shared_ptr<util::Layer>> layers;
 	std::vector<std::shared_ptr<simp::Building>> buildings;
+	int ground_level;
 
 	// rendering engine
 	RenderManager renderManager;

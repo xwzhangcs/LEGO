@@ -10,7 +10,6 @@ namespace simp {
 	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
 		std::vector<std::shared_ptr<simp::Building>> buildings;
 		for (int i = 0; i < disjointed_voxel_data.size(); i++) {
-			std::cout << i << std::endl;
 			try {
 				std::vector<cv::Mat_<uchar>> voxel_data = disjointed_voxel_data.getDisjointedVoxelData(i);
 
