@@ -3,6 +3,7 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QMessageBox>
+#include "OptionDialog.h"
 #include "OpenCVOptionDialog.h"
 #include "OurCustomOptionDialog.h"
 #include "CurveOptionDialog.h"
@@ -99,9 +100,9 @@ void MainWindow::onInputVoxel() {
 }
 
 void MainWindow::onSimplifyByAll() {
-	OpenCVOptionDialog dlg;
+	OptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByAll();
+		glWidget->simplifyByAll(dlg.getAlpha());
 		glWidget->update();
 	}
 }

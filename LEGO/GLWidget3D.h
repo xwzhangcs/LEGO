@@ -37,6 +37,7 @@ public:
 	//std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
 	std::vector<std::shared_ptr<util::Layer>> layers;
 	std::vector<std::shared_ptr<simp::Building>> buildings;
+	float voxel_count;
 	int ground_level;
 
 	// rendering engine
@@ -59,7 +60,7 @@ public:
 	void savePLY(const QString& filename);
 	void saveImage(const QString& filename);
 	void showInputVoxel();
-	void simplifyByAll();
+	void simplifyByAll(double alpha);
 	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);

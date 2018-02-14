@@ -311,6 +311,12 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
+	// count the voxel
+	voxel_count = 0;
+	for (int i = 0; i < voxel_data.size(); i++) {
+		voxel_count += util::calculateArea(voxel_data[i]);
+	}
+
 	// find the ground level
 	double max_area = 0;
 	for (int i = 0; i < voxel_data.size(); i++) {
@@ -353,8 +359,8 @@ void GLWidget3D::showInputVoxel() {
 	update3DGeometry(layers);
 }
 
-void GLWidget3D::simplifyByAll() {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_ALL, 0.5, 0.8, 0, 0, 0);
+void GLWidget3D::simplifyByAll(double alpha) {
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_ALL, alpha, 0.8, 0, 0, 0);
 
 	show_mode = SHOW_ALL;
 	update3DGeometry();
@@ -399,6 +405,7 @@ void GLWidget3D::opencvTest() {
 		double best_epsilon;
 		double best_error;
 		double best_simplicity;
+		double best_simplicity_baseline;
 
 		const int num_layering_samples = 5;
 		const int num_epsilon_samples = 5;
@@ -411,7 +418,6 @@ void GLWidget3D::opencvTest() {
 
 				// calculate the cost
 				std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);
-				//std::cout << "error = " << costs[0] / costs[1] << ", simplicity = " << costs[2] / costs[3] << std::endl;
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 			
 				out << layering_threshold << "," << epsilon << "," << cost << endl;
@@ -420,7 +426,8 @@ void GLWidget3D::opencvTest() {
 					best_layering_threshold = layering_threshold;
 					best_epsilon = epsilon;
 					best_error = costs[0] / costs[1];
-					best_simplicity = costs[2] / baseline_costs[2];
+					best_simplicity = costs[2];
+					best_simplicity_baseline = baseline_costs[2];
 				}
 			}
 		}
@@ -431,8 +438,8 @@ void GLWidget3D::opencvTest() {
 		std::cout << "Best cost = " << min_cost << std::endl;
 		std::cout << "Best layering threshold = " << best_layering_threshold << std::endl;
 		std::cout << "Best epsilon = " << best_epsilon << std::endl;
-		std::cout << "Best error = " << best_error << std::endl;
-		std::cout << "Best simplicity = " << best_simplicity << std::endl;
+		std::cout << "Best error = " << best_error * voxel_count << " / " << voxel_count << " (" << best_error << ")" << std::endl;
+		std::cout << "Best simplicity = " << best_simplicity << " / " << best_simplicity_baseline << " (" << best_simplicity / best_simplicity_baseline << ")" << std::endl;
 	}
 }
 
@@ -454,6 +461,7 @@ void GLWidget3D::rightAngleTest() {
 		double best_resolution;
 		double best_error;
 		double best_simplicity;
+		double best_simplicity_baseline;
 
 		const int num_layering_samples = 5;
 		const int num_resolution_samples = 5;
@@ -468,7 +476,6 @@ void GLWidget3D::rightAngleTest() {
 
 				// calculate the cost
 				std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);
-				//std::cout << "error = " << costs[0] / costs[1] << ", simplicity = " << costs[2] / costs[3] << std::endl;
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 				
 				out << layering_threshold << "," << resolution << "," << cost << endl;
@@ -477,7 +484,8 @@ void GLWidget3D::rightAngleTest() {
 					best_layering_threshold = layering_threshold;
 					best_resolution = resolution;
 					best_error = costs[0] / costs[1];
-					best_simplicity = costs[2] / baseline_costs[2];
+					best_simplicity = costs[2];
+					best_simplicity_baseline = baseline_costs[2];
 				}
 			}
 		}
@@ -488,8 +496,8 @@ void GLWidget3D::rightAngleTest() {
 		std::cout << "Best cost = " << min_cost << std::endl;
 		std::cout << "Best layering threshold = " << best_layering_threshold << std::endl;
 		std::cout << "Best resolution = " << best_resolution << std::endl;
-		std::cout << "Best error = " << best_error << std::endl;
-		std::cout << "Best simplicity = " << best_simplicity << std::endl;
+		std::cout << "Best error = " << best_error * voxel_count << " / " << voxel_count << " (" << best_error << ")" << std::endl;
+		std::cout << "Best simplicity = " << best_simplicity << " / " << best_simplicity_baseline << " (" << best_simplicity / best_simplicity_baseline << ")" << std::endl;
 	}
 }
 

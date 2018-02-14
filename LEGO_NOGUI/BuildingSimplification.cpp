@@ -20,23 +20,32 @@ namespace simp {
 				if (voxel_data.size() > 0) {
 					size = cv::Size(voxel_data[0].cols, voxel_data[0].rows);
 				}
-
-				std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
-
+				
 				std::shared_ptr<Building> building;
 				if (algorithm == ALG_ALL) {
+					float threshold = 0.5;
+					if (alpha < 0.5) threshold = 0.1;
+					else if (alpha < 0.7) threshold = 0.58;
+					else if (alpha < 1.0) threshold = 0.7;
+					else threshold = 0.9;
+
+					std::shared_ptr<util::Layer> layer = lvd.layering(threshold);
+
 					building = simplifyBuildingByAll(size, layer, alpha);
 				}
 				else if (algorithm == ALG_OPENCV) {
+					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 					building = simplifyBuildingByOpenCV(size, layer, alpha, epsilon);
 				}
 				else if (algorithm == ALG_RIGHTANGLE) {
+					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
 					building = simplifyBuildingByOurCustom(size, layer, alpha, resolution, angle, dx, dy);
 				}
 				else if (algorithm == ALG_CURVE) {
+					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
 					building = simplifyBuildingByCurve(size, layer, alpha, epsilon, curve_threshold);
 				}
 
@@ -63,8 +72,6 @@ namespace simp {
 	}
 
 	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha) {
-		return NULL;
-		/*
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -73,10 +80,24 @@ namespace simp {
 		util::Polygon best_simplified_polygon;
 		bool found_best = false;
 
+		// get baseline cost
+		util::Polygon baseline_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), 0.5);
+		std::vector<float> baseline_costs = calculateCost(size, baseline_polygon, layer, alpha);
+		
 		// try OpenCV
 		try {
-			util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), 1);
-			float cost = calculateCost(size, simplified_polygon, layer, alpha);
+			float epsilon = 2;
+			if (alpha < 0.1) epsilon = 10.5;
+			else if (alpha < 0.2) epsilon = 5.5;
+			else if (alpha < 0.4) epsilon = 3;
+			else if (alpha < 0.5) epsilon = 2.5;
+			else if (alpha < 0.9) epsilon = 2;
+			else epsilon = 0.5;
+
+			util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), epsilon);
+			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);
+			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
 			if (cost < best_cost) {
 				found_best = true;
 				best_cost = cost;
@@ -88,11 +109,17 @@ namespace simp {
 
 		// try right angle
 		try {
+			int resolution = 2;
+			if (alpha < 0.1) resolution = 6;
+			else if (alpha < 1.0) resolution = 4;
+			else resolution = 5;
+
 			float angle = -1;
 			int dx = -1;
 			int dy = -1;
-			util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->selectRepresentativeSlice(), 4, angle, dx, dy);
-			float cost = calculateCost(size, simplified_polygon, layer, alpha);
+			util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->selectRepresentativeSlice(), resolution, angle, dx, dy);
+			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);
+			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 			if (cost < best_cost) {
 				found_best = true;
 				best_cost = cost;
@@ -121,7 +148,6 @@ namespace simp {
 		}
 
 		return building;
-		*/
 	}
 
 	/**
@@ -203,8 +229,13 @@ namespace simp {
 	}
 
 	/**
-	 * Calculate cost function for the layer, which is defined by
-	 *  \Sum_slice  [ \alpha * (1 - IOU) + (1 - \alpha) * simiplicity ] * area(slice)
+	 * Calculate cost for the layer/
+	 * 
+	 * @param size					XY dimension of the voxel data
+	 * @param simplified_polygon	the simplified polygon for which we calculate the cost
+	 * @param layer					layer for which we calculate the cost
+	 * @param alpha					weight ratio of the error term to the simplicity term in the cost function
+	 * @return						three values, (1-IOU) * area, area, and #primitive shapes
 	 */
 	std::vector<float> BuildingSimplification::calculateCost(const cv::Size& size, const util::Polygon& simplified_polygon, std::shared_ptr<util::Layer> layer, float alpha) {
 		std::vector<float> ans(4, 0);
@@ -217,16 +248,8 @@ namespace simp {
 			float slice_area = util::calculateArea(layer->slices[i]);
 
 			float iou = util::calculateIOU(simplified_polygon_img, layer->slices[i]);
-			ans[0] += (1 - iou) * 2 * slice_area;
+			ans[0] += (1 - iou) * slice_area;
 			ans[1] += slice_area;
-		}
-
-		// calculate the number of primitive shapes of the raw contour polygon as the baseline
-		std::vector<util::Polygon> polygons = util::findContours(layer->selectRepresentativeSlice());
-		int baseline_num_prim = 1;
-		if (polygons.size() > 0) {
-			OpenCVSimplification::decomposePolygon(polygons[0]);
-			baseline_num_prim = polygons[0].primitive_shapes.size();
 		}
 
 		ans[2] = simplified_polygon.primitive_shapes.size();
