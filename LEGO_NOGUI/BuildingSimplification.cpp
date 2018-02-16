@@ -24,14 +24,16 @@ namespace simp {
 				std::shared_ptr<Building> building;
 				if (algorithm == ALG_ALL) {
 					float threshold = 0.5;
-					if (alpha < 0.5) threshold = 0.1;
-					else if (alpha < 0.7) threshold = 0.58;
-					else if (alpha < 1.0) threshold = 0.7;
-					else threshold = 0.9;
+					if (alpha < 0.7) threshold = 0.0;
+					else if (alpha < 1.0) threshold = 0.6;
+					else threshold = 1.0;
 
 					std::shared_ptr<util::Layer> layer = lvd.layering(threshold);
 
-					building = simplifyBuildingByAll(size, layer, alpha);
+					float angle = -1;
+					int dx = -1;
+					int dy = -1;
+					building = simplifyBuildingByAll(size, layer, alpha, angle, dx, dy);
 				}
 				else if (algorithm == ALG_OPENCV) {
 					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
@@ -71,35 +73,35 @@ namespace simp {
 		return costs;
 	}
 
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha) {
+	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
 
 		float best_cost = std::numeric_limits<float>::max();
 		util::Polygon best_simplified_polygon;
-		bool found_best = false;
 
 		// get baseline cost
 		util::Polygon baseline_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), 0.5);
 		std::vector<float> baseline_costs = calculateCost(size, baseline_polygon, layer, alpha);
 		
+		int best_algorithm = ALG_UNKNOWN;
+
 		// try OpenCV
 		try {
-			float epsilon = 2;
-			if (alpha < 0.1) epsilon = 10.5;
-			else if (alpha < 0.2) epsilon = 5.5;
-			else if (alpha < 0.4) epsilon = 3;
-			else if (alpha < 0.5) epsilon = 2.5;
+			float epsilon = 0;
+			if (alpha < 0.1) epsilon = 10;
+			else if (alpha < 0.2) epsilon = 6;
+			else if (alpha < 0.4) epsilon = 4;
 			else if (alpha < 0.9) epsilon = 2;
-			else epsilon = 0.5;
+			else epsilon = 0;
 
 			util::Polygon simplified_polygon = OpenCVSimplification::simplify(layer->selectRepresentativeSlice(), epsilon);
 			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);
 			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
 			if (cost < best_cost) {
-				found_best = true;
+				best_algorithm = ALG_OPENCV;
 				best_cost = cost;
 				best_simplified_polygon = simplified_polygon;
 			}
@@ -114,14 +116,11 @@ namespace simp {
 			else if (alpha < 1.0) resolution = 4;
 			else resolution = 5;
 
-			float angle = -1;
-			int dx = -1;
-			int dy = -1;
 			util::Polygon simplified_polygon = OurCustomSimplification::simplify(layer->selectRepresentativeSlice(), resolution, angle, dx, dy);
 			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);
 			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 			if (cost < best_cost) {
-				found_best = true;
+				best_algorithm = ALG_RIGHTANGLE;
 				best_cost = cost;
 				best_simplified_polygon = simplified_polygon;
 			}
@@ -132,7 +131,7 @@ namespace simp {
 		// try curve
 		// ...
 
-		if (!found_best) throw "No valid simplification is found.";
+		if (best_algorithm == ALG_UNKNOWN) throw "No valid simplification is found.";
 
 		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		best_simplified_polygon.transform(mat);
@@ -140,7 +139,12 @@ namespace simp {
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<Building> child = simplifyBuildingByAll(size, layer->children[i], alpha);
+				if (best_algorithm != ALG_RIGHTANGLE) {
+					angle = -1;
+					dx = -1;
+					dy = -1;
+				}
+				std::shared_ptr<Building> child = simplifyBuildingByAll(size, layer->children[i], alpha, angle, dx, dy);
 				building->children.push_back(child);
 			}
 			catch (...) {
@@ -184,7 +188,7 @@ namespace simp {
 
 		return building;
 	}
-
+	
 	/**
 	 * Simplify the shape of a building.
 	 *

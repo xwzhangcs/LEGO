@@ -10,7 +10,7 @@ namespace simp {
 	
 	class BuildingSimplification {
 	public:
-		enum ALGORITHM { ALG_ALL = 0, ALG_OPENCV, ALG_RIGHTANGLE, ALG_CURVE };
+		enum ALGORITHM { ALG_UNKNOWN = 0, ALG_ALL, ALG_OPENCV, ALG_RIGHTANGLE, ALG_CURVE };
 
 	protected:
 		BuildingSimplification() {}
@@ -20,7 +20,7 @@ namespace simp {
 		static std::vector<float> sumCost(const std::vector<std::shared_ptr<Building>>& buildings);
 
 	private:
-		static std::shared_ptr<Building> simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha);
+		static std::shared_ptr<Building> simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy);
 		static std::shared_ptr<Building> simplifyBuildingByOpenCV(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon);
 		static std::shared_ptr<Building> simplifyBuildingByOurCustom(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy);
 		static std::shared_ptr<Building> simplifyBuildingByCurve(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon, float curve_threshold);

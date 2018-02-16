@@ -31,10 +31,14 @@ namespace simp {
 
 		// simplify the hole as well
 		for (int i = 0; i < polygons[0].holes.size(); i++) {
-			util::Ring simplified_hole;
-			simplifyContour(polygons[0].holes[i], simplified_hole, resolution, angle, dx, dy);
-			if (simplified_hole.size() >= 3) {
-				ans.holes.push_back(simplified_hole);
+			try {
+				util::Ring simplified_hole;
+				simplifyContour(polygons[0].holes[i], simplified_hole, resolution, angle, dx, dy);
+				if (simplified_hole.size() >= 3) {
+					ans.holes.push_back(simplified_hole);
+				}
+			}
+			catch (...) {
 			}
 		}
 
@@ -122,70 +126,47 @@ namespace simp {
 		// create the integer coordinates of the polygon
 		std::vector<cv::Point> aa_contour_int(aa_contour.size());
 		for (int i = 0; i < aa_contour.size(); i++) {
-			aa_contour_int[i] = cv::Point(aa_contour[i]);
+			aa_contour_int[i] = cv::Point(std::round(aa_contour[i].x), std::round(aa_contour[i].y));
 		}
 
 		// scale down the polygon based on the resolution
 		std::vector<cv::Point> small_aa_polygon(aa_contour.size());
 		for (int i = 0; i < aa_contour.size(); i++) {
-			small_aa_polygon[i] = cv::Point(aa_contour[i].x / resolution, aa_contour[i].y / resolution);
+			small_aa_polygon[i] = cv::Point(std::round(aa_contour[i].x / resolution), std::round(aa_contour[i].y / resolution));
 		}
 		
 		// calculate the bounding box
-		cv::Point min_pt(INT_MAX, INT_MAX);
-		cv::Point max_pt(INT_MIN, INT_MIN);
-		for (int i = 0; i < small_aa_polygon.size(); i++) {
-			min_pt.x = std::min(min_pt.x, small_aa_polygon[i].x - 3);
-			min_pt.y = std::min(min_pt.y, small_aa_polygon[i].y - 3);
-			max_pt.x = std::max(max_pt.x, small_aa_polygon[i].x + 3);
-			max_pt.y = std::max(max_pt.y, small_aa_polygon[i].y + 3);
-		}
+		cv::Rect bbox = util::boundingBox(small_aa_polygon);
 
-		cv::Mat img(max_pt.y - min_pt.y + 1, max_pt.x - min_pt.x + 1, CV_8U, cv::Scalar(0));
+		cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
+		util::createImageFromContour(bbox.width, bbox.height, small_aa_polygon, cv::Point(-bbox.x, -bbox.y), img);
 
-		// draw a polygon
-		std::vector<std::vector<cv::Point>> polygons;
-		polygons.push_back(small_aa_polygon);
-		cv::fillPoly(img, polygons, cv::Scalar(255), cv::LINE_4, 0, cv::Point(-min_pt.x, -min_pt.y));
-
-		// dilate the image
-		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
-		cv::Mat inflated;
-		cv::dilate(img, img, kernel);
-
-		// extract a contour (my custom version)
-		std::vector<cv::Point> simplified_small_aa_contour;
-		util::findContour(img, simplified_small_aa_contour);
-		if (simplified_small_aa_contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
+		std::vector<util::Polygon> polygons = util::findContours(img);
+		if (polygons.size() == 0) throw "No contour is found.";
 
 		// offset back and scale up the simplified scale-down polygon
-		std::vector<cv::Point> simplified_aa_contour(simplified_small_aa_contour.size());
-		for (int i = 0; i < simplified_small_aa_contour.size(); i++) {
-			simplified_aa_contour[i] = cv::Point((simplified_small_aa_contour[i].x + min_pt.x) * resolution, (simplified_small_aa_contour[i].y + min_pt.y) * resolution);
+		std::vector<cv::Point> simplified_aa_contour(polygons[0].contour.size());
+		for (int i = 0; i < polygons[0].contour.size(); i++) {
+			simplified_aa_contour[i] = cv::Point((polygons[0].contour[i].x + bbox.x) * resolution, (polygons[0].contour[i].y + bbox.y) * resolution);
 		}
-
+		
 		// refine the simplified contour
 		double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour));
-
-		// check if the simplified contour has self-intersecting
-		simplified_aa_contour = util::removeRedundantPoint(simplified_aa_contour);
-		for (int i = 0; i < simplified_aa_contour.size(); i++) {
-			for (int j = i + 1; j < simplified_aa_contour.size(); j++) {
-				if (simplified_aa_contour[i] == simplified_aa_contour[j]) {
-					result.clear();
-					return std::numeric_limits<double>::max();
-				}
-			}
+		
+		// generate a simplified contour removing self-intersections
+		bbox = util::boundingBox(simplified_aa_contour);
+		util::createImageFromContour(bbox.width, bbox.height, simplified_aa_contour, cv::Point(-bbox.x, -bbox.y), img);
+		polygons = util::findContours(img);
+		if (polygons.size() == 0) throw "No valid contour is generated.";
+		for (int i = 0; i < polygons[0].contour.size(); i++) {
+			polygons[0].contour[i] += cv::Point2f(bbox.x, bbox.y);
 		}
 
 		// calculate the cost
-		cost += simplified_aa_contour.size() * 0.2;
+		cost += polygons[0].contour.size() * 0.2;
 
 		// transform back the simplified contour
-		util::Ring simplified_contour;
-		for (int i = 0; i < simplified_aa_contour.size(); i++) {
-			simplified_contour.points.push_back(simplified_aa_contour[i]);
-		}
+		util::Ring simplified_contour = polygons[0].contour;
 		simplified_contour.mat = invM;
 
 		result = simplified_contour;
