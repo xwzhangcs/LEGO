@@ -19,6 +19,7 @@
 #include <CGAL/Polygon_2.h>
 #include <CGAL/random_polygon_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/Boolean_set_operations_2.h>
 
 namespace util {
 
@@ -31,22 +32,13 @@ namespace util {
 		}
 	};
 
-	typedef CGAL::Exact_predicates_inexact_constructions_kernel       K;
-	typedef CGAL::Triangulation_vertex_base_2<K>                      Vb;
-	typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>    Fbb;
-	typedef CGAL::Constrained_triangulation_face_base_2<K, Fbb>        Fb;
+	typedef CGAL::Exact_predicates_inexact_constructions_kernel       Kernel;
+	typedef CGAL::Triangulation_vertex_base_2<Kernel>                      Vb;
+	typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, Kernel>    Fbb;
+	typedef CGAL::Constrained_triangulation_face_base_2<Kernel, Fbb>        Fb;
 	typedef CGAL::Triangulation_data_structure_2<Vb, Fb>               TDS;
 	typedef CGAL::Exact_predicates_tag                                Itag;
-	typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>  CDT;
-	typedef CDT::Point                                                Point;
-	typedef CGAL::Partition_traits_2<K>                         Traits;
-	typedef Traits::Polygon_2                                   Polygon_2;
-	typedef Traits::Point_2                                     Point_2;
-	typedef Polygon_2::Vertex_iterator                          Vertex_iterator;
-	typedef std::list<Polygon_2>                                Polygon_list;
-	typedef CGAL::Creator_uniform_2<int, Point_2>               Creator;
-	typedef CGAL::Random_points_in_square_2< Point_2, Creator > Point_generator;
-	typedef boost::shared_ptr<Polygon_2>						PolygonPtr;
+	typedef CGAL::Constrained_Delaunay_triangulation_2<Kernel, TDS, Itag>  CDT;
 
 	class PrimitiveShape {
 	public:
@@ -145,6 +137,8 @@ namespace util {
 	bool withinPolygon(const cv::Point2f& pt, const Ring& ring);
 	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2);
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
+	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);
+	double calculateIOU(const Ring& polygon1, const Ring& polygon2);
 	double calculateArea(const cv::Mat_<uchar>& img);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img);
 	Ring addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img);
