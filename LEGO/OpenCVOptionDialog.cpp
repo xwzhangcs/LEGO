@@ -3,8 +3,8 @@
 OpenCVOptionDialog::OpenCVOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
-	ui.spinBoxEpsilon->setValue(1);
-	ui.doubleSpinBoxLayeringThreshold->setValue(0.8);
+	ui.spinBoxEpsilon->setValue(2);
+	ui.doubleSpinBoxLayeringThreshold->setValue(0.1);
 	ui.doubleSpinBoxLayeringThreshold->setSingleStep(0.1);
 	ui.doubleSpinBoxSnapVertexThreshold->setValue(1.0);
 	ui.doubleSpinBoxSnapEdgeThreshold->setValue(1.0);

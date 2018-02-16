@@ -7,13 +7,15 @@
 #include "PlyWriter.h"
 
 int main(int argc, const char* argv[]) {
-	if (argc < 3) {
-		std::cerr << "Usage: " << argv[0] << " <slice image filename> <output filename>" << std::endl;
+	if (argc < 4) {
+		std::cerr << "Usage: " << argv[0] << " <slice image filename> <algorithm { 1 - all, 2 - DP, 3 - right angle, 4 - curve }> <output filename>" << std::endl;
 		return -1;
 	}
 
 	QString input_filename(argv[1]);
 	std::vector<cv::Mat_<uchar>> voxel_data;
+
+	int algorithm = std::stoi(argv[2]);
 
 	// get directory
 	QFileInfo finfo(input_filename);
@@ -44,8 +46,8 @@ int main(int argc, const char* argv[]) {
 	util::DisjointVoxelData dvd;
 	dvd.disjoint(voxel_data, 0.5);
 
-	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, simp::BuildingSimplification::ALG_OPENCV, 0.5, 0.8, 1, 4, 2);
-	util::ply::PlyWriter::write(argv[2], buildings);
+	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, algorithm, 0.5, 0.1, 2, 4, 1);
+	util::ply::PlyWriter::write(argv[3], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
 
