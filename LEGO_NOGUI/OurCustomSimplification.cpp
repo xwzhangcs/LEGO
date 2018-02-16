@@ -10,7 +10,6 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-
 	util::Polygon OurCustomSimplification::simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy) {
 		// make sure there is a building in the layer
 		std::vector<util::Polygon> polygons = util::findContours(slice);
@@ -175,13 +174,13 @@ namespace simp {
 	}
 
 	/**
-	* Optimize the simplified contour such that it best fit to the input contour.
-	* Return the IOU of the input contour and the optimized simplified contour.
-	*
-	* @param contour				input contour
-	* @param simplified_contour	simplified contour
-	* @return						intersection over union (IOU)
-	*/
+	 * Optimize the simplified contour such that it best fits to the input contour.
+	 * Return the IOU of the input contour and the optimized simplified contour.
+	 *
+	 * @param contour				input contour
+	 * @param simplified_contour		simplified contour
+	 * @return						intersection over union (IOU)
+	 */
 	double OurCustomSimplification::optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour) {
 		// calculate the bounding box
 		int min_x = std::numeric_limits<int>::max();

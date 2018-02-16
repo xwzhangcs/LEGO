@@ -7,7 +7,7 @@
 
 namespace simp {
 
-	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
+	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int ground_level, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
 		std::vector<std::shared_ptr<simp::Building>> buildings;
 		for (int i = 0; i < disjointed_voxel_data.size(); i++) {
 			try {
@@ -28,7 +28,7 @@ namespace simp {
 					else if (alpha < 1.0) threshold = 0.6;
 					else threshold = 1.0;
 
-					std::shared_ptr<util::Layer> layer = lvd.layering(threshold);
+					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, threshold);
 
 					float angle = -1;
 					int dx = -1;
@@ -36,18 +36,18 @@ namespace simp {
 					building = simplifyBuildingByAll(size, layer, alpha, angle, dx, dy);
 				}
 				else if (algorithm == ALG_OPENCV) {
-					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
+					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, layering_threshold);
 					building = simplifyBuildingByOpenCV(size, layer, alpha, epsilon);
 				}
 				else if (algorithm == ALG_RIGHTANGLE) {
-					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
+					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, layering_threshold);
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
 					building = simplifyBuildingByOurCustom(size, layer, alpha, resolution, angle, dx, dy);
 				}
 				else if (algorithm == ALG_CURVE) {
-					std::shared_ptr<util::Layer> layer = lvd.layering(layering_threshold);
+					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, layering_threshold);
 					building = simplifyBuildingByCurve(size, layer, alpha, epsilon, curve_threshold);
 				}
 

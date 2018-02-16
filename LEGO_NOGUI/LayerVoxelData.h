@@ -28,7 +28,7 @@ namespace util {
 	public:
 		LayerVoxelData(const std::vector<cv::Mat_<uchar>>& voxel_data, float threshold);
 
-		std::shared_ptr<Layer> layering(float layering_threshold);
+		std::shared_ptr<Layer> layering(int ground_level, float layering_threshold);
 
 	private:
 		void layering(std::shared_ptr<Layer> current_layer, const cv::Mat_<uchar>& current_slice, int height, const cv::Mat_<uchar>& bottom_slice, float layering_threshold);

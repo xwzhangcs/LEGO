@@ -323,7 +323,8 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 		max_area = std::max(max_area, util::calculateArea(voxel_data[i]));
 	}
 	for (ground_level = 0; ground_level < voxel_data.size(); ground_level++) {
-		if (util::calculateArea(voxel_data[ground_level]) > max_area * 0.5) break;
+		// If the slice has voxel more than 80% of the maximum, the slice is considered at the ground level.
+		if (util::calculateArea(voxel_data[ground_level]) > max_area * 0.8) break;
 	}
 
 	disjoint_voxel_data.disjoint(voxel_data, 0.5);
@@ -335,7 +336,7 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 
 		try {
 			util::LayerVoxelData lvd(voxel_data, 0.5);
-			std::shared_ptr<util::Layer> layer = lvd.layering(0.8);
+			std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, 0.8);
 			layers.push_back(layer);
 		}
 		catch (...) {}
@@ -360,28 +361,28 @@ void GLWidget3D::showInputVoxel() {
 }
 
 void GLWidget3D::simplifyByAll(double alpha) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_ALL, alpha, 0.8, 0, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_ALL, alpha, 0.8, 0, 0, 0);
 
 	show_mode = SHOW_ALL;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, 0.5, layering_threshold, epsilon, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, 0.5, layering_threshold, epsilon, 0, 0);
 
 	show_mode = SHOW_OPENCV;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_RIGHTANGLE, 0.5, layering_threshold, 0, resolution, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_RIGHTANGLE, 0.5, layering_threshold, 0, resolution, 0);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_CURVE, 0.5, layering_threshold, epsilon, 0, curve_threshold);
+	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_CURVE, 0.5, layering_threshold, epsilon, 0, curve_threshold);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
@@ -397,7 +398,7 @@ void GLWidget3D::opencvTest() {
 		QTextStream out(&file);
 
 		// get baseline cost
-		std::vector<std::shared_ptr<simp::Building>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
+		std::vector<std::shared_ptr<simp::Building>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
 		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -414,7 +415,7 @@ void GLWidget3D::opencvTest() {
 			for (int epsilon_idx = 0; epsilon_idx <= num_epsilon_samples; epsilon_idx++) {
 				float epsilon = (float)epsilon_idx * 10 / num_epsilon_samples + 0.0;
 
-				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, alpha, layering_threshold, epsilon, 0, 0);
+				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, layering_threshold, epsilon, 0, 0);
 
 				// calculate the cost
 				std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);
@@ -453,7 +454,7 @@ void GLWidget3D::rightAngleTest() {
 		QTextStream out(&file);
 
 		// get baseline cost
-		std::vector<std::shared_ptr<simp::Building>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
+		std::vector<std::shared_ptr<simp::Building>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
 		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -472,7 +473,7 @@ void GLWidget3D::rightAngleTest() {
 
 				std::cout << "layering_idx = " << layering_idx << ", " << "resolution_idx = " << resolution_idx << std::endl;
 
-				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, simp::BuildingSimplification::ALG_RIGHTANGLE, alpha, layering_threshold, 0, resolution, 0);
+				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_RIGHTANGLE, alpha, layering_threshold, 0, resolution, 0);
 
 				// calculate the cost
 				std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);

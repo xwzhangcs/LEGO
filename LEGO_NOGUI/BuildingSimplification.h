@@ -16,7 +16,7 @@ namespace simp {
 		BuildingSimplification() {}
 
 	public:
-		static std::vector<std::shared_ptr<Building>> simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold);
+		static std::vector<std::shared_ptr<Building>> simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int ground_level, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold);
 		static std::vector<float> sumCost(const std::vector<std::shared_ptr<Building>>& buildings);
 
 	private:

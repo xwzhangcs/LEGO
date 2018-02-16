@@ -30,10 +30,21 @@ int main(int argc, const char* argv[]) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
+	// find the ground level
+	int ground_level = 0;
+	double max_area = 0;
+	for (int i = 0; i < voxel_data.size(); i++) {
+		max_area = std::max(max_area, util::calculateArea(voxel_data[i]));
+	}
+	for (ground_level = 0; ground_level < voxel_data.size(); ground_level++) {
+		// If the slice has voxel more than 80% of the maximum, the slice is considered at the ground level.
+		if (util::calculateArea(voxel_data[ground_level]) > max_area * 0.8) break;
+	}
+
 	util::DisjointVoxelData dvd;
 	dvd.disjoint(voxel_data, 0.5);
 
-	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, simp::BuildingSimplification::ALG_OPENCV, 0.5, 0.8, 1, 4, 2);
+	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, simp::BuildingSimplification::ALG_OPENCV, 0.5, 0.8, 1, 4, 2);
 	util::ply::PlyWriter::write(argv[2], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
