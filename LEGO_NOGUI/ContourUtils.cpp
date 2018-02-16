@@ -689,10 +689,10 @@ namespace util {
 
 		contour_points[0].resize(contour.size());
 		for (int i = 0; i < contour.size(); i++) {
-			contour_points[0][i] = cv::Point(contour[i].x * 2, contour[i].y * 2);
+			contour_points[0][i] = cv::Point((contour[i].x + offset.x) * 2, (contour[i].y + offset.y) * 2);
 		}
 
-		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, offset);
+		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4);
 
 		// erode image
 		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);
@@ -707,15 +707,15 @@ namespace util {
 
 		contour_points[0].resize(polygon.contour.size());
 		for (int i = 0; i < polygon.contour.size(); i++) {
-			contour_points[0][i] = cv::Point(polygon.contour[i].x * 2, polygon.contour[i].y * 2);
+			contour_points[0][i] = cv::Point((polygon.contour[i].x + offset.x) * 2, (polygon.contour[i].y + offset.y) * 2);
 		}
 		for (int i = 0; i < polygon.holes.size(); i++) {
 			contour_points[i + 1].resize(polygon.holes[i].size());
 			for (int j = 0; j < polygon.holes[i].size(); j++) {
-				contour_points[i + 1][j] = cv::Point(polygon.holes[i][j].x * 2, polygon.holes[i][j].y * 2);
+				contour_points[i + 1][j] = cv::Point((polygon.holes[i][j].x + offset.x) * 2, (polygon.holes[i][j].y + offset.y) * 2);
 			}
 		}
-		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4, 0, offset);
+		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4);
 
 		// erode image
 		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);

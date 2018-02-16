@@ -7,6 +7,12 @@
 *.userosscache
 *.sln.docstates
 
+# voxel data
+data/
+
+# screenshot
+LEGO/screenshot/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
