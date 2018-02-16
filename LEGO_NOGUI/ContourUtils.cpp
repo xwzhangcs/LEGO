@@ -803,33 +803,7 @@ namespace util {
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points) {
 		std::vector<std::vector<cv::Point2f>> ans;
 
-		CGAL::Partition_traits_2<Kernel>::Polygon_2 polygon;
-		for (int i = 0; i < points.size(); ++i) {
-			polygon.push_back(CGAL::Partition_traits_2<Kernel>::Point_2(points[i].x, points[i].y));
-		}
-
-		if (polygon.is_simple()) {
-			if (polygon.is_clockwise_oriented()) {
-				polygon.reverse_orientation();
-			}
-
-			// tesselate the concave polygon
-			std::list<CGAL::Partition_traits_2<Kernel>::Polygon_2> partition_polys;
-			CGAL::Partition_traits_2<Kernel> partition_traits;
-			CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
-
-			for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-				std::vector<cv::Point2f> pol;
-				for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-					pol.push_back(cv::Point2f(vit->x(), vit->y()));
-				}
-
-				util::counterClockwise(pol);
-				ans.push_back(pol);
-			}
-		}
-
-		return ans;
+		return tessellate(points, {});
 	}
 
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points, const std::vector<Ring>& holes) {
