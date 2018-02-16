@@ -398,7 +398,7 @@ void GLWidget3D::opencvTest() {
 		QTextStream out(&file);
 
 		// get baseline cost
-		std::vector<std::shared_ptr<simp::Building>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
+		std::vector<std::shared_ptr<simp::BuildingLayer>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
 		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -454,7 +454,7 @@ void GLWidget3D::rightAngleTest() {
 		QTextStream out(&file);
 
 		// get baseline cost
-		std::vector<std::shared_ptr<simp::Building>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
+		std::vector<std::shared_ptr<simp::BuildingLayer>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_OPENCV, alpha, 0.9, 0.5, 0, 0);
 		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -555,7 +555,7 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::
 	}
 }
 
-void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings) {
+void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::BuildingLayer>>& buildings) {
 	renderManager.removeObjects();
 
 	glm::vec4 color(0.7, 1, 0.7, 1);
@@ -578,7 +578,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<simp::Buildi
 }
 
 
-void GLWidget3D::update3DGeometry(std::shared_ptr<simp::Building> building, glm::vec4& color, std::vector<Vertex>& vertices) {
+void GLWidget3D::update3DGeometry(std::shared_ptr<simp::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices) {
 	if (color_mode == COLOR_BY_LAYER) {
 		color = glm::vec4((float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, (float)(rand() % 80) / 100 + 0.2, 1);
 	}

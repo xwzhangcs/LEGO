@@ -46,7 +46,7 @@ int main(int argc, const char* argv[]) {
 	util::DisjointVoxelData dvd;
 	dvd.disjoint(voxel_data, 0.5);
 
-	std::vector<std::shared_ptr<simp::Building>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, algorithm, 0.5, 0.1, 2, 4, 1);
+	std::vector<std::shared_ptr<simp::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, algorithm, 0.5, 0.1, 2, 4, 1);
 	util::ply::PlyWriter::write(argv[3], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;

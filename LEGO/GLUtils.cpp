@@ -536,46 +536,7 @@ namespace glutils {
 	}
 
 	void drawConcavePolygon(const std::vector<glm::dvec2>& points, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
-		double min_x = std::numeric_limits<double>::max();
-		double max_x = -std::numeric_limits<double>::max();
-		double min_y = std::numeric_limits<double>::max();
-		double max_y = -std::numeric_limits<double>::max();
-
-		Polygon_2 polygon;
-		for (int i = 0; i < points.size(); ++i) {
-			polygon.push_back(Point_2(points[i].x, points[i].y));
-
-			min_x = std::min(min_x, points[i].x);
-			max_x = std::max(max_x, points[i].x);
-			min_y = std::min(min_y, points[i].y);
-			max_y = std::max(max_y, points[i].y);
-		}
-
-		// tesselate the concave polygon
-		try {
-			if (polygon.is_simple()) {
-				if (polygon.is_clockwise_oriented()) {
-					polygon.reverse_orientation();
-				}
-
-				Polygon_list partition_polys;
-				Traits       partition_traits;
-				CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
-
-				for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-					std::vector<glm::vec2> pts;
-					std::vector<glm::vec2> texCoords;
-					for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-						pts.push_back(glm::vec2(vit->x(), vit->y()));
-						texCoords.push_back(glm::vec2((vit->x() - min_x) / (max_x - min_x), (vit->y() - min_y) / (max_y - min_y)));
-					}
-
-					drawPolygon(pts, color, texCoords, mat, vertices, flip);
-				}
-			}
-		}
-		catch (...) {
-		}
+		drawConcavePolygon(points, {}, color, mat, vertices, flip);
 	}
 
 	void mark_domains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border) {
@@ -637,84 +598,82 @@ namespace glutils {
 		for (int j = 0; j < points.size(); j++) {
 			polygon.push_back(Point(points[j].x, points[j].y));
 		}
-		cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
-		for (int i = 0; i < holes.size(); i++) {
-			Polygon_2 polygon;
-			for (int j = 0; j < holes[i].size(); j++) {
-				polygon.push_back(Point(holes[i][j].x, holes[i][j].y));
-			}
+
+		if (polygon.is_simple()) {
 			cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
-		}
-
-		//Mark facets that are inside the domain bounded by the polygon
-		mark_domains(cdt);
-
-		for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
-			if (fit->info().in_domain()) {
-				std::vector<glm::vec2> triangle;
-				for (int i = 0; i < 3; i++) {
-					CDT::Vertex_handle vh = fit->vertex(i);
-					triangle.push_back(glm::vec2(vh->point().x(), vh->point().y()));
+			for (int i = 0; i < holes.size(); i++) {
+				Polygon_2 polygon;
+				for (int j = 0; j < holes[i].size(); j++) {
+					polygon.push_back(Point(holes[i][j].x, holes[i][j].y));
 				}
-				drawPolygon(triangle, color, mat, vertices, flip);
+				cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
+			}
+
+			//Mark facets that are inside the domain bounded by the polygon
+			mark_domains(cdt);
+
+			for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
+				if (fit->info().in_domain()) {
+					std::vector<glm::vec2> triangle;
+					for (int i = 0; i < 3; i++) {
+						CDT::Vertex_handle vh = fit->vertex(i);
+						triangle.push_back(glm::vec2(vh->point().x(), vh->point().y()));
+					}
+					drawPolygon(triangle, color, mat, vertices, flip);
+				}
 			}
 		}
 	}
 
 	void drawConcavePolygon(const std::vector<glm::vec2>& points, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
+		drawConcavePolygon(points, {}, color, texCoords, mat, vertices, flip);
+	}
+
+	void drawConcavePolygon(const std::vector<glm::vec2>& points, const std::vector<std::vector<glm::vec2>>& holes, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
+		float min_x = std::numeric_limits<float>::max();
+		float max_x = -std::numeric_limits<float>::max();
+		float min_y = std::numeric_limits<float>::max();
+		float max_y = -std::numeric_limits<float>::max();
+
+		//Insert the polygons into a constrained triangulation
+		CDT cdt;
 		Polygon_2 polygon;
-		for (int i = 0; i < points.size(); ++i) {
-			polygon.push_back(Point_2(points[i].x, points[i].y));
+		for (int i = 0; i < points.size(); i++) {
+			polygon.push_back(Point(points[i].x, points[i].y));
+
+			min_x = std::min(min_x, points[i].x);
+			max_x = std::max(max_x, points[i].x);
+			min_y = std::min(min_y, points[i].y);
+			max_y = std::max(max_y, points[i].y);
 		}
 
-		if (polygon.is_clockwise_oriented()) {
-			polygon.reverse_orientation();
-		}
-		
-		// tesselate the concave polygon
-		Polygon_list partition_polys;
-		Traits       partition_traits;
-		CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
-
-		for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-			std::vector<glm::vec2> pts;
-			std::vector<glm::vec2> tex;
-
-			for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-				glm::vec2 pt(vit->x(), vit->y());
-				pts.push_back(pt);
-
-				// find the same point to get texture coordinates
-				bool found = false;
-				glm::vec2 texCoord;
-				for (int i = 0; i < points.size(); ++i) {
-					if (glm::length(points[i] - pt) < 0.01f) {
-						found = true;
-						texCoord = texCoords[i];
-					}
+		if (polygon.is_simple()) {
+			cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
+			for (int i = 0; i < holes.size(); i++) {
+				Polygon_2 polygon;
+				for (int j = 0; j < holes[i].size(); j++) {
+					polygon.push_back(Point(holes[i][j].x, holes[i][j].y));
 				}
-
-				// if not, estimate the texture coordinates based on the three neighbors
-				if (!found) {
-					glm::vec2 p1 = points[0];
-					glm::vec2 t1 = texCoords[0];
-					glm::vec2 p2 = points[1];
-					glm::vec2 t2 = texCoords[1];
-					glm::vec2 p3 = points[2];
-					glm::vec2 t3 = texCoords[2];
-					if (glm::dot(glm::normalize(p2 - p1), glm::normalize(p3 - p2)) > 0.99f && points.size() > 3 && texCoords.size() > 3) {
-						p3 = points[3];
-						t3 = texCoords[3];
-					}
-
-					glm::vec2 bc = barycentricCoordinates(p1, p2, p3, pt);
-					texCoord = t1 * (1.0f - bc.x - bc.y) + t2 * bc.x + t3 * bc.y;
-				}
-
-				tex.push_back(texCoord);
+				cdt.insert_constraint(polygon.vertices_begin(), polygon.vertices_end(), true);
 			}
 
-			drawPolygon(pts, color, tex, mat, vertices, flip);
+			//Mark facets that are inside the domain bounded by the polygon
+			mark_domains(cdt);
+
+			for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
+				if (fit->info().in_domain()) {
+					std::vector<glm::vec2> triangle;
+					std::vector<glm::vec2> tex;
+					for (int i = 0; i < 3; i++) {
+						CDT::Vertex_handle vh = fit->vertex(i);
+						triangle.push_back(glm::vec2(vh->point().x(), vh->point().y()));
+
+						// Tex coordinates have to calculated here...
+						// 
+					}
+					drawPolygon(triangle, color, tex, mat, vertices, flip);
+				}
+			}
 		}
 	}
 

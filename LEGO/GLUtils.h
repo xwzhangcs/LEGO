@@ -96,6 +96,7 @@ namespace glutils {
 	void mark_domains(CDT& cdt);
 	void drawConcavePolygon(const std::vector<glm::dvec2>& points, const std::vector<std::vector<glm::dvec2>>& holes, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip = false);
 	void drawConcavePolygon(const std::vector<glm::vec2>& points, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip = false);
+	void drawConcavePolygon(const std::vector<glm::vec2>& points, const std::vector<std::vector<glm::vec2>>& holes, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip = false);
 	void drawGrid(float width, float height, float cell_size, const glm::vec4& lineColor, const glm::vec4& backgroundColor, const glm::mat4& mat, std::vector<Vertex>& vertices);
 	void drawBox(float length_x, float length_y, float length_z, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices);
 	void drawSphere(float radius, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices);

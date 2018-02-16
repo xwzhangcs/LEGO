@@ -7,18 +7,17 @@
 
 namespace simp {
 
-	class Building {
+	class BuildingLayer {
 	public:
 		util::Polygon footprint;
 		float bottom_height;
 		float top_height;
 		std::vector<float> costs;	// error, error_denominator, #primitives
-		std::vector<std::shared_ptr<Building>> children;
+		std::vector<std::shared_ptr<BuildingLayer>> children;
 
 	public:
-		Building() {}
-		Building(const util::Polygon& footprint, float bottom_height, float top_height);
-		~Building();
+		BuildingLayer() {}
+		BuildingLayer(const util::Polygon& footprint, float bottom_height, float top_height);
 	};
 
 }

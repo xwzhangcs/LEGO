@@ -7,8 +7,8 @@
 
 namespace simp {
 
-	std::vector<std::shared_ptr<Building>> BuildingSimplification::simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int ground_level, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
-		std::vector<std::shared_ptr<simp::Building>> buildings;
+	std::vector<std::shared_ptr<BuildingLayer>> BuildingSimplification::simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int ground_level, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
+		std::vector<std::shared_ptr<simp::BuildingLayer>> buildings;
 		for (int i = 0; i < disjointed_voxel_data.size(); i++) {
 			try {
 				std::vector<cv::Mat_<uchar>> voxel_data = disjointed_voxel_data.getDisjointedVoxelData(i);
@@ -21,7 +21,7 @@ namespace simp {
 					size = cv::Size(voxel_data[0].cols, voxel_data[0].rows);
 				}
 				
-				std::shared_ptr<Building> building;
+				std::shared_ptr<BuildingLayer> building;
 				if (algorithm == ALG_ALL) {
 					float threshold = 0.5;
 					if (alpha < 0.7) threshold = 0.0;
@@ -59,7 +59,7 @@ namespace simp {
 		return buildings;
 	}
 
-	std::vector<float> BuildingSimplification::sumCost(const std::vector<std::shared_ptr<Building>>& buildings) {
+	std::vector<float> BuildingSimplification::sumCost(const std::vector<std::shared_ptr<BuildingLayer>>& buildings) {
 		std::vector<float> costs(3, 0);
 
 		for (int i = 0; i < buildings.size(); i++) {
@@ -73,7 +73,7 @@ namespace simp {
 		return costs;
 	}
 
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy) {
+	std::shared_ptr<BuildingLayer> BuildingSimplification::simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -135,7 +135,7 @@ namespace simp {
 
 		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		best_simplified_polygon.transform(mat);
-		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(best_simplified_polygon, layer->bottom_height, layer->top_height));
+		std::shared_ptr<BuildingLayer> building = std::shared_ptr<BuildingLayer>(new BuildingLayer(best_simplified_polygon, layer->bottom_height, layer->top_height));
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
@@ -144,7 +144,7 @@ namespace simp {
 					dx = -1;
 					dy = -1;
 				}
-				std::shared_ptr<Building> child = simplifyBuildingByAll(size, layer->children[i], alpha, angle, dx, dy);
+				std::shared_ptr<BuildingLayer> child = simplifyBuildingByAll(size, layer->children[i], alpha, angle, dx, dy);
 				building->children.push_back(child);
 			}
 			catch (...) {
@@ -161,7 +161,7 @@ namespace simp {
 	 * @param epsilon	simplification level
 	 * @return			simplified building shape
 	 */
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOpenCV(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon) {
+	std::shared_ptr<BuildingLayer> BuildingSimplification::simplifyBuildingByOpenCV(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -173,12 +173,12 @@ namespace simp {
 
 		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		simplified_polygon.transform(mat);
-		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
+		std::shared_ptr<BuildingLayer> building = std::shared_ptr<BuildingLayer>(new BuildingLayer(simplified_polygon, layer->bottom_height, layer->top_height));
 		building->costs = costs;
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<Building> child = simplifyBuildingByOpenCV(size, layer->children[i], alpha, epsilon);
+				std::shared_ptr<BuildingLayer> child = simplifyBuildingByOpenCV(size, layer->children[i], alpha, epsilon);
 				OpenCVSimplification::decomposePolygon(child->footprint);
 				building->children.push_back(child);
 			}
@@ -196,7 +196,7 @@ namespace simp {
 	 * @param resolution	simplification level
 	 * @return				simplified building shape
 	 */
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByOurCustom(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy) {
+	std::shared_ptr<BuildingLayer> BuildingSimplification::simplifyBuildingByOurCustom(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -208,12 +208,12 @@ namespace simp {
 
 		cv::Mat_<float> mat = (cv::Mat_<float>(3, 3) << 1, 0, -size.width / 2, 0, -1, size.height / 2, 0, 0, 1);
 		simplified_polygon.transform(mat);
-		std::shared_ptr<Building> building = std::shared_ptr<Building>(new Building(simplified_polygon, layer->bottom_height, layer->top_height));
+		std::shared_ptr<BuildingLayer> building = std::shared_ptr<BuildingLayer>(new BuildingLayer(simplified_polygon, layer->bottom_height, layer->top_height));
 		building->costs = costs;
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<Building> child = simplifyBuildingByOurCustom(size, layer->children[i], alpha, resolution, angle, dx, dy);
+				std::shared_ptr<BuildingLayer> child = simplifyBuildingByOurCustom(size, layer->children[i], alpha, resolution, angle, dx, dy);
 				OurCustomSimplification::decomposePolygon(child->footprint);
 				building->children.push_back(child);
 			}
@@ -224,7 +224,7 @@ namespace simp {
 		return building;
 	}
 
-	std::shared_ptr<Building> BuildingSimplification::simplifyBuildingByCurve(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon, float curve_threshold) {
+	std::shared_ptr<BuildingLayer> BuildingSimplification::simplifyBuildingByCurve(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon, float curve_threshold) {
 		// to be implemented
 
 		throw "Not implemented";

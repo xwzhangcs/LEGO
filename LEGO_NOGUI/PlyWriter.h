@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "Building.h"
+#include "BuildingLayer.h"
 
 namespace util {
 
@@ -37,10 +37,10 @@ namespace util {
 			PlyWriter() {}
 
 		public:
-			static void write(const char* filename, const std::vector<std::shared_ptr<simp::Building>>& buildings);
+			static void write(const char* filename, const std::vector<std::shared_ptr<simp::BuildingLayer>>& buildings);
 
 		private:
-			static int writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
+			static int writeBuilding(std::shared_ptr<simp::BuildingLayer> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);
 			static int findClosestVertexIndex(const Point3d& p, const std::map<Point3d, int>& points);
 		};
 

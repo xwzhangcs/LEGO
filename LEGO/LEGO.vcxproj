@@ -138,7 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\LEGO_NOGUI\Building.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\BuildingLayer.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\BuildingSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\ContourUtils.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\DisjointVoxelData.cpp" />
@@ -238,7 +238,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\LEGO_NOGUI\Building.h" />
+    <ClInclude Include="..\LEGO_NOGUI\BuildingLayer.h" />
     <ClInclude Include="..\LEGO_NOGUI\BuildingSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\ContourUtils.h" />
     <ClInclude Include="..\LEGO_NOGUI\DisjointVoxelData.h" />

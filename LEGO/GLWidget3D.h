@@ -9,7 +9,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "Building.h"
+#include "BuildingLayer.h"
 #include "GLUtils.h"
 #include "LayerVoxelData.h"
 #include "DisjointVoxelData.h"
@@ -36,7 +36,7 @@ public:
 	util::DisjointVoxelData disjoint_voxel_data;
 	//std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
 	std::vector<std::shared_ptr<util::Layer>> layers;
-	std::vector<std::shared_ptr<simp::Building>> buildings;
+	std::vector<std::shared_ptr<simp::BuildingLayer>> buildings;
 	float voxel_count;
 	int ground_level;
 
@@ -69,8 +69,8 @@ public:
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
 	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);
-	void update3DGeometry(const std::vector<std::shared_ptr<simp::Building>>& buildings);
-	void update3DGeometry(std::shared_ptr<simp::Building> building, glm::vec4& color, std::vector<Vertex>& vertices);
+	void update3DGeometry(const std::vector<std::shared_ptr<simp::BuildingLayer>>& buildings);
+	void update3DGeometry(std::shared_ptr<simp::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices);
 
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);

@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <opencv2/opencv.hpp>
-#include "Building.h"
+#include "BuildingLayer.h"
 #include "ContourUtils.h"
 
 namespace simp {

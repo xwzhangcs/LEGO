@@ -6,7 +6,7 @@ namespace util {
 	
 	namespace ply {
 
-		void PlyWriter::write(const char* filename, const std::vector<std::shared_ptr<simp::Building>>& buildings) {
+		void PlyWriter::write(const char* filename, const std::vector<std::shared_ptr<simp::BuildingLayer>>& buildings) {
 			std::map<Point3d, int> vertices_map;
 			std::vector<Point3d> vertices;
 			std::vector<std::vector<int>> faces;
@@ -48,7 +48,7 @@ namespace util {
 			out.close();
 		}
 
-		int PlyWriter::writeBuilding(std::shared_ptr<simp::Building> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces) {
+		int PlyWriter::writeBuilding(std::shared_ptr<simp::BuildingLayer> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces) {
 			std::vector<std::vector<cv::Point2f>> polygons;
 
 			if (building->footprint.primitive_shapes.size() == 0) {

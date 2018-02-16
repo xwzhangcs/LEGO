@@ -352,12 +352,12 @@ namespace util {
 	* The images have to be CV_8U type.
 	*/
 	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2) {
-		int union_cnt = 0;
-		int inter_cnt = 0;
+		double union_cnt = 0;
+		double inter_cnt = 0;
 		for (int r = 0; r < img.rows; r++) {
 			for (int c = 0; c < img.cols; c++) {
-				if (img.at<uchar>(r, c) == 255 || img2.at<uchar>(r, c) == 255) union_cnt++;
-				if (img.at<uchar>(r, c) == 255 && img2.at<uchar>(r, c) == 255) inter_cnt++;
+				union_cnt += std::max(img.at<uchar>(r, c), img2.at<uchar>(r, c));
+				inter_cnt += std::min(img.at<uchar>(r, c), img2.at<uchar>(r, c));
 			}
 		}
 
@@ -370,13 +370,13 @@ namespace util {
 	* Check the IOU only within the specified region, rect.
 	*/
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect) {
-		int union_cnt = 0;
-		int inter_cnt = 0;
+		double union_cnt = 0;
+		double inter_cnt = 0;
 
 		for (int r = rect.y; r < rect.y + rect.height; r++) {
 			for (int c = rect.x; c < rect.x + rect.width; c++) {
-				if (img1.at<uchar>(r, c) == 255 || img2.at<uchar>(r, c) == 255) union_cnt++;
-				if (img1.at<uchar>(r, c) == 255 && img2.at<uchar>(r, c) == 255) inter_cnt++;
+				union_cnt += std::max(img1.at<uchar>(r, c), img2.at<uchar>(r, c));
+				inter_cnt += std::min(img1.at<uchar>(r, c), img2.at<uchar>(r, c));
 			}
 		}
 

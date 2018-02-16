@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Building.cpp" />
+    <ClCompile Include="BuildingLayer.cpp" />
     <ClCompile Include="BuildingSimplification.cpp" />
     <ClCompile Include="ContourUtils.cpp" />
     <ClCompile Include="DisjointVoxelData.cpp" />
@@ -30,7 +30,7 @@
     <ClCompile Include="PlyWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Building.h" />
+    <ClInclude Include="BuildingLayer.h" />
     <ClInclude Include="BuildingSimplification.h" />
     <ClInclude Include="ContourUtils.h" />
     <ClInclude Include="DisjointVoxelData.h" />
