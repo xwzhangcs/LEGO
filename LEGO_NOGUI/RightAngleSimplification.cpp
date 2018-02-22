@@ -1,4 +1,4 @@
-#include "OurCustomSimplification.h"
+#include "RightAngleSimplification.h"
 #include "ContourUtils.h"
 
 namespace simp {
@@ -10,7 +10,7 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-	util::Polygon OurCustomSimplification::simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy) {
+	util::Polygon RightAngleSimplification::simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy) {
 		// make sure there is a building in the layer
 		std::vector<util::Polygon> polygons = util::findContours(slice);
 		if (polygons.size() == 0) throw "No building is found.";
@@ -60,7 +60,7 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<float, int, int> OurCustomSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution) {
+	std::tuple<float, int, int> RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -105,7 +105,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double OurCustomSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy) {
+	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy) {
 		double theta = angle / 180 * CV_PI;
 
 		// create a transformation matrix
@@ -181,7 +181,7 @@ namespace simp {
 	 * @param simplified_contour		simplified contour
 	 * @return						intersection over union (IOU)
 	 */
-	double OurCustomSimplification::optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour) {
+	double RightAngleSimplification::optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour) {
 		// calculate the bounding box
 		int min_x = std::numeric_limits<int>::max();
 		int max_x = -std::numeric_limits<int>::max();
@@ -312,7 +312,7 @@ namespace simp {
 		return best_score;
 	}
 
-	std::vector<cv::Point> OurCustomSimplification::proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map) {
+	std::vector<cv::Point> RightAngleSimplification::proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map) {
 		std::vector<cv::Point> prop_contour(contour.size());
 		for (int i = 0; i < contour.size(); i++) {
 			prop_contour[i] = cv::Point(x_map[contour[i].x], y_map[contour[i].y]);
@@ -320,7 +320,7 @@ namespace simp {
 		return prop_contour;
 	}
 
-	void OurCustomSimplification::decomposePolygon(util::Polygon& polygon) {
+	void RightAngleSimplification::decomposePolygon(util::Polygon& polygon) {
 		// list up all xy coordinates
 		std::map<float, bool> x_map;
 		std::map<float, bool> y_map;
@@ -374,7 +374,7 @@ namespace simp {
 		}
 	}
 
-	void OurCustomSimplification::findMaximumRectangle(const std::vector<std::vector<bool>>& grid, const std::vector<float>& x_coords, const std::vector<float>& y_coords, int& x, int& y, int& width, int& height) {
+	void RightAngleSimplification::findMaximumRectangle(const std::vector<std::vector<bool>>& grid, const std::vector<float>& x_coords, const std::vector<float>& y_coords, int& x, int& y, int& width, int& height) {
 		float max_area = 0;
 		
 		for (int r = 0; r < grid.size(); r++) {

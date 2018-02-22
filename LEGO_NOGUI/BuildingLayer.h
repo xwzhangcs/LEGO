@@ -9,6 +9,7 @@ namespace simp {
 
 	class BuildingLayer {
 	public:
+		int building_id;
 		util::Polygon footprint;
 		float bottom_height;
 		float top_height;
@@ -17,7 +18,7 @@ namespace simp {
 
 	public:
 		BuildingLayer() {}
-		BuildingLayer(const util::Polygon& footprint, float bottom_height, float top_height);
+		BuildingLayer(int building_id, const util::Polygon& footprint, float bottom_height, float top_height);
 	};
 
 }

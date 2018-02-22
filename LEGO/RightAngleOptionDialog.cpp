@@ -1,6 +1,6 @@
-#include "OurCustomOptionDialog.h"
+#include "RightAngleOptionDialog.h"
 
-OurCustomOptionDialog::OurCustomOptionDialog(QWidget *parent) : QDialog(parent) {
+RightAngleOptionDialog::RightAngleOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
 	ui.spinBoxResolution->setValue(4);
@@ -13,29 +13,29 @@ OurCustomOptionDialog::OurCustomOptionDialog(QWidget *parent) : QDialog(parent) 
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
 }
 
-OurCustomOptionDialog::~OurCustomOptionDialog() {
+RightAngleOptionDialog::~RightAngleOptionDialog() {
 }
 
-int OurCustomOptionDialog::getResolution() {
+int RightAngleOptionDialog::getResolution() {
 	return ui.spinBoxResolution->value();
 }
 
-double OurCustomOptionDialog::getLayeringThreshold() {
+double RightAngleOptionDialog::getLayeringThreshold() {
 	return ui.doubleSpinBoxLayeringThreshold->value();
 }
 
-double OurCustomOptionDialog::getSnapVertexThreshold() {
+double RightAngleOptionDialog::getSnapVertexThreshold() {
 	return ui.doubleSpinBoxSnapVertexThreshold->value();
 }
 
-double OurCustomOptionDialog::getSnapEdgeThreshold() {
+double RightAngleOptionDialog::getSnapEdgeThreshold() {
 	return ui.doubleSpinBoxSnapEdgeThreshold->value();
 }
 
-void OurCustomOptionDialog::onOK() {
+void RightAngleOptionDialog::onOK() {
 	accept();
 }
 
-void OurCustomOptionDialog::onCancel() {
+void RightAngleOptionDialog::onCancel() {
 	reject();
 }

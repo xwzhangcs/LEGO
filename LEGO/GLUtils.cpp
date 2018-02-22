@@ -6,6 +6,7 @@
 #include <boost/geometry/geometries/ring.hpp>
 #include <cassert>
 #include <list>
+#include <unordered_map>
 
 namespace glutils {
 
@@ -141,9 +142,9 @@ namespace glutils {
 	}
 
 	/**
-		* Compute the offset polygon.
-		*/
-	void offsetPolygon(const std::vector<glm::vec2>& points, float offsetDistance, std::vector<glm::vec2>& offset_points) {
+	 * Compute the offset polygon.
+	 */
+	void offsetPolygon(const std::vector<glm::dvec2>& points, double offsetDistance, std::vector<glm::dvec2>& offset_points) {
 		offset_points.clear();
 
 		Polygon_2 poly;
@@ -158,7 +159,7 @@ namespace glutils {
 			offset_poly = CGAL::create_exterior_skeleton_and_offset_polygons_2(lOffset, poly);
 
 			for (auto it = offset_poly[1]->vertices_begin(); it != offset_poly[1]->vertices_end(); ++it) {
-				offset_points.push_back(glm::vec2(it->x(), it->y()));
+				offset_points.push_back(glm::dvec2(it->x(), it->y()));
 			}
 			std::reverse(offset_points.begin(), offset_points.end());
 		}
@@ -173,8 +174,8 @@ namespace glutils {
 	}
 
 	/*
-		* Return the distance from segment ab to point c.
-		*/
+	 * Return the distance from segment ab to point c.
+	 */
 	float distance(const glm::vec2& a, const glm::vec2& b, const glm::vec2& c, bool segmentOnly) {
 		float r_numerator = (c.x-a.x) * (b.x-a.x) + (c.y-a.y) * (b.y-a.y);
 		float r_denomenator = (b.x-a.x) * (b.x-a.x) + (b.y-a.y) * (b.y-a.y);
@@ -203,17 +204,17 @@ namespace glutils {
 	}
 
 	/*
-		* Return the distance from segment ab to point c.
-		*/
+	 * Return the distance from segment ab to point c.
+	 */
 	float distance(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
 		glm::vec3 v = glm::normalize(b - a);
 		return glm::length(glm::cross(a - c, v));
 	}
 
 	/**
-		* Line-line intersection
-		* Compute the intersection of a line that pass though p1 and whose vector is v1 and another line that pass through p2 and whose vector is v2.
-		*/
+	 * Line-line intersection
+	 * Compute the intersection of a line that pass though p1 and whose vector is v1 and another line that pass through p2 and whose vector is v2.
+	 */
 	glm::vec3 lineLineIntersection(const glm::vec3& p1, const glm::vec3& v1, const glm::vec3& p2, const glm::vec3& v2, float weight1, float weight2) {
 		// tentative implementation (might be wrong)
 		glm::mat2 m1;
@@ -235,16 +236,16 @@ namespace glutils {
 	}
 
 	/**
-		* Ray-Plane intersection
-		* Compute the intersection of a ray that starts from a and its direction v, and a plane whose normal is n and p is on the plane.
-		*/
+	 * Ray-Plane intersection
+	 * Compute the intersection of a ray that starts from a and its direction v, and a plane whose normal is n and p is on the plane.
+	 */
 	glm::vec3 rayPlaneIntersection(const glm::vec3& a, const glm::vec3& v, const glm::vec3& p, const glm::vec3& n) {
 		return a + v * glm::dot(p - a, n) / glm::dot(v, n);
 	}
 
 	/**
-		* Ray-Triangle intersection
-		*/
+	 * Ray-Triangle intersection
+	 */
 	bool rayTriangleIntersection(const glm::vec3& a, const glm::vec3& v, const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, glm::vec3& intPt) {
 		glm::vec3 n = glm::cross(p2 - p1, p3 - p1);
 		intPt = a + v * glm::dot(p1 - a, n) / glm::dot(v, n);
@@ -268,14 +269,14 @@ namespace glutils {
 	}
 
 	/**
-		* Compute the barycentroic coordinates.
-		*
-		* @param p1	point 1
-		* @param p2	point 2
-		* @param p3	point 3
-		* @param p		point
-		* @return		the barycentroic coodinates
-		*/
+	 * Compute the barycentroic coordinates.
+	 *
+	 * @param p1	point 1
+	 * @param p2	point 2
+	 * @param p3	point 3
+	 * @param p		point
+	 * @return		the barycentroic coodinates
+	 */
 	glm::vec2 barycentricCoordinates(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3, const glm::vec2& p) {
 		float den = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
 		float alpha = ((p.x - p1.x) * (p3.y - p1.y) - (p.y - p1.y) * (p3.x - p1.x)) / den;
@@ -360,7 +361,7 @@ namespace glutils {
 		vertices.push_back(Vertex(p4, n, glm::vec4(1, 1, 1, 1), t4, 1));
 	}
 
-	void drawPolygon(const std::vector<glm::vec3>& points, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices) {
+	void drawPolygon(const std::vector<glm::dvec3>& points, const glm::vec4& color, const std::vector<glm::dvec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices) {
 		glm::vec3 p1(mat * glm::vec4(points.back(), 1));
 		glm::vec2 t1 = texCoords.back();
 		glm::vec3 p2(mat * glm::vec4(points[0], 1));
@@ -395,7 +396,7 @@ namespace glutils {
 		}
 	}
 
-	void drawPolygon(const std::vector<glm::vec3>& points, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
+	void drawPolygon(const std::vector<glm::dvec3>& points, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
 		glm::vec3 p1(mat * glm::vec4(points.back(), 1));
 		glm::vec3 p2(mat * glm::vec4(points[0], 1));
 
@@ -426,7 +427,7 @@ namespace glutils {
 		}
 	}
 
-	void drawPolygon(const std::vector<glm::vec2>& points, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
+	void drawPolygon(const std::vector<glm::dvec2>& points, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
 		glm::vec3 p1(mat * glm::vec4(points.back(), 0, 1));
 		glm::vec3 p2(mat * glm::vec4(points[0], 0, 1));
 
@@ -457,7 +458,7 @@ namespace glutils {
 		}
 	}
 
-	void drawPolygon(const std::vector<glm::vec2>& points, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
+	void drawPolygon(const std::vector<glm::dvec2>& points, const glm::vec4& color, const std::vector<glm::dvec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
 		glm::vec3 p1(mat * glm::vec4(points.back(), 0, 1));
 		glm::vec2 t1 = texCoords.back();
 		glm::vec3 p2(mat * glm::vec4(points[0], 0, 1));
@@ -489,49 +490,6 @@ namespace glutils {
 
 			p2 = p3;
 			t2 = t3;
-		}
-	}
-
-	void drawConcavePolygon(const std::vector<glm::vec2>& points, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
-		float min_x = std::numeric_limits<float>::max();
-		float max_x = -std::numeric_limits<float>::max();
-		float min_y = std::numeric_limits<float>::max();
-		float max_y = -std::numeric_limits<float>::max();
-
-		Polygon_2 polygon;
-		for (int i = 0; i < points.size(); ++i) {
-			polygon.push_back(Point_2(points[i].x, points[i].y));
-
-			min_x = std::min(min_x, points[i].x);
-			max_x = std::max(max_x, points[i].x);
-			min_y = std::min(min_y, points[i].y);
-			max_y = std::max(max_y, points[i].y);
-		}
-
-		try {
-			// tesselate the concave polygon
-			if (polygon.is_simple()) {
-				if (polygon.is_clockwise_oriented()) {
-					polygon.reverse_orientation();
-				}
-
-				Polygon_list partition_polys;
-				Traits       partition_traits;
-				CGAL::greene_approx_convex_partition_2(polygon.vertices_begin(), polygon.vertices_end(), std::back_inserter(partition_polys), partition_traits);
-
-				for (auto fit = partition_polys.begin(); fit != partition_polys.end(); ++fit) {
-					std::vector<glm::vec2> pts;
-					std::vector<glm::vec2> texCoords;
-					for (auto vit = fit->vertices_begin(); vit != fit->vertices_end(); ++vit) {
-						pts.push_back(glm::vec2(vit->x(), vit->y()));
-						texCoords.push_back(glm::vec2((vit->x() - min_x) / (max_x - min_x), (vit->y() - min_y) / (max_y - min_y)));
-					}
-
-					drawPolygon(pts, color, texCoords, mat, vertices, flip);
-				}
-			}
-		}
-		catch (...) {
 		}
 	}
 
@@ -614,7 +572,7 @@ namespace glutils {
 
 			for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
 				if (fit->info().in_domain()) {
-					std::vector<glm::vec2> triangle;
+					std::vector<glm::dvec2> triangle;
 					for (int i = 0; i < 3; i++) {
 						CDT::Vertex_handle vh = fit->vertex(i);
 						triangle.push_back(glm::vec2(vh->point().x(), vh->point().y()));
@@ -625,26 +583,26 @@ namespace glutils {
 		}
 	}
 
-	void drawConcavePolygon(const std::vector<glm::vec2>& points, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
-		drawConcavePolygon(points, {}, color, texCoords, mat, vertices, flip);
+	void drawConcavePolygon(const std::vector<glm::dvec2>& points, const glm::vec4& color, const std::vector<glm::dvec2>& tex_coords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
+		drawConcavePolygon(points, {}, color, tex_coords, {}, mat, vertices, flip);
 	}
 
-	void drawConcavePolygon(const std::vector<glm::vec2>& points, const std::vector<std::vector<glm::vec2>>& holes, const glm::vec4& color, const std::vector<glm::vec2>& texCoords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
-		float min_x = std::numeric_limits<float>::max();
-		float max_x = -std::numeric_limits<float>::max();
-		float min_y = std::numeric_limits<float>::max();
-		float max_y = -std::numeric_limits<float>::max();
-
+	void drawConcavePolygon(const std::vector<glm::dvec2>& points, const std::vector<std::vector<glm::dvec2>>& holes, const glm::vec4& color, const std::vector<glm::dvec2>& tex_coords, const std::vector<std::vector<glm::dvec2>>& holes_tex_coords, const glm::mat4& mat, std::vector<Vertex>& vertices, bool flip) {
+		std::map<std::pair<double, double>, std::pair<double, double>> tex_coords_map;
+		for (int i = 0; i < points.size(); i++) {
+			tex_coords_map[{points[i].x, points[i].y}] = { tex_coords[i].x, tex_coords[i].y };
+		}
+		for (int i = 0; i < holes.size(); i++) {
+			for (int j = 0; j < holes[i].size(); j++) {
+				tex_coords_map[{holes[i][j].x, holes[i][j].y}] = { holes_tex_coords[i][j].x, holes_tex_coords[i][j].y };
+			}
+		}
+		
 		//Insert the polygons into a constrained triangulation
 		CDT cdt;
 		Polygon_2 polygon;
 		for (int i = 0; i < points.size(); i++) {
 			polygon.push_back(Point(points[i].x, points[i].y));
-
-			min_x = std::min(min_x, points[i].x);
-			max_x = std::max(max_x, points[i].x);
-			min_y = std::min(min_y, points[i].y);
-			max_y = std::max(max_y, points[i].y);
 		}
 
 		if (polygon.is_simple()) {
@@ -662,14 +620,15 @@ namespace glutils {
 
 			for (CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
 				if (fit->info().in_domain()) {
-					std::vector<glm::vec2> triangle;
-					std::vector<glm::vec2> tex;
+					std::vector<glm::dvec2> triangle;
+					std::vector<glm::dvec2> tex(3);
 					for (int i = 0; i < 3; i++) {
 						CDT::Vertex_handle vh = fit->vertex(i);
 						triangle.push_back(glm::vec2(vh->point().x(), vh->point().y()));
 
 						// Tex coordinates have to calculated here...
-						// 
+						std::pair<double, double> t = tex_coords_map[{vh->point().x(), vh->point().y()}];
+						tex[i] = glm::vec2(t.first, t.second);
 					}
 					drawPolygon(triangle, color, tex, mat, vertices, flip);
 				}
@@ -843,7 +802,7 @@ namespace glutils {
 	}
 
 	/**
-	 * X軸方向に高さ h、底面の半径 r1、上面の半径 r2の円錐を描画する。
+	 * Draw a cylinder in X axis direction.
 	 */
 	void drawCylinderX(float radius1, float radius2, float h, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, int slices) {
 		float phi = atan2(radius1 - radius2, h);
@@ -870,7 +829,7 @@ namespace glutils {
 	}
 
 	/**
-	 * Y軸方向に高さ h、底面の半径 r1、上面の半径 r2の円錐を描画する。
+	 * Draw a cylinder in Y axis direction.
 	 */
 	void drawCylinderY(float radius1, float radius2, float h, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, int slices) {
 		float phi = atan2(radius1 - radius2, h);
@@ -897,7 +856,7 @@ namespace glutils {
 	}
 
 	/**
-	 * Z軸方向に高さ h、底面の半径 r1/r2、上面の半径 r3/r4の円錐を描画する。
+	 * Draw a cylinder in Z axis direction.
 	 */
 	void drawCylinderZ(float radius1, float radius2, float radius3, float radius4, float h, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices, int slices, bool top_face, bool bottom_face) {
 		float phi = atan2(radius1 - radius2, h);
@@ -928,36 +887,6 @@ namespace glutils {
 
 		if (bottom_face) {
 			drawCircle(radius3, radius4, color, glm::rotate(mat, (float)M_PI, glm::vec3(1, 0, 0)), vertices, slices);
-		}
-	}
-
-	void drawPrism(std::vector<glm::vec2> points, float h, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
-		correct(points);
-
-		// top face
-		drawConcavePolygon(points, color, glm::translate(mat, glm::vec3(0, 0, h)), vertices);
-
-		// bottom face
-		drawConcavePolygon(points, color, mat, vertices, true);
-
-		// side faces
-		for (int i = 0; i < points.size(); i++) {
-			int next = (i + 1) % points.size();
-			glm::vec3 p1(mat * glm::vec4(points[i], 0, 1));
-			glm::vec3 p2(mat * glm::vec4(points[next], 0, 1));
-			glm::vec3 p3(mat * glm::vec4(points[next], h, 1));
-			glm::vec3 p4(mat * glm::vec4(points[i], h, 1));
-
-			glm::vec3 n = glm::cross(p2 - p1, p3 - p2);
-			n /= glm::length(n);
-
-			vertices.push_back(Vertex(p1, n, color));
-			vertices.push_back(Vertex(p2, n, color, 1));
-			vertices.push_back(Vertex(p3, n, color));
-
-			vertices.push_back(Vertex(p1, n, color));
-			vertices.push_back(Vertex(p3, n, color));
-			vertices.push_back(Vertex(p4, n, color, 1));
 		}
 	}
 
@@ -1026,8 +955,8 @@ namespace glutils {
 	}
 
 	/**
-		* Create a prism with holes
-		*/
+	 * Create a prism with holes
+	 */
 	void drawPrismWithHoles(std::vector<glm::dvec2> points, std::vector<std::vector<glm::dvec2>> holes, double h, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
 		correct(points);
 		for (int i = 0; i < holes.size(); i++) {
@@ -1085,7 +1014,7 @@ namespace glutils {
 	}
 
 	/**
-	 * Z軸方向に、指定された長さ、色、半径の矢印を描画する。
+	 * Draw arrow in Z axis direction.
 	 */
 	void drawArrow(float radius, float length, const glm::vec4& color, const glm::mat4& mat, std::vector<Vertex>& vertices) {
 		drawCylinderZ(radius, radius, radius, radius, length - radius * 4, color, mat, vertices);
@@ -1094,15 +1023,15 @@ namespace glutils {
 	}
 
 	void drawAxes(float radius, float length, const glm::mat4& mat, std::vector<Vertex>& vertices) {
-		// X軸を描画（赤色）
+		// X axis
 		glm::mat4 m1 = glm::rotate(mat, deg2rad(90), glm::vec3(0, 1, 0));
 		drawArrow(radius, length, glm::vec4(1, 0, 0, 1), m1, vertices);
 
-		// Y軸を描画（緑色）
+		// Y axis
 		glm::mat4 m2 = glm::rotate(mat, deg2rad(-90), glm::vec3(1, 0, 0));
 		drawArrow(radius, length, glm::vec4(0, 1, 0, 1), m2, vertices);
 
-		// Z軸を描画 (青色）
+		// Z axis
 		drawArrow(radius, length, glm::vec4(0, 0, 1, 1), mat, vertices);
 	}
 
@@ -1115,20 +1044,20 @@ namespace glutils {
 		std::vector<glm::vec3> circle_normals(slices);
 
 		{
-			// 最初の円筒形の、ローカル座標系を計算
+			// local coordinates of the first cylinder
 			modelMat1 = glm::translate(modelMat1, glm::vec3(points[0]));
 			y_dir = glm::normalize(points[1] - points[0]);
 			z_dir = glm::normalize(glm::cross(points[2] - points[1], y_dir));
 			x_dir = glm::normalize(glm::cross(y_dir, z_dir));
 			z_dir = glm::normalize(glm::cross(x_dir, y_dir));
 
-			// ローカル座標系への変換行列を計算		
+			// transformation matrix to the local coordinates
 			modelMat1[0].x = x_dir.x; modelMat1[0].y = x_dir.y; modelMat1[0].z = x_dir.z;
 			modelMat1[1].x = y_dir.x; modelMat1[1].y = y_dir.y; modelMat1[1].z = y_dir.z;
 			modelMat1[2].x = z_dir.x; modelMat1[2].y = z_dir.y; modelMat1[2].z = z_dir.z;
 		}
 
-		// 円周の頂点座標を計算
+		// Circle
 		for (int k = 0; k < slices; ++k) {
 			float theta = (float)k / slices * M_PI * 2.0f;
 
@@ -1144,7 +1073,7 @@ namespace glutils {
 			modelMat2 = glm::translate(glm::mat4(), glm::vec3(points[i + 1]));
 
 			if (i < points.size() - 2) {
-				// この円筒形の、ローカル座標系を計算
+				// Calculate the local coordinates of the cylinder
 				y_dir2 = glm::normalize(points[i + 2] - points[i + 1]);
 				if (i < points.size() - 3) {
 					z_dir2 = glm::normalize(glm::cross(y_dir2, points[i + 1] - points[i]));
@@ -1157,7 +1086,7 @@ namespace glutils {
 				x_dir2 = glm::normalize(glm::cross(y_dir2, z_dir2));
 				z_dir2 = glm::normalize(glm::cross(x_dir2, y_dir2));
 
-				// ローカル座標系への変換行列を計算		
+				// Transformation matrix to the local coordinates
 				modelMat2[0].x = x_dir2.x; modelMat2[0].y = x_dir2.y; modelMat2[0].z = x_dir2.z;
 				modelMat2[1].x = y_dir2.x; modelMat2[1].y = y_dir2.y; modelMat2[1].z = y_dir2.z;
 				modelMat2[2].x = z_dir2.x; modelMat2[2].y = z_dir2.y; modelMat2[2].z = z_dir2.z;

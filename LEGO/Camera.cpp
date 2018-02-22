@@ -26,11 +26,11 @@ void Camera::mousePress(int mouse_x, int mouse_y) {
  */
 void Camera::rotate(int mouse_x, int mouse_y, float senstivity) {
 	xrot += (mouse_y - mouse_pos.y) * senstivity;
-	if (xrot > 180) xrot -= 360;
-	else if (xrot < -180) xrot += 360;
+	if (xrot > 360) xrot -= 360;
+	else if (xrot < -360) xrot += 360;
 	zrot += (mouse_x - mouse_pos.x) * senstivity;
-	if (zrot > 180) zrot -= 180;
-	else if (zrot < -180) zrot += 360;
+	if (zrot > 360) zrot -= 360;
+	else if (zrot < -360) zrot += 360;
 	updateMVPMatrix();
 
 	mouse_pos = glm::vec2(mouse_x, mouse_y);

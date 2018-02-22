@@ -20,10 +20,10 @@ namespace simp {
 		static std::vector<float> sumCost(const std::vector<std::shared_ptr<BuildingLayer>>& buildings);
 
 	private:
-		static std::shared_ptr<BuildingLayer> simplifyBuildingByAll(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy);
-		static std::shared_ptr<BuildingLayer> simplifyBuildingByOpenCV(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon);
-		static std::shared_ptr<BuildingLayer> simplifyBuildingByOurCustom(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy);
-		static std::shared_ptr<BuildingLayer> simplifyBuildingByCurve(const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon, float curve_threshold);
+		static std::shared_ptr<BuildingLayer> simplifyBuildingByAll(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy);
+		static std::shared_ptr<BuildingLayer> simplifyBuildingByOpenCV(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon);
+		static std::shared_ptr<BuildingLayer> simplifyBuildingByOurCustom(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy);
+		static std::shared_ptr<BuildingLayer> simplifyBuildingByCurve(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon, float curve_threshold);
 
 		static std::vector<float> calculateCost(const cv::Size& size, const util::Polygon& polygon, std::shared_ptr<util::Layer> layer, float alpha);
 	};

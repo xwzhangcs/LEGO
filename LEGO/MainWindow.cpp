@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include "OptionDialog.h"
 #include "OpenCVOptionDialog.h"
-#include "OurCustomOptionDialog.h"
+#include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -21,9 +21,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// group for rendering modes
 	QActionGroup* groupColoring = new QActionGroup(this);
-	groupColoring->addAction(ui.actionSameColor);
-	groupColoring->addAction(ui.actionColoringByBuilding);
-	groupColoring->addAction(ui.actionColoringByLayer);
+	groupColoring->addAction(ui.actionColor);
+	groupColoring->addAction(ui.actionTexture);
 
 	// group for rendering modes
 	QActionGroup* groupRendering = new QActionGroup(this);
@@ -42,9 +41,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
 	connect(ui.actionOpenCVTest, SIGNAL(triggered()), this, SLOT(onOpenCVTest()));
 	connect(ui.actionRightAngleTest, SIGNAL(triggered()), this, SLOT(onRightAngleTest()));
-	connect(ui.actionSameColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
-	connect(ui.actionColoringByBuilding, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
-	connect(ui.actionColoringByLayer, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
+	connect(ui.actionCurveTest, SIGNAL(triggered()), this, SLOT(onCurveTest()));
+	connect(ui.actionColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
+	connect(ui.actionTexture, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingSSAO, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingHatching, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
@@ -116,7 +115,7 @@ void MainWindow::onSimplifyByOpenCV() {
 }
 
 void MainWindow::onSimplifyByRightAngle() {
-	OurCustomOptionDialog dlg;
+	RightAngleOptionDialog dlg;
 	if (dlg.exec()) {
 		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
@@ -139,15 +138,16 @@ void MainWindow::onRightAngleTest() {
 	glWidget->rightAngleTest();
 }
 
+void MainWindow::onCurveTest() {
+	glWidget->curveTest();
+}
+
 void MainWindow::onColoringModeChanged() {
-	if (ui.actionSameColor->isChecked()) {
-		glWidget->color_mode = GLWidget3D::COLOR_SAME;
+	if (ui.actionColor->isChecked()) {
+		glWidget->color_mode = GLWidget3D::COLOR;
 	}
-	else if (ui.actionColoringByBuilding->isChecked()) {
-		glWidget->color_mode = GLWidget3D::COLOR_BY_BUILDING;
-	}
-	else if (ui.actionColoringByLayer->isChecked()) {
-		glWidget->color_mode = GLWidget3D::COLOR_BY_LAYER;
+	else if (ui.actionTexture->isChecked()) {
+		glWidget->color_mode = GLWidget3D::TEXTURE;
 	}
 	glWidget->update3DGeometry();
 	glWidget->update();

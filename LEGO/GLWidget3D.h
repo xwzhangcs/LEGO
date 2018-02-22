@@ -21,7 +21,7 @@ class GLWidget3D : public QGLWidget {
 
 public:
 	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_ALL, SHOW_OPENCV, SHOW_RIGHTANGLE, SHOW_CURVE };
-	enum COLOR_MODE { COLOR_SAME = 0, COLOR_BY_BUILDING, COLOR_BY_LAYER };
+	enum COLOR_MODE { COLOR = 0, TEXTURE };
 
 public:
 	MainWindow* mainWin;
@@ -34,7 +34,6 @@ public:
 
 	// input voxel data
 	util::DisjointVoxelData disjoint_voxel_data;
-	//std::vector<std::vector<cv::Mat_<uchar>>> disjointed_voxel_data;
 	std::vector<std::shared_ptr<util::Layer>> layers;
 	std::vector<std::shared_ptr<simp::BuildingLayer>> buildings;
 	float voxel_count;
@@ -66,12 +65,12 @@ public:
 	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void opencvTest();
 	void rightAngleTest();
+	void curveTest();
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
 	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);
 	void update3DGeometry(const std::vector<std::shared_ptr<simp::BuildingLayer>>& buildings);
-	void update3DGeometry(std::shared_ptr<simp::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices);
-
+	void update3DGeometry(std::shared_ptr<simp::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 

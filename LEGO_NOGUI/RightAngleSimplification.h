@@ -7,9 +7,9 @@
 
 namespace simp {
 
-	class OurCustomSimplification {
+	class RightAngleSimplification {
 	protected:
-		OurCustomSimplification() {}
+		RightAngleSimplification() {}
 
 	public:
 		static util::Polygon simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy);

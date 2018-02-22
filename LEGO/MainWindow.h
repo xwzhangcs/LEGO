@@ -28,6 +28,7 @@ public slots:
 	void onSimplifyByCurve();
 	void onOpenCVTest();
 	void onRightAngleTest();
+	void onCurveTest();
 	void onColoringModeChanged();
 	void onRenderingModeChanged();
 };

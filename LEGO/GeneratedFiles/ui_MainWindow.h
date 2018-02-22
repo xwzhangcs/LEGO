@@ -38,13 +38,14 @@ public:
     QAction *actionInputVoxel;
     QAction *actionSaveImage;
     QAction *actionSaveImageHD;
-    QAction *actionSameColor;
-    QAction *actionColoringByBuilding;
+    QAction *actionColor;
+    QAction *actionTexture;
     QAction *actionColoringByLayer;
     QAction *actionSimplifyByCurve;
     QAction *actionSimplifyByAll;
     QAction *actionOpenCVTest;
     QAction *actionRightAngleTest;
+    QAction *actionCurveTest;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -97,13 +98,13 @@ public:
         actionSaveImage->setObjectName(QStringLiteral("actionSaveImage"));
         actionSaveImageHD = new QAction(MainWindowClass);
         actionSaveImageHD->setObjectName(QStringLiteral("actionSaveImageHD"));
-        actionSameColor = new QAction(MainWindowClass);
-        actionSameColor->setObjectName(QStringLiteral("actionSameColor"));
-        actionSameColor->setCheckable(true);
-        actionSameColor->setChecked(true);
-        actionColoringByBuilding = new QAction(MainWindowClass);
-        actionColoringByBuilding->setObjectName(QStringLiteral("actionColoringByBuilding"));
-        actionColoringByBuilding->setCheckable(true);
+        actionColor = new QAction(MainWindowClass);
+        actionColor->setObjectName(QStringLiteral("actionColor"));
+        actionColor->setCheckable(true);
+        actionColor->setChecked(true);
+        actionTexture = new QAction(MainWindowClass);
+        actionTexture->setObjectName(QStringLiteral("actionTexture"));
+        actionTexture->setCheckable(true);
         actionColoringByLayer = new QAction(MainWindowClass);
         actionColoringByLayer->setObjectName(QStringLiteral("actionColoringByLayer"));
         actionColoringByLayer->setCheckable(true);
@@ -117,6 +118,8 @@ public:
         actionOpenCVTest->setObjectName(QStringLiteral("actionOpenCVTest"));
         actionRightAngleTest = new QAction(MainWindowClass);
         actionRightAngleTest->setObjectName(QStringLiteral("actionRightAngleTest"));
+        actionCurveTest = new QAction(MainWindowClass);
+        actionCurveTest->setObjectName(QStringLiteral("actionCurveTest"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -146,9 +149,8 @@ public:
         menuFile->addAction(actionSaveImage);
         menuFile->addSeparator();
         menuFile->addAction(actionExit);
-        menuRendering->addAction(actionSameColor);
-        menuRendering->addAction(actionColoringByBuilding);
-        menuRendering->addAction(actionColoringByLayer);
+        menuRendering->addAction(actionColor);
+        menuRendering->addAction(actionTexture);
         menuRendering->addSeparator();
         menuRendering->addAction(actionRenderingBasic);
         menuRendering->addAction(actionRenderingSSAO);
@@ -162,6 +164,7 @@ public:
         menuSimplify->addSeparator();
         menuSimplify->addAction(actionOpenCVTest);
         menuSimplify->addAction(actionRightAngleTest);
+        menuSimplify->addAction(actionCurveTest);
 
         retranslateUi(MainWindowClass);
 
@@ -187,13 +190,14 @@ public:
         actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));
         actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "P", 0));
         actionSaveImageHD->setText(QApplication::translate("MainWindowClass", "Save Image HD", 0));
-        actionSameColor->setText(QApplication::translate("MainWindowClass", "Same Color", 0));
-        actionColoringByBuilding->setText(QApplication::translate("MainWindowClass", "Coloring by Building", 0));
+        actionColor->setText(QApplication::translate("MainWindowClass", "Color", 0));
+        actionTexture->setText(QApplication::translate("MainWindowClass", "Texture", 0));
         actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", 0));
         actionSimplifyByCurve->setText(QApplication::translate("MainWindowClass", "Curve", 0));
         actionSimplifyByAll->setText(QApplication::translate("MainWindowClass", "All", 0));
         actionOpenCVTest->setText(QApplication::translate("MainWindowClass", "OpenCV Test", 0));
         actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", 0));
+        actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));

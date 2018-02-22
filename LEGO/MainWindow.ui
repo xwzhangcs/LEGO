@@ -38,9 +38,8 @@
     <property name="title">
      <string>Rendering</string>
     </property>
-    <addaction name="actionSameColor"/>
-    <addaction name="actionColoringByBuilding"/>
-    <addaction name="actionColoringByLayer"/>
+    <addaction name="actionColor"/>
+    <addaction name="actionTexture"/>
     <addaction name="separator"/>
     <addaction name="actionRenderingBasic"/>
     <addaction name="actionRenderingSSAO"/>
@@ -59,6 +58,7 @@
     <addaction name="separator"/>
     <addaction name="actionOpenCVTest"/>
     <addaction name="actionRightAngleTest"/>
+    <addaction name="actionCurveTest"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -181,7 +181,7 @@
     <string>Save Image HD</string>
    </property>
   </action>
-  <action name="actionSameColor">
+  <action name="actionColor">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -189,15 +189,15 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Same Color</string>
+    <string>Color</string>
    </property>
   </action>
-  <action name="actionColoringByBuilding">
+  <action name="actionTexture">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Coloring by Building</string>
+    <string>Texture</string>
    </property>
   </action>
   <action name="actionColoringByLayer">
@@ -232,6 +232,11 @@
   <action name="actionRightAngleTest">
    <property name="text">
     <string>Right Angle Test</string>
+   </property>
+  </action>
+  <action name="actionCurveTest">
+   <property name="text">
+    <string>Curve Test</string>
    </property>
   </action>
  </widget>

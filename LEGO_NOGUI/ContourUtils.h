@@ -74,6 +74,19 @@ namespace util {
 		std::vector<cv::Point2f> getActualPoints();
 	};
 
+	class PrimitiveCurve : public PrimitiveShape {
+	public:
+		float theta_start;
+		float theta_end;
+		cv::Point2f center;
+		float radius;
+
+	public:
+		PrimitiveCurve(const cv::Mat_<float>& mat, float theta_start, float theta_end, const cv::Point2f &center, float radius);
+		boost::shared_ptr<PrimitiveShape> clone();
+		std::vector<cv::Point2f> getActualPoints();
+	};
+
 	class Ring {
 	public:
 		cv::Mat_<float> mat;
