@@ -1,10 +1,9 @@
 #include <iostream>
-#include "OpenCVSimplification.h"
 #include <QDir>
 #include <QString>
-#include "DisjointVoxelData.h"
-#include "BuildingSimplification.h"
-#include "PlyWriter.h"
+#include "util/DisjointVoxelData.h"
+#include "simp/BuildingSimplification.h"
+#include "util/PlyWriter.h"
 
 int main(int argc, const char* argv[]) {
 	if (argc < 4) {
@@ -46,7 +45,7 @@ int main(int argc, const char* argv[]) {
 	util::DisjointVoxelData dvd;
 	dvd.disjoint(voxel_data, 0.5);
 
-	std::vector<std::shared_ptr<simp::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, algorithm, 0.5, 0.1, 2, 4, 1);
+	std::vector<std::shared_ptr<util::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, algorithm, 0.5, 0.1, 2, 4, 1);
 	util::ply::PlyWriter::write(argv[3], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;

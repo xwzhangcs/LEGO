@@ -19,27 +19,27 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="BuildingLayer.cpp" />
-    <ClCompile Include="BuildingSimplification.cpp" />
-    <ClCompile Include="ContourUtils.cpp" />
-    <ClCompile Include="CurveSimplification.cpp" />
-    <ClCompile Include="DisjointVoxelData.cpp" />
-    <ClCompile Include="LayerVoxelData.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="OpenCVSimplification.cpp" />
-    <ClCompile Include="RightAngleSimplification.cpp" />
-    <ClCompile Include="PlyWriter.cpp" />
+    <ClCompile Include="simp\BuildingSimplification.cpp" />
+    <ClCompile Include="simp\CurveSimplification.cpp" />
+    <ClCompile Include="simp\DPSimplification.cpp" />
+    <ClCompile Include="simp\RightAngleSimplification.cpp" />
+    <ClCompile Include="util\BuildingLayer.cpp" />
+    <ClCompile Include="util\ContourUtils.cpp" />
+    <ClCompile Include="util\DisjointVoxelData.cpp" />
+    <ClCompile Include="util\LayerVoxelData.cpp" />
+    <ClCompile Include="util\PlyWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BuildingLayer.h" />
-    <ClInclude Include="BuildingSimplification.h" />
-    <ClInclude Include="ContourUtils.h" />
-    <ClInclude Include="CurveSimplification.h" />
-    <ClInclude Include="DisjointVoxelData.h" />
-    <ClInclude Include="LayerVoxelData.h" />
-    <ClInclude Include="OpenCVSimplification.h" />
-    <ClInclude Include="RightAngleSimplification.h" />
-    <ClInclude Include="PlyWriter.h" />
+    <ClInclude Include="simp\BuildingSimplification.h" />
+    <ClInclude Include="simp\CurveSimplification.h" />
+    <ClInclude Include="simp\DPSimplification.h" />
+    <ClInclude Include="simp\RightAngleSimplification.h" />
+    <ClInclude Include="util\BuildingLayer.h" />
+    <ClInclude Include="util\ContourUtils.h" />
+    <ClInclude Include="util\DisjointVoxelData.h" />
+    <ClInclude Include="util\LayerVoxelData.h" />
+    <ClInclude Include="util\PlyWriter.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A84953E3-4DFB-4479-9C1B-022F9487F2EA}</ProjectGuid>

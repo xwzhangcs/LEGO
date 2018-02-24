@@ -23,7 +23,7 @@ public slots:
 	void onSaveImage();
 	void onInputVoxel();
 	void onSimplifyByAll();
-	void onSimplifyByOpenCV();
+	void onSimplifyByDP();
 	void onSimplifyByRightAngle();
 	void onSimplifyByCurve();
 	void onOpenCVTest();

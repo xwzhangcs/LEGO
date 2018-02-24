@@ -52,7 +52,7 @@
     <addaction name="actionInputVoxel"/>
     <addaction name="separator"/>
     <addaction name="actionSimplifyByAll"/>
-    <addaction name="actionSimplifyByOpenCV"/>
+    <addaction name="actionSimplifyByDP"/>
     <addaction name="actionSimplifyByRightAngle"/>
     <addaction name="actionSimplifyByCurve"/>
     <addaction name="separator"/>
@@ -141,12 +141,12 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionSimplifyByOpenCV">
+  <action name="actionSimplifyByDP">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>OpenCV</string>
+    <string>Douglas-Peucker</string>
    </property>
   </action>
   <action name="actionSimplifyByRightAngle">

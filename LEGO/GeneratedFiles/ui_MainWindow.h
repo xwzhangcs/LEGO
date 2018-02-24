@@ -33,7 +33,7 @@ public:
     QAction *actionRenderingHatching;
     QAction *actionOpen;
     QAction *actionSavePLY;
-    QAction *actionSimplifyByOpenCV;
+    QAction *actionSimplifyByDP;
     QAction *actionSimplifyByRightAngle;
     QAction *actionInputVoxel;
     QAction *actionSaveImage;
@@ -84,9 +84,9 @@ public:
         QIcon icon1;
         icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionSavePLY->setIcon(icon1);
-        actionSimplifyByOpenCV = new QAction(MainWindowClass);
-        actionSimplifyByOpenCV->setObjectName(QStringLiteral("actionSimplifyByOpenCV"));
-        actionSimplifyByOpenCV->setCheckable(true);
+        actionSimplifyByDP = new QAction(MainWindowClass);
+        actionSimplifyByDP->setObjectName(QStringLiteral("actionSimplifyByDP"));
+        actionSimplifyByDP->setCheckable(true);
         actionSimplifyByRightAngle = new QAction(MainWindowClass);
         actionSimplifyByRightAngle->setObjectName(QStringLiteral("actionSimplifyByRightAngle"));
         actionSimplifyByRightAngle->setCheckable(true);
@@ -158,7 +158,7 @@ public:
         menuSimplify->addAction(actionInputVoxel);
         menuSimplify->addSeparator();
         menuSimplify->addAction(actionSimplifyByAll);
-        menuSimplify->addAction(actionSimplifyByOpenCV);
+        menuSimplify->addAction(actionSimplifyByDP);
         menuSimplify->addAction(actionSimplifyByRightAngle);
         menuSimplify->addAction(actionSimplifyByCurve);
         menuSimplify->addSeparator();
@@ -184,7 +184,7 @@ public:
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
         actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", 0));
         actionSavePLY->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
-        actionSimplifyByOpenCV->setText(QApplication::translate("MainWindowClass", "OpenCV", 0));
+        actionSimplifyByDP->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker", 0));
         actionSimplifyByRightAngle->setText(QApplication::translate("MainWindowClass", "Right Angle", 0));
         actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", 0));
         actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));

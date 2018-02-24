@@ -4,7 +4,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include "OptionDialog.h"
-#include "OpenCVOptionDialog.h"
+#include "DPOptionDialog.h"
 #include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
 
@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	QActionGroup* groupSimplify = new QActionGroup(this);
 	groupSimplify->addAction(ui.actionInputVoxel);
 	groupSimplify->addAction(ui.actionSimplifyByAll);
-	groupSimplify->addAction(ui.actionSimplifyByOpenCV);
+	groupSimplify->addAction(ui.actionSimplifyByDP);
 	groupSimplify->addAction(ui.actionSimplifyByRightAngle);
 	groupSimplify->addAction(ui.actionSimplifyByCurve);
 
@@ -36,7 +36,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
 	connect(ui.actionInputVoxel, SIGNAL(triggered()), this, SLOT(onInputVoxel()));
 	connect(ui.actionSimplifyByAll, SIGNAL(triggered()), this, SLOT(onSimplifyByAll()));
-	connect(ui.actionSimplifyByOpenCV, SIGNAL(triggered()), this, SLOT(onSimplifyByOpenCV()));
+	connect(ui.actionSimplifyByDP, SIGNAL(triggered()), this, SLOT(onSimplifyByDP()));
 	connect(ui.actionSimplifyByRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByRightAngle()));
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
 	connect(ui.actionOpenCVTest, SIGNAL(triggered()), this, SLOT(onOpenCVTest()));
@@ -106,8 +106,8 @@ void MainWindow::onSimplifyByAll() {
 	}
 }
 
-void MainWindow::onSimplifyByOpenCV() {
-	OpenCVOptionDialog dlg;
+void MainWindow::onSimplifyByDP() {
+	DPOptionDialog dlg;
 	if (dlg.exec()) {
 		glWidget->simplifyByOpenCV(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();

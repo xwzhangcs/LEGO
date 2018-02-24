@@ -18,12 +18,12 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\ContourUtils.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\util\ContourUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\LEGO_NOGUI\ContourUtils.h">
+    <ClInclude Include="..\LEGO_NOGUI\util\ContourUtils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

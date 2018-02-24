@@ -9,10 +9,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "BuildingLayer.h"
+#include "util/BuildingLayer.h"
 #include "GLUtils.h"
-#include "LayerVoxelData.h"
-#include "DisjointVoxelData.h"
+#include "util/LayerVoxelData.h"
+#include "util/DisjointVoxelData.h"
 
 class MainWindow;
 
@@ -35,7 +35,7 @@ public:
 	// input voxel data
 	util::DisjointVoxelData disjoint_voxel_data;
 	std::vector<std::shared_ptr<util::Layer>> layers;
-	std::vector<std::shared_ptr<simp::BuildingLayer>> buildings;
+	std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 	float voxel_count;
 	int ground_level;
 
@@ -69,8 +69,8 @@ public:
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
 	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);
-	void update3DGeometry(const std::vector<std::shared_ptr<simp::BuildingLayer>>& buildings);
-	void update3DGeometry(std::shared_ptr<simp::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
+	void update3DGeometry(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
+	void update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 

@@ -123,11 +123,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\LEGO_NOGUI\ContourUtils.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\util\ContourUtils.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\LEGO_NOGUI\ContourUtils.h" />
+    <ClInclude Include="..\LEGO_NOGUI\util\ContourUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

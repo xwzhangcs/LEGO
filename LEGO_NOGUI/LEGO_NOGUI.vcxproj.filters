@@ -15,63 +15,63 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ContourUtils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="OpenCVSimplification.cpp">
+    <ClCompile Include="simp\BuildingSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PlyWriter.cpp">
+    <ClCompile Include="simp\CurveSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DisjointVoxelData.cpp">
+    <ClCompile Include="simp\RightAngleSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BuildingSimplification.cpp">
+    <ClCompile Include="util\ContourUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LayerVoxelData.cpp">
+    <ClCompile Include="util\DisjointVoxelData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BuildingLayer.cpp">
+    <ClCompile Include="util\LayerVoxelData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CurveSimplification.cpp">
+    <ClCompile Include="util\PlyWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RightAngleSimplification.cpp">
+    <ClCompile Include="util\BuildingLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="simp\DPSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ContourUtils.h">
+    <ClInclude Include="simp\BuildingSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="OpenCVSimplification.h">
+    <ClInclude Include="util\ContourUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PlyWriter.h">
+    <ClInclude Include="simp\CurveSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DisjointVoxelData.h">
+    <ClInclude Include="util\DisjointVoxelData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BuildingSimplification.h">
+    <ClInclude Include="util\LayerVoxelData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LayerVoxelData.h">
+    <ClInclude Include="util\PlyWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BuildingLayer.h">
+    <ClInclude Include="simp\RightAngleSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CurveSimplification.h">
+    <ClInclude Include="util\BuildingLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RightAngleSimplification.h">
+    <ClInclude Include="simp\DPSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

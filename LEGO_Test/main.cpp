@@ -1,5 +1,5 @@
 #include <iostream>
-#include "ContourUtils.h"
+#include "util/ContourUtils.h"
 
 void testFindContour(const char* filename) {
 	std::cout << "------------------------------------------------" << std::endl;
