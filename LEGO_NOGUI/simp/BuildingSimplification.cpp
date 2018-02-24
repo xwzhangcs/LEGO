@@ -45,7 +45,7 @@ namespace simp {
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
-					building = simplifyBuildingByOurCustom(i, size, layer, alpha, resolution, angle, dx, dy);
+					building = simplifyBuildingByRightAngle(i, size, layer, alpha, resolution, angle, dx, dy);
 				}
 				else if (algorithm == ALG_CURVE) {
 					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, layering_threshold);
@@ -218,7 +218,7 @@ namespace simp {
 	 * @param resolution	simplification level
 	 * @return				simplified building shape
 	 */
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByOurCustom(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy) {
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByRightAngle(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy) {
 		std::vector<util::Polygon> polygons = util::findContours(layer->slices[0]);
 
 		if (polygons.size() == 0) throw "No building voxel is found in this layer.";
@@ -235,7 +235,7 @@ namespace simp {
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByOurCustom(building_id, size, layer->children[i], alpha, resolution, angle, dx, dy);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByRightAngle(building_id, size, layer->children[i], alpha, resolution, angle, dx, dy);
 				RightAngleSimplification::decomposePolygon(child->footprint);
 				building->children.push_back(child);
 			}
