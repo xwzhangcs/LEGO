@@ -7,14 +7,14 @@
 
 int main(int argc, const char* argv[]) {
 	if (argc < 4) {
-		std::cerr << "Usage: " << argv[0] << " <slice image filename> <algorithm { 1 - all, 2 - DP, 3 - right angle, 4 - curve }> <output filename>" << std::endl;
+		std::cerr << "Usage: " << argv[0] << " <slice image filename> <weight [0-1]> <output filename>" << std::endl;
 		return -1;
 	}
 
 	QString input_filename(argv[1]);
 	std::vector<cv::Mat_<uchar>> voxel_data;
 
-	int algorithm = std::stoi(argv[2]);
+	float alpha = std::stof(argv[2]);
 
 	// get directory
 	QFileInfo finfo(input_filename);
@@ -45,7 +45,7 @@ int main(int argc, const char* argv[]) {
 	util::DisjointVoxelData dvd;
 	dvd.disjoint(voxel_data, 0.5);
 
-	std::vector<std::shared_ptr<util::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, algorithm, 0.5, 0.1, 2, 4, 1);
+	std::vector<std::shared_ptr<util::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, simp::BuildingSimplification::ALG_ALL, alpha, 0.1, 2, 4, 1);
 	util::ply::PlyWriter::write(argv[3], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
