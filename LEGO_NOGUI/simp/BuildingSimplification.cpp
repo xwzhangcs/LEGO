@@ -24,9 +24,11 @@ namespace simp {
 				
 				std::shared_ptr<util::BuildingLayer> building;
 				if (algorithm == ALG_ALL) {
-					float threshold = 0.5;
-					if (alpha < 0.7) threshold = 0.0;
-					else if (alpha < 1.0) threshold = 0.6;
+					// Select the best layting threshold based on the weight ratio between accuracy and simplicity.
+					float threshold;
+					if (alpha <= 0.5) threshold = 0.0;
+					else if (alpha <= 0.7) threshold = 0.6;
+					else if (alpha <= 0.9) threshold = 0.9;
 					else threshold = 1.0;
 
 					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, threshold);
@@ -88,13 +90,13 @@ namespace simp {
 		
 		int best_algorithm = ALG_UNKNOWN;
 
-		// try OpenCV
+		// try Douglas-Peucker
 		try {
-			float epsilon = 0;
-			if (alpha < 0.1) epsilon = 10;
-			else if (alpha < 0.2) epsilon = 6;
-			else if (alpha < 0.4) epsilon = 4;
-			else if (alpha < 0.9) epsilon = 2;
+			float epsilon;
+			if (alpha == 0.0) epsilon = 10;
+			else if (alpha <= 0.1) epsilon = 6;
+			else if (alpha <= 0.3) epsilon = 4;
+			else if (alpha <= 0.8) epsilon = 2;
 			else epsilon = 0;
 
 			util::Polygon simplified_polygon = DPSimplification::simplify(layer->selectRepresentativeSlice(), epsilon);
@@ -112,10 +114,10 @@ namespace simp {
 
 		// try right angle
 		try {
-			int resolution = 2;
-			if (alpha < 0.1) resolution = 6;
-			else if (alpha < 1.0) resolution = 4;
-			else resolution = 5;
+			int resolution;
+			if (alpha == 0.0) resolution = 6;
+			else if (alpha <= 0.9) resolution = 4;
+			else resolution = 1;
 
 			util::Polygon simplified_polygon = RightAngleSimplification::simplify(layer->selectRepresentativeSlice(), resolution, angle, dx, dy);
 			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);
@@ -131,14 +133,17 @@ namespace simp {
 
 		// try curve
 		try {
-			float epsilon = 0;
-			if (alpha < 0.1) epsilon = 10;
-			else if (alpha < 0.2) epsilon = 6;
-			else if (alpha < 0.4) epsilon = 4;
-			else if (alpha < 0.9) epsilon = 2;
+			float epsilon;
+			if (alpha == 0.0) epsilon = 10;
+			else if (alpha <= 0.1) epsilon = 6;
+			else if (alpha <= 0.3) epsilon = 4;
+			else if (alpha <= 0.8) epsilon = 2;
 			else epsilon = 0;
 
-			float curve_threshold = 1.0f;
+			float curve_threshold;
+			if (alpha == 0.0) curve_threshold = 4.0f;
+			else if (alpha <= 0.8) curve_threshold = 1.0f;
+			else curve_threshold = 0.1f;
 
 			util::Polygon simplified_polygon = CurveSimplification::simplify(layer->selectRepresentativeSlice(), epsilon, curve_threshold);
 			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);

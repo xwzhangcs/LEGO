@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionSimplifyByDP, SIGNAL(triggered()), this, SLOT(onSimplifyByDP()));
 	connect(ui.actionSimplifyByRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByRightAngle()));
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
-	connect(ui.actionOpenCVTest, SIGNAL(triggered()), this, SLOT(onOpenCVTest()));
+	connect(ui.actionDPTest, SIGNAL(triggered()), this, SLOT(onDPTest()));
 	connect(ui.actionRightAngleTest, SIGNAL(triggered()), this, SLOT(onRightAngleTest()));
 	connect(ui.actionCurveTest, SIGNAL(triggered()), this, SLOT(onCurveTest()));
 	connect(ui.actionColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
@@ -109,7 +109,7 @@ void MainWindow::onSimplifyByAll() {
 void MainWindow::onSimplifyByDP() {
 	DPOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByOpenCV(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
+		glWidget->simplifyByDP(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }
@@ -130,8 +130,8 @@ void MainWindow::onSimplifyByCurve() {
 	}
 }
 
-void MainWindow::onOpenCVTest() {
-	glWidget->opencvTest();
+void MainWindow::onDPTest() {
+	glWidget->dpTest();
 }
 
 void MainWindow::onRightAngleTest() {

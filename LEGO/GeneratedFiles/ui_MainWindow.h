@@ -43,7 +43,7 @@ public:
     QAction *actionColoringByLayer;
     QAction *actionSimplifyByCurve;
     QAction *actionSimplifyByAll;
-    QAction *actionOpenCVTest;
+    QAction *actionDPTest;
     QAction *actionRightAngleTest;
     QAction *actionCurveTest;
     QWidget *centralWidget;
@@ -114,8 +114,8 @@ public:
         actionSimplifyByAll = new QAction(MainWindowClass);
         actionSimplifyByAll->setObjectName(QStringLiteral("actionSimplifyByAll"));
         actionSimplifyByAll->setCheckable(true);
-        actionOpenCVTest = new QAction(MainWindowClass);
-        actionOpenCVTest->setObjectName(QStringLiteral("actionOpenCVTest"));
+        actionDPTest = new QAction(MainWindowClass);
+        actionDPTest->setObjectName(QStringLiteral("actionDPTest"));
         actionRightAngleTest = new QAction(MainWindowClass);
         actionRightAngleTest->setObjectName(QStringLiteral("actionRightAngleTest"));
         actionCurveTest = new QAction(MainWindowClass);
@@ -162,7 +162,7 @@ public:
         menuSimplify->addAction(actionSimplifyByRightAngle);
         menuSimplify->addAction(actionSimplifyByCurve);
         menuSimplify->addSeparator();
-        menuSimplify->addAction(actionOpenCVTest);
+        menuSimplify->addAction(actionDPTest);
         menuSimplify->addAction(actionRightAngleTest);
         menuSimplify->addAction(actionCurveTest);
 
@@ -195,7 +195,7 @@ public:
         actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", 0));
         actionSimplifyByCurve->setText(QApplication::translate("MainWindowClass", "Curve", 0));
         actionSimplifyByAll->setText(QApplication::translate("MainWindowClass", "All", 0));
-        actionOpenCVTest->setText(QApplication::translate("MainWindowClass", "OpenCV Test", 0));
+        actionDPTest->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker Test", 0));
         actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", 0));
         actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));

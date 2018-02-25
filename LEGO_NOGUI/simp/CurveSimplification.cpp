@@ -31,8 +31,8 @@ namespace simp {
 				contour[i] = input.contour[i];
 			if (contour.size() > 80){
 				util::Polygon output;
-				int bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
-				if (bContainCurve == 1)
+				bool bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
+				if (bContainCurve)
 				{
 					polygon.contour = output.contour;
 					polygon.mat = polygon.contour.mat;
@@ -256,10 +256,10 @@ namespace simp {
 	}
 
 	/**
-	* @return			0:not curve 1: curve
+	* @return			false:not curve true: curve
 	*/
-	int CurveSimplification::approxContour(std::vector<cv::Point2f>& input, util::Polygon &output, float epsilon, float curve_threshold){
-		int bContainCurve = 0;
+	bool CurveSimplification::approxContour(std::vector<cv::Point2f>& input, util::Polygon &output, float epsilon, float curve_threshold){
+		bool bContainCurve = 0;
 		std::vector<cv::Point2f> clean_contour;
 		std::vector<int> contour_points_type;
 		std::vector<cv::Point3f> contour_points_circle;
@@ -357,7 +357,7 @@ namespace simp {
 				type_final_contour.push_back(2);
 				i++;
 				count++;
-				bContainCurve = 1;
+				bContainCurve = true;
 			}
 			else{
 				simplified_tmp.clear();
@@ -379,7 +379,7 @@ namespace simp {
 				i = index;
 			}
 		}
-		if (bContainCurve == 1){
+		if (bContainCurve){
 			// generate output polygon and decomposePolygon here
 			output.contour.resize(final_contour.size());
 			
@@ -602,6 +602,7 @@ namespace simp {
 			end_tmp -= 360;
 		if (start_tmp >= mid_tmp && mid_tmp >= end_tmp && (end_tmp - start_tmp) >= -360)
 			return end_tmp - start_tmp;
+		return end_tmp - start_tmp;
 	}
 
 	bool CurveSimplification::valid_curve(double threshold, const std::vector<cv::Point2d>& points, cv::Point2d center, double radius, cv::Rect bbox){

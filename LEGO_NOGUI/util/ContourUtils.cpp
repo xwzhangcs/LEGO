@@ -831,13 +831,22 @@ namespace util {
 	}
 
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points) {
-		std::vector<std::vector<cv::Point2f>> ans;
-
 		return tessellate(points, {});
 	}
 
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points, const std::vector<Ring>& holes) {
 		std::vector<std::vector<cv::Point2f>> ans;
+
+		if (points.size() == 0) {
+			return{};
+		}
+		else if (points.size() <= 2) {
+			ans.resize(1);
+			for (int i = 0; i < points.size(); i++) {
+				ans[0].push_back(cv::Point2f(points[i].x, points[i].y));
+			}
+			return ans;
+		}
 
 		//Insert the polygons into a constrained triangulation
 		CDT cdt;

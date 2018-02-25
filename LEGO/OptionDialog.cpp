@@ -4,6 +4,7 @@ OptionDialog::OptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
 	ui.doubleSpinBoxAlpha->setValue(0.5);
+	ui.doubleSpinBoxAlpha->setSingleStep(0.1);
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));

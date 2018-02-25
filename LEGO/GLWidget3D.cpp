@@ -367,10 +367,10 @@ void GLWidget3D::simplifyByAll(double alpha) {
 	update3DGeometry();
 }
 
-void GLWidget3D::simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
+void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
 	buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_DP, 0.5, layering_threshold, epsilon, 0, 0);
 
-	show_mode = SHOW_OPENCV;
+	show_mode = SHOW_DP;
 	update3DGeometry();
 }
 
@@ -388,11 +388,11 @@ void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double 
 	update3DGeometry();
 }
 
-void GLWidget3D::opencvTest() {
+void GLWidget3D::dpTest() {
 	for (int alpha_idx = 0; alpha_idx <= 10; alpha_idx++) {
 		double alpha = (double)alpha_idx * 0.1;
 
-		QString filename = QString("opencv_alpha_%1.txt").arg(alpha);
+		QString filename = QString("dp_alpha_%1.txt").arg(alpha);
 		QFile file(filename);
 		file.open(QIODevice::WriteOnly);
 		QTextStream out(&file);
@@ -637,7 +637,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Buildi
 	QMap<QString, std::vector<Vertex>> vertices;
 	for (int i = 0; i < buildings.size(); i++) {
 		// randomly select a texture file
-		int facade_texture_id = rand() % 10;
+		int facade_texture_id = rand() % 13;
 		if (color_mode == TEXTURE) {
 			if (facade_texture_id == 0) {
 				color = glm::vec4(0.741, 0.623, 0.490, 1.0);
@@ -669,10 +669,19 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Buildi
 			else if (facade_texture_id == 9) {
 				color = glm::vec4(0.784, 0.721, 0.623, 1.0);
 			}
+			else if (facade_texture_id == 10) {
+				color = glm::vec4(0.494, 0.388, 0.321, 1.0);
+			}
+			else if (facade_texture_id == 11) {
+				color = glm::vec4(0.756, 0.780, 0.772, 1.0);
+			}
+			else if (facade_texture_id == 12) {
+				color = glm::vec4(0.764, 0.768, 0.788, 1.0);
+			}
 		}
 
-		QString facade_texture = QString("textures/window_tile%1.png").arg(facade_texture_id + 1);
-		QString roof_texture = QString("textures/roof%1.png").arg(rand() % 2 + 1);
+		QString facade_texture = QString("textures/window_tile%1.png").arg(facade_texture_id);
+		QString roof_texture = QString("textures/roof%1.png").arg(rand() % 4);
 		update3DGeometry(buildings[i], color, facade_texture, roof_texture, vertices);
 	}
 	for (auto it = vertices.begin(); it != vertices.end(); it++) {

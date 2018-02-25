@@ -26,7 +26,7 @@ public slots:
 	void onSimplifyByDP();
 	void onSimplifyByRightAngle();
 	void onSimplifyByCurve();
-	void onOpenCVTest();
+	void onDPTest();
 	void onRightAngleTest();
 	void onCurveTest();
 	void onColoringModeChanged();

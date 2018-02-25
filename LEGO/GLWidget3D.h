@@ -20,7 +20,7 @@ class GLWidget3D : public QGLWidget {
 	Q_OBJECT
 
 public:
-	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_ALL, SHOW_OPENCV, SHOW_RIGHTANGLE, SHOW_CURVE };
+	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_ALL, SHOW_DP, SHOW_RIGHTANGLE, SHOW_CURVE };
 	enum COLOR_MODE { COLOR = 0, TEXTURE };
 
 public:
@@ -60,10 +60,10 @@ public:
 	void saveImage(const QString& filename);
 	void showInputVoxel();
 	void simplifyByAll(double alpha);
-	void simplifyByOpenCV(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void opencvTest();
+	void dpTest();
 	void rightAngleTest();
 	void curveTest();
 	void update3DGeometry();

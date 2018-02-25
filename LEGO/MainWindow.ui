@@ -56,7 +56,7 @@
     <addaction name="actionSimplifyByRightAngle"/>
     <addaction name="actionSimplifyByCurve"/>
     <addaction name="separator"/>
-    <addaction name="actionOpenCVTest"/>
+    <addaction name="actionDPTest"/>
     <addaction name="actionRightAngleTest"/>
     <addaction name="actionCurveTest"/>
    </widget>
@@ -224,9 +224,9 @@
     <string>All</string>
    </property>
   </action>
-  <action name="actionOpenCVTest">
+  <action name="actionDPTest">
    <property name="text">
-    <string>OpenCV Test</string>
+    <string>Douglas-Peucker Test</string>
    </property>
   </action>
   <action name="actionRightAngleTest">
