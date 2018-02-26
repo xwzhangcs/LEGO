@@ -26,9 +26,12 @@ namespace simp {
 				if (algorithm == ALG_ALL) {
 					// Select the best layting threshold based on the weight ratio between accuracy and simplicity.
 					float threshold;
-					if (alpha <= 0.5) threshold = 0.0;
-					else if (alpha <= 0.7) threshold = 0.6;
-					else if (alpha <= 0.9) threshold = 0.9;
+					if (alpha < 0.2) threshold = 0.0;
+					else if (alpha < 0.4) threshold = 0.1;
+					else if (alpha < 0.6) threshold = 0.4;
+					else if (alpha < 0.7) threshold = 0.5;
+					else if (alpha < 0.8) threshold = 0.6;
+					else if (alpha < 1.0) threshold = 0.9;
 					else threshold = 1.0;
 
 					std::shared_ptr<util::Layer> layer = lvd.layering(ground_level, threshold);
@@ -94,9 +97,9 @@ namespace simp {
 		try {
 			float epsilon;
 			if (alpha == 0.0) epsilon = 10;
-			else if (alpha <= 0.1) epsilon = 6;
-			else if (alpha <= 0.3) epsilon = 4;
-			else if (alpha <= 0.8) epsilon = 2;
+			else if (alpha < 0.2) epsilon = 6;
+			else if (alpha < 0.4) epsilon = 4;
+			else if (alpha < 0.9) epsilon = 2;
 			else epsilon = 0;
 
 			util::Polygon simplified_polygon = DPSimplification::simplify(layer->selectRepresentativeSlice(), epsilon);
@@ -116,7 +119,7 @@ namespace simp {
 		try {
 			int resolution;
 			if (alpha == 0.0) resolution = 6;
-			else if (alpha <= 0.9) resolution = 4;
+			else if (alpha < 1.0) resolution = 4;
 			else resolution = 1;
 
 			util::Polygon simplified_polygon = RightAngleSimplification::simplify(layer->selectRepresentativeSlice(), resolution, angle, dx, dy);
@@ -135,9 +138,9 @@ namespace simp {
 		try {
 			float epsilon;
 			if (alpha == 0.0) epsilon = 10;
-			else if (alpha <= 0.1) epsilon = 6;
-			else if (alpha <= 0.3) epsilon = 4;
-			else if (alpha <= 0.8) epsilon = 2;
+			else if (alpha < 0.2) epsilon = 6;
+			else if (alpha < 0.4) epsilon = 4;
+			else if (alpha < 0.9) epsilon = 2;
 			else epsilon = 0;
 
 			float curve_threshold;
