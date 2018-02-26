@@ -806,24 +806,116 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::BuildingLayer> building,
 	// side faces
 	float floor_tile_width = 3.0f;
 	float floor_tile_height = 3.0f;
-	for (int i = 0; i < footprint.size(); i++) {
-		int next = (i + 1) % footprint.size();
-		glm::vec3 p1(mat * glm::vec4(footprint[i], 0, 1));
-		glm::vec3 p2(mat * glm::vec4(footprint[next], 0, 1));
-		glm::vec3 p3(mat * glm::vec4(footprint[next], h, 1));
-		glm::vec3 p4(mat * glm::vec4(footprint[i], h, 1));
 
-		glm::vec2 t1(0, 0);
-		int tex_coord_x = glm::length(footprint[next] - footprint[i]) / floor_tile_width;
+	// At first, find the first point that has angle close to 90 degrees.
+	int start_index = 0;
+	for (int i = 0; i < footprint.size(); i++) {
+		int prev = (i + footprint.size() - 1) % footprint.size();
+		int next = (i + 1) % footprint.size();
+
+		if (dotProductBetweenThreePoints(footprint[prev], footprint[i], footprint[next]) < 0.8) {
+			start_index = i;
+			break;
+		}
+	}
+
+	std::vector<glm::dvec2> coords;
+	for (int i = 0; i <= footprint.size(); i++) {
+		int prev = (start_index + i - 1 + footprint.size()) % footprint.size();
+		int cur = (start_index + i) % footprint.size();
+		int next = (start_index + i + 1) % footprint.size();
+
+		if (dotProductBetweenThreePoints(footprint[prev], footprint[cur], footprint[next]) < 0.8) {
+			// create a face
+			if (coords.size() > 0) {
+				coords.push_back(footprint[cur]);
+				createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+			}
+			coords.clear();
+		}
+
+		coords.push_back(footprint[cur]);
+	}
+
+	// create a face
+	if (coords.size() >= 2) {
+		createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+	}
+
+	// side faces for the holes
+	for (int i = 0; i < holes.size(); i++) {
+		reverse(holes[i].begin(), holes[i].end());
+
+		// At first, find the first point that has angle close to 90 degrees.
+		int start_index = 0;
+		for (int j = 0; j < holes[i].size(); j++) {
+			int prev = (j + holes[i].size() - 1) % holes[i].size();
+			int next = (j + 1) % holes[i].size();
+
+			if (dotProductBetweenThreePoints(holes[i][prev], holes[i][i], holes[i][next]) < 0.8) {
+				start_index = j;
+				break;
+			}
+		}
+
+		std::vector<glm::dvec2> coords;
+		for (int j = 0; j <= holes[i].size(); j++) {
+			int prev = (start_index + j - 1 + holes[i].size()) % holes[i].size();
+			int cur = (start_index + j) % holes[i].size();
+			int next = (start_index + j + 1) % holes[i].size();
+
+			if (dotProductBetweenThreePoints(holes[i][prev], holes[i][cur], holes[i][next]) < 0.8) {
+				// create a face
+				if (coords.size() > 0) {
+					coords.push_back(holes[i][cur]);
+					createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+				}
+				coords.clear();
+			}
+
+			coords.push_back(holes[i][cur]);
+		}
+
+		// create a face
+		if (coords.size() >= 2) {
+			createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+		}
+	}
+
+	for (int i = 0; i < building->children.size(); i++) {
+		update3DGeometry(building->children[i], color, facade_texture, roof_texture, vertices);
+	}
+}
+
+void GLWidget3D::createFace(const std::vector<glm::dvec2>& coords, double h, int floor_tile_width, int floor_tile_height, const glm::mat4& mat, glm::vec4& color, const QString& facade_texture, QMap<QString, std::vector<Vertex>>& vertices) {
+	float length = getLength(coords);
+	int repetition = length / floor_tile_width;
+	float actual_floor_tile_width = 0;
+	if (repetition > 0) actual_floor_tile_width = length / repetition;
+
+	float tex_x = 0;
+	for (int j = 1; j < coords.size(); j++) {
+		glm::vec3 p1(mat * glm::vec4(coords[j - 1], 0, 1));
+		glm::vec3 p2(mat * glm::vec4(coords[j], 0, 1));
+		glm::vec3 p3(mat * glm::vec4(coords[j], h, 1));
+		glm::vec3 p4(mat * glm::vec4(coords[j - 1], h, 1));
+
+		glm::vec2 t1(tex_x, 0);
+		float tex_dx = 0;
+		if (repetition > 0) {
+			tex_dx = glm::length(coords[j] - coords[j - 1]) / actual_floor_tile_width;
+		}
 		int tex_coord_y = h / floor_tile_height;
-		glm::vec2 t2(tex_coord_x, 0);
-		glm::vec2 t3(tex_coord_x, tex_coord_y);
-		glm::vec2 t4(0, tex_coord_y);
-		
+		glm::vec2 t2(tex_x + tex_dx, 0);
+		glm::vec2 t3(tex_x + tex_dx, tex_coord_y);
+		glm::vec2 t4(tex_x, tex_coord_y);
+
+		tex_x += tex_dx;
+
 		glm::vec3 n = glm::cross(p2 - p1, p3 - p2);
 		n /= glm::length(n);
 
-		if (color_mode == COLOR || tex_coord_x < 1.0 || tex_coord_y < 1.0) {
+		if (color_mode == COLOR || repetition == 0 || tex_coord_y == 0) {
 			// the facade is too small, so we use a simple color
 			vertices[""].push_back(Vertex(p1, n, color));
 			vertices[""].push_back(Vertex(p2, n, color));
@@ -842,55 +934,24 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::BuildingLayer> building,
 			vertices[facade_texture].push_back(Vertex(p1, n, glm::vec4(1, 1, 1, 1), t1));
 			vertices[facade_texture].push_back(Vertex(p3, n, glm::vec4(1, 1, 1, 1), t3));
 			vertices[facade_texture].push_back(Vertex(p4, n, glm::vec4(1, 1, 1, 1), t4));
-		}
+		}		
 	}
+}
 
-	// side faces for the holes
-	for (int i = 0; i < holes.size(); i++) {
-		reverse(holes[i].begin(), holes[i].end());
-		for (int j = 0; j < holes[i].size(); j++) {
-			int next = (j + 1) % holes[i].size();
-			glm::vec3 p1(mat * glm::vec4(holes[i][j], 0, 1));
-			glm::vec3 p2(mat * glm::vec4(holes[i][next], 0, 1));
-			glm::vec3 p3(mat * glm::vec4(holes[i][next], h, 1));
-			glm::vec3 p4(mat * glm::vec4(holes[i][j], h, 1));
+double GLWidget3D::dotProductBetweenThreePoints(const glm::dvec2& a, const glm::dvec2& b, const glm::dvec2& c) {
+	glm::dvec2 prev_vec = b - a;
+	glm::dvec2 next_vec = c - b;
+	prev_vec /= glm::length(prev_vec);
+	next_vec /= glm::length(next_vec);
+	return glm::dot(prev_vec, next_vec);
+}
 
-			glm::vec2 t1(0, 0);
-			int tex_coord_x = glm::length(holes[i][next] - holes[i][j]) / floor_tile_width;
-			int tex_coord_y = h / floor_tile_height;
-			glm::vec2 t2(tex_coord_x, 0);
-			glm::vec2 t3(tex_coord_x, tex_coord_y);
-			glm::vec2 t4(0, tex_coord_y);
-
-			glm::vec3 n = glm::cross(p2 - p1, p3 - p2);
-			n /= glm::length(n);
-
-			if (color_mode == COLOR || tex_coord_x < 1.0 || tex_coord_y < 1.0) {
-				// the facade is too small, so we use a simple color
-				vertices[""].push_back(Vertex(p1, n, color));
-				vertices[""].push_back(Vertex(p2, n, color));
-				vertices[""].push_back(Vertex(p3, n, color));
-
-				vertices[""].push_back(Vertex(p1, n, color));
-				vertices[""].push_back(Vertex(p3, n, color));
-				vertices[""].push_back(Vertex(p4, n, color));
-			}
-			else {
-				// the facade is big enough for texture mapping
-				vertices[facade_texture].push_back(Vertex(p1, n, glm::vec4(1, 1, 1, 1), t1));
-				vertices[facade_texture].push_back(Vertex(p2, n, glm::vec4(1, 1, 1, 1), t2));
-				vertices[facade_texture].push_back(Vertex(p3, n, glm::vec4(1, 1, 1, 1), t3));
-
-				vertices[facade_texture].push_back(Vertex(p1, n, glm::vec4(1, 1, 1, 1), t1));
-				vertices[facade_texture].push_back(Vertex(p3, n, glm::vec4(1, 1, 1, 1), t3));
-				vertices[facade_texture].push_back(Vertex(p4, n, glm::vec4(1, 1, 1, 1), t4));
-			}
-		}
+double GLWidget3D::getLength(const std::vector<glm::dvec2>& points) {
+	double ans = 0;
+	for (int i = 1; i < points.size(); i++) {
+		ans += glm::length(points[i] - points[i - 1]);
 	}
-
-	for (int i = 0; i < building->children.size(); i++) {
-		update3DGeometry(building->children[i], color, facade_texture, roof_texture, vertices);
-	}
+	return ans;
 }
 
 void GLWidget3D::keyPressEvent(QKeyEvent *e) {
