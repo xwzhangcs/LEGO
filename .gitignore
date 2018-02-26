@@ -8,7 +8,7 @@
 *.sln.docstates
 
 # voxel data
-data/
+#data/
 
 # screenshot
 LEGO/screenshot/
