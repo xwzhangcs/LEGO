@@ -48,8 +48,8 @@ namespace util {
 		PrimitiveShape() {}
 
 	public:
-		virtual boost::shared_ptr<PrimitiveShape> clone() = 0;
-		virtual std::vector<cv::Point2f> getActualPoints() = 0;
+		virtual boost::shared_ptr<PrimitiveShape> clone() const = 0;
+		virtual std::vector<cv::Point2f> getActualPoints() const = 0;
 	};
 
 	class PrimitiveRectangle : public PrimitiveShape {
@@ -59,8 +59,8 @@ namespace util {
 
 	public:
 		PrimitiveRectangle(const cv::Mat_<float>& mat, const cv::Point2f& min_pt, const cv::Point2f& max_pt);
-		boost::shared_ptr<PrimitiveShape> clone();
-		std::vector<cv::Point2f> getActualPoints();
+		boost::shared_ptr<PrimitiveShape> clone() const;
+		std::vector<cv::Point2f> getActualPoints() const;
 	};
 
 	class PrimitiveTriangle : public PrimitiveShape {
@@ -70,8 +70,8 @@ namespace util {
 	public:
 		PrimitiveTriangle(const cv::Mat_<float>& mat);
 		PrimitiveTriangle(const cv::Mat_<float>& mat, const std::vector<cv::Point2f>& points);
-		boost::shared_ptr<PrimitiveShape> clone();
-		std::vector<cv::Point2f> getActualPoints();
+		boost::shared_ptr<PrimitiveShape> clone() const;
+		std::vector<cv::Point2f> getActualPoints() const;
 	};
 
 	class PrimitiveCurve : public PrimitiveShape {
@@ -83,8 +83,8 @@ namespace util {
 
 	public:
 		PrimitiveCurve(const cv::Mat_<float>& mat, float theta_start, float theta_end, const cv::Point2f &center, float radius);
-		boost::shared_ptr<PrimitiveShape> clone();
-		std::vector<cv::Point2f> getActualPoints();
+		boost::shared_ptr<PrimitiveShape> clone() const;
+		std::vector<cv::Point2f> getActualPoints() const;
 	};
 
 	class Ring {
@@ -95,6 +95,7 @@ namespace util {
 	public:
 		Ring();
 
+		void operator=(const std::vector<cv::Point2f>& points);
 		const cv::Point2f& front() const;
 		cv::Point2f& front();
 		const cv::Point2f& back() const;
@@ -113,8 +114,9 @@ namespace util {
 		void transform(const cv::Mat_<float>& m);
 		void clockwise();
 		void counterClockwise();
-		cv::Point2f getActualPoint(int index);
-		Ring getActualPoints();
+		cv::Point2f getActualPoint(int index) const;
+		Ring getActualPoints() const;
+		bool isSimple() const;
 	};
 
 	class Polygon {
@@ -130,7 +132,7 @@ namespace util {
 	public:
 		Polygon() {}
 
-		Polygon clone();
+		Polygon clone() const;
 		void translate(float x, float y);
 		void transform(const cv::Mat_<float>& m);
 		void clockwise();
@@ -140,7 +142,7 @@ namespace util {
 	bool isClockwise(const std::vector<cv::Point2f>& polygon);
 	void clockwise(std::vector<cv::Point2f>& polygon);
 	void counterClockwise(std::vector<cv::Point2f>& polygon);
-	
+	bool isSimple(const Ring& points);
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
 	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
 

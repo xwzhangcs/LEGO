@@ -14,7 +14,9 @@ int main(int argc, const char* argv[]) {
 	QString input_filename(argv[1]);
 	std::vector<cv::Mat_<uchar>> voxel_data;
 
+	// The weight ratio of the accuracy term to the simplicity term for the cost function.
 	float alpha = std::stof(argv[2]);
+	alpha = std::min(std::max(0.0f, alpha), 1.0f);
 
 	// get directory
 	QFileInfo finfo(input_filename);

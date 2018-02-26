@@ -55,6 +55,9 @@ namespace simp {
 				else{
 					std::vector<cv::Point2f> output_tmp;
 					cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
+					if (output_tmp.size() < 3){
+						throw "No building is found.";
+					}
 					polygon.contour.resize(output_tmp.size());
 					int index = 0;
 					for (int k = 0; k < output_tmp.size(); k++){
@@ -82,6 +85,9 @@ namespace simp {
 				std::vector<cv::Point2f> output_tmp;
 				cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
 				polygon.contour.resize(output_tmp.size());
+				if (output_tmp.size() < 3){
+					throw "No building is found.";
+				}
 				int index = 0;
 				for (int k = 0; k < output_tmp.size(); k++){
 					polygon.contour[k] = output_tmp[k];
@@ -396,6 +402,9 @@ namespace simp {
 					bfind_start = true;
 				}
 			}
+			// check whether the polygon is simple
+			if (!util::isSimple(output.contour))
+				return false;
 			// The transfomration matrix should be same for the external contour and the internal holes
 			// because for OpenCV simplification, transformation is just to trasnform from OpenCV image coordinates
 			// to the world coordinate system.
@@ -513,7 +522,7 @@ namespace simp {
 				outside++;
 		}
 		//std::cout << "outside is " << outside << std::endl;
-		if (outside > 5)
+		if (outside > 2)
 			return true;
 		else
 			return false;

@@ -17,12 +17,12 @@ namespace util {
 		this->max_pt = max_pt;
 	}
 
-	boost::shared_ptr<PrimitiveShape> PrimitiveRectangle::clone() {
+	boost::shared_ptr<PrimitiveShape> PrimitiveRectangle::clone() const {
 		boost::shared_ptr<PrimitiveShape> ans = boost::shared_ptr<PrimitiveShape>(new PrimitiveRectangle(mat, min_pt, max_pt));
 		return ans;
 	}
 
-	std::vector<cv::Point2f> PrimitiveRectangle::getActualPoints() {
+	std::vector<cv::Point2f> PrimitiveRectangle::getActualPoints() const {
 		std::vector<cv::Point2f> ans(4);
 
 		cv::Mat_<float> p0 = (cv::Mat_<float>(3, 1) << min_pt.x, min_pt.y, 1);
@@ -51,12 +51,12 @@ namespace util {
 		this->points = points;
 	}
 
-	boost::shared_ptr<PrimitiveShape> PrimitiveTriangle::clone() {
+	boost::shared_ptr<PrimitiveShape> PrimitiveTriangle::clone() const {
 		boost::shared_ptr<PrimitiveShape> ans = boost::shared_ptr<PrimitiveShape>(new PrimitiveTriangle(mat, points));
 		return ans;
 	}
 
-	std::vector<cv::Point2f> PrimitiveTriangle::getActualPoints() {
+	std::vector<cv::Point2f> PrimitiveTriangle::getActualPoints() const {
 		std::vector<cv::Point2f> ans(points.size());
 
 		for (int i = 0; i < points.size(); i++) {
@@ -75,12 +75,12 @@ namespace util {
 		this->radius = radius;
 	}
 
-	boost::shared_ptr<PrimitiveShape> PrimitiveCurve::clone() {
+	boost::shared_ptr<PrimitiveShape> PrimitiveCurve::clone() const {
 		boost::shared_ptr<PrimitiveShape> ans = boost::shared_ptr<PrimitiveShape>(new PrimitiveCurve(mat, theta_start, theta_end, center, radius));
 		return ans;
 	}
 
-	std::vector<cv::Point2f> PrimitiveCurve::getActualPoints() {
+	std::vector<cv::Point2f> PrimitiveCurve::getActualPoints() const {
 		float angle_start_end = this->theta_end - this->theta_start;
 		float angle_between = 5;
 		int num_points = abs(angle_start_end / 5);
@@ -99,6 +99,10 @@ namespace util {
 
 	Ring::Ring() {
 		mat = cv::Mat_<float>::eye(3, 3);
+	}
+
+	void Ring::operator=(const std::vector<cv::Point2f>& points) {
+		this->points = points;
 	}
 
 	const cv::Point2f& Ring::front() const {
@@ -187,7 +191,7 @@ namespace util {
 		}
 	}
 
-	cv::Point2f Ring::getActualPoint(int index) {
+	cv::Point2f Ring::getActualPoint(int index) const {
 		cv::Mat_<float> pt = (cv::Mat_<float>(3, 1) << points[index].x, points[index].y, 1);
 		cv::Mat_<float> pt2 = mat * pt;
 
@@ -197,7 +201,7 @@ namespace util {
 		return ans;
 	}
 
-	Ring Ring::getActualPoints() {
+	Ring Ring::getActualPoints() const {
 		Ring ans;
 		ans.points.resize(points.size());
 		for (int i = 0; i < points.size(); i++) {
@@ -208,8 +212,17 @@ namespace util {
 		}
 		return ans;
 	}
+	
+	bool Ring::isSimple() const {
+		CDT cdt;
+		CGAL::Partition_traits_2<Kernel>::Polygon_2 polygon;
+		for (int i = 0; i < points.size(); i++) {
+			polygon.push_back(CDT::Point(points[i].x, points[i].y));
+		}
+		return polygon.is_simple();
+	}
 
-	Polygon Polygon::clone() {
+	Polygon Polygon::clone() const {
 		Polygon ans;
 		ans.mat = mat;
 		ans.contour = contour;
@@ -270,6 +283,15 @@ namespace util {
 		if (isClockwise(polygon)) {
 			std::reverse(polygon.begin(), polygon.end());
 		}
+	}
+
+	bool isSimple(const Ring& points){
+		CDT cdt;
+		CGAL::Partition_traits_2<Kernel>::Polygon_2 polygon;
+		for (int i = 0; i < points.size(); i++) {
+			polygon.push_back(CDT::Point(points[i].x, points[i].y));
+		}
+		return polygon.is_simple();
 	}
 
 	/**
@@ -830,25 +852,39 @@ namespace util {
 		}
 	}
 
+	/**
+	 * Triangulate the polygon into triangles using the Delaunay triangulation.
+	 * This function requires the polygon without any self-intersection. If the polygon has
+	 * any self-intersection, this function will return no triangle.
+	 *
+	 * @param points		contour
+	 * @return			list of triangles
+	 */
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points) {
 		return tessellate(points, {});
 	}
 
+	/**
+	 * Triangulate the polygon with holes into triangles using the Delaunay triangulation.
+	 * This function requires the polygon without any self-intersection. If the polygon has
+	 * any self-intersection, this function will return no triangle.
+	 *
+	 * @param points	contour
+	 * @param holes		holes
+	 * @return			list of triangles
+	 */
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points, const std::vector<Ring>& holes) {
 		std::vector<std::vector<cv::Point2f>> ans;
 
+		// Don't triangulate if there are only less than 3 points.
 		if (points.size() == 0) {
 			return{};
 		}
 		else if (points.size() <= 2) {
-			ans.resize(1);
-			for (int i = 0; i < points.size(); i++) {
-				ans[0].push_back(cv::Point2f(points[i].x, points[i].y));
-			}
-			return ans;
+			return{ points.points };
 		}
 
-		//Insert the polygons into a constrained triangulation
+		// Insert the polygons into a constrained triangulation.
 		CDT cdt;
 		CGAL::Partition_traits_2<Kernel>::Polygon_2 polygon;
 		for (int i = 0; i < points.size(); i++) {
