@@ -450,7 +450,7 @@ namespace simp {
 					std::vector<cv::Point2f> end_points;
 					end_points.push_back(start + center);
 					end_points.push_back(end + center);
-					if (concaveCurve(end_points, output)){
+					if (concaveCurve(end_points, output) && curve_poitns.size() < final_contour.size()){
 						if (curve_start_index >= curve_end_index){
 							for (int j = curve_start_index; j < curve_end_index + final_contour.size(); j++)
 								type_final_contour[j % final_contour.size()] = 3;

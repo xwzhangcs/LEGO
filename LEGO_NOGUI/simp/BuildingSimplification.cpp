@@ -142,8 +142,7 @@ namespace simp {
 
 			float curve_threshold;
 			if (alpha == 0.0) curve_threshold = 4.0f;
-			else if (alpha <= 0.8) curve_threshold = 1.0f;
-			else curve_threshold = 0.1f;
+			else curve_threshold = 1.0f;
 
 			util::Polygon simplified_polygon = CurveSimplification::simplify(layer->selectRepresentativeSlice(), epsilon, curve_threshold);
 			std::vector<float> costs = calculateCost(size, simplified_polygon, layer, alpha);
