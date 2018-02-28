@@ -13,7 +13,18 @@ namespace simp {
 	util::Polygon CurveSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold) {
 		util::Polygon ans;
 
-		decomposePolygon(polygon, ans, epsilon, curve_threshold);
+		// create a slice image from the input polygon
+		cv::Rect bbox = util::boundingBox(polygon.contour.points);
+		cv::Mat_<uchar> img;
+		util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point2f(-bbox.x, -bbox.y), img);
+		
+		std::vector<util::Polygon> polygons = findContours(img, epsilon, curve_threshold);
+		if (polygons.size() == 0) throw "No building is found.";
+
+		// tranlsate (bbox.x, bbox.y)
+		polygons[0].translate(bbox.x, bbox.y);
+
+		decomposePolygon(polygons[0], ans, epsilon, curve_threshold);
 		if (ans.contour.size() < 3){
 			throw "No building is found.";
 		}
