@@ -61,16 +61,21 @@ namespace simp {
 					//}
 				}
 				else{
-					std::vector<cv::Point2f> output_tmp;
-					cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
-					if (output_tmp.size() < 3){
-						throw "No building is found.";
+					cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+
+					if (polygon.contour.points.size() < 3) {
+						// If the simplification makes the polygon a line, gradually increase the epsilon 
+						// until it becomes a polygon with at least 3 vertices.
+						float epsilon2 = epsilon - 0.3;
+						while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
+							cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+							epsilon2 -= 0.3;
+						}
+						if (polygon.contour.points.size() < 3) {
+							polygon.contour.points = contour;
+						}
 					}
-					polygon.contour.resize(output_tmp.size());
-					int index = 0;
-					for (int k = 0; k < output_tmp.size(); k++){
-						polygon.contour[k] = output_tmp[k];
-					}
+
 					polygon.mat = polygon.contour.mat;
 					std::vector<std::vector<cv::Point2f>> contours;
 					contours = util::tessellate(polygon.contour);
@@ -90,17 +95,20 @@ namespace simp {
 				}
 			}
 			else{
-				std::vector<cv::Point2f> output_tmp;
-				cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
-				polygon.contour.resize(output_tmp.size());
-				if (output_tmp.size() < 3){
-					throw "No building is found.";
+				cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+				if (polygon.contour.points.size() < 3) {
+					// If the simplification makes the polygon a line, gradually increase the epsilon 
+					// until it becomes a polygon with at least 3 vertices.
+					float epsilon2 = epsilon - 0.3;
+					while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
+						cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+						epsilon2 -= 0.3;
+					}
+					if (polygon.contour.points.size() < 3) {
+						polygon.contour.points = contour;
+					}
 				}
-				int index = 0;
-				for (int k = 0; k < output_tmp.size(); k++){
-					polygon.contour[k] = output_tmp[k];
-				}
-				
+
 				polygon.mat = polygon.contour.mat;
 				std::vector<std::vector<cv::Point2f>> contours;
 				contours = util::tessellate(polygon.contour);
@@ -136,23 +144,36 @@ namespace simp {
 					polygon.contour = output.contour;
 				}
 				else{
-					std::vector<cv::Point2f> output_tmp;
-					cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
-					polygon.contour.resize(output_tmp.size());
-					int index = 0;
-					for (int k = 0; k < output_tmp.size(); k++){
-						polygon.contour[k] = output_tmp[k];
-					}
+					cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
 
+					if (polygon.contour.points.size() < 3) {
+						// If the simplification makes the polygon a line, gradually increase the epsilon 
+						// until it becomes a polygon with at least 3 vertices.
+						float epsilon2 = epsilon - 0.3;
+						while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
+							cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+							epsilon2 -= 0.3;
+						}
+						if (polygon.contour.points.size() < 3) {
+							polygon.contour.points = contour;
+						}
+					}
 				}
 			}
 			else{
-				std::vector<cv::Point2f> output_tmp;
-				cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
-				polygon.contour.resize(output_tmp.size());
-				int index = 0;
-				for (int k = 0; k < output_tmp.size(); k++){
-					polygon.contour[k] = output_tmp[k];
+				cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+
+				if (polygon.contour.points.size() < 3) {
+					// If the simplification makes the polygon a line, gradually increase the epsilon 
+					// until it becomes a polygon with at least 3 vertices.
+					float epsilon2 = epsilon - 0.3;
+					while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
+						cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+						epsilon2 -= 0.3;
+					}
+					if (polygon.contour.points.size() < 3) {
+						polygon.contour.points = contour;
+					}
 				}
 			}
 			// holes
@@ -173,24 +194,11 @@ namespace simp {
 						}
 					}
 					else{
-						std::vector<cv::Point2f> output_tmp;
-						cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
-						simplified_hole.resize(output_tmp.size());
-						int index = 0;
-						for (int k = 0; k < output_tmp.size(); k++){
-							simplified_hole[k] = output_tmp[k];
-						}
-
+						cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
 					}
 				}
 				else{
-					std::vector<cv::Point2f> output_tmp;
-					cv::approxPolyDP(cv::Mat(contour), output_tmp, epsilon, true);
-					simplified_hole.resize(output_tmp.size());
-					int index = 0;
-					for (int k = 0; k < output_tmp.size(); k++){
-						simplified_hole[k] = output_tmp[k];
-					}
+					cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
 				}
 				if (simplified_hole.size() >= 3)
 					polygon.holes.push_back(simplified_hole);

@@ -94,8 +94,10 @@ namespace util {
 
 	public:
 		Ring();
+		Ring(const Ring& ring);
 
-		void operator=(const std::vector<cv::Point2f>& points);
+		Ring& operator=(const Ring& ring);
+		Ring& operator=(const std::vector<cv::Point2f>& points);
 		const cv::Point2f& front() const;
 		cv::Point2f& front();
 		const cv::Point2f& back() const;

@@ -101,8 +101,20 @@ namespace util {
 		mat = cv::Mat_<float>::eye(3, 3);
 	}
 
-	void Ring::operator=(const std::vector<cv::Point2f>& points) {
+	Ring::Ring(const Ring& ring) {
+		this->mat = ring.mat.clone();
+		this->points = ring.points;
+	}
+
+	Ring& Ring::operator=(const Ring& ring) {
+		this->mat = ring.mat.clone();
+		this->points = ring.points;
+		return *this;
+	}
+
+	Ring& Ring::operator=(const std::vector<cv::Point2f>& points) {
 		this->points = points;
+		return *this;
 	}
 
 	const cv::Point2f& Ring::front() const {
