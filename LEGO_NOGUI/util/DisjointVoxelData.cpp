@@ -12,6 +12,7 @@ namespace util {
 		std::vector<std::shared_ptr<BuildingLayer>> layers;
 		cv::Mat_<unsigned short> cluster = cv::Mat_<unsigned short>::zeros(voxel_data[0].size());
 
+		setbuf(stdout, NULL);
 		printf("Processing slice");
 		for (int h = 0; h < voxel_data.size(); h++) {
 			printf("\rProcessing slice %d  ", h);

@@ -11,6 +11,7 @@ namespace simp {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		time_t start = clock();
+		setbuf(stdout, NULL);
 		printf("Processing building");
 		for (int i = 0; i < raw_buildings.size(); i++) {
 			printf("\rProcessing building %d  ", i);
