@@ -33,21 +33,19 @@ int main(int argc, const char* argv[]) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
 
-	// find the ground level
-	int ground_level = 0;
-	double max_area = 0;
-	for (int i = 0; i < voxel_data.size(); i++) {
-		max_area = std::max(max_area, util::calculateArea(voxel_data[i]));
-	}
-	for (ground_level = 0; ground_level < voxel_data.size(); ground_level++) {
-		// If the slice has voxel more than 80% of the maximum, the slice is considered at the ground level.
-		if (util::calculateArea(voxel_data[ground_level]) > max_area * 0.8) break;
-	}
+	// determine the layering threshold based on the weight ratio
+	float threshold;
+	if (alpha < 0.2) threshold = 0.0;
+	else if (alpha < 0.4) threshold = 0.1;
+	else if (alpha < 0.6) threshold = 0.4;
+	else if (alpha < 0.7) threshold = 0.5;
+	else if (alpha < 0.8) threshold = 0.6;
+	else if (alpha < 1.0) threshold = 0.9;
+	else threshold = 1.0;
 
-	util::DisjointVoxelData dvd;
-	dvd.disjoint(voxel_data, 0.5);
+	std::vector<std::shared_ptr<util::BuildingLayer>> raw_buildings = util::DisjointVoxelData::disjoint(voxel_data);
 
-	std::vector<std::shared_ptr<util::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(dvd, ground_level, simp::BuildingSimplification::ALG_ALL, alpha, 0.1, 2, 4, 1);
+	std::vector<std::shared_ptr<util::BuildingLayer>> buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, alpha, 0.5, 2, 4, 1);
 	util::ply::PlyWriter::write(argv[3], buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;

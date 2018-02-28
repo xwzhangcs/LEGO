@@ -32,7 +32,7 @@ namespace util {
 		}
 	};
 
-	typedef CGAL::Exact_predicates_inexact_constructions_kernel       Kernel;
+	typedef CGAL::Exact_predicates_exact_constructions_kernel       Kernel;
 	typedef CGAL::Triangulation_vertex_base_2<Kernel>                      Vb;
 	typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, Kernel>    Fbb;
 	typedef CGAL::Constrained_triangulation_face_base_2<Kernel, Fbb>        Fb;
@@ -153,9 +153,10 @@ namespace util {
 	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2);
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);
-	double calculateIOU(const Ring& polygon1, const Ring& polygon2);
+	//double calculateIOU(const Ring& polygon1, const Ring& polygon2);
+	double calculateArea(const Polygon& polygon);
 	double calculateArea(const cv::Mat_<uchar>& img);
-	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img);
+	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner);
 	Ring addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img);
 	void findContour(const cv::Mat_<uchar>& img, std::vector<cv::Point>& contour);
 	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result);

@@ -12,7 +12,7 @@ namespace simp {
 		DPSimplification() {}
 
 	public:
-		static util::Polygon simplify(const cv::Mat& slice, float epsilon);
+		static util::Polygon simplify(const util::Polygon& polygon, float epsilon);
 		static void decomposePolygon(util::Polygon& polygon);
 	};
 

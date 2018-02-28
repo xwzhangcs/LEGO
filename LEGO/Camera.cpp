@@ -47,7 +47,7 @@ void Camera::rotateAroundZ(int mouse_x, int mouse_y, float senstivity) {
  * Call this function whenever the mouse moves while zooming.
  */
 void Camera::zoom(float delta) {
-	pos.z -= delta * 0.1f;
+	pos.z -= delta * (pos.z + 1) * 0.001f;
 	updateMVPMatrix();
 }
 
@@ -55,8 +55,8 @@ void Camera::zoom(float delta) {
  * Call this function whenever the mouse moves while moving the model.
  */
 void Camera::move(int mouse_x, int mouse_y) {
-	pos.x -= (mouse_x - mouse_pos.x) * 0.1;
-	pos.y += (mouse_y - mouse_pos.y) * 0.1;
+	pos.x -= (mouse_x - mouse_pos.x) * (pos.z + 1) * 0.001;
+	pos.y += (mouse_y - mouse_pos.y) * (pos.z + 1) * 0.001;
 	updateMVPMatrix();
 
 	mouse_pos = glm::vec2(mouse_x, mouse_y);
@@ -67,7 +67,7 @@ void Camera::move(int mouse_x, int mouse_y) {
  */
 void Camera::updatePMatrix(int width,int height) {
 	float aspect = (float)width / (float)height;
-	float zfar = 1000.0f;
+	float zfar = 4000.0f;
 	float znear = 1.0f;
 	float f = 1.0f / tan(fovy * M_PI / 360.0f);
 

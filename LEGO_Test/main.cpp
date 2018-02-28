@@ -6,7 +6,7 @@ void testFindContour(const char* filename) {
 	std::cout << "findContour testing..." << std::endl;
 	std::cout << filename << std::endl;
 	cv::Mat img = cv::imread(filename, cv::IMREAD_GRAYSCALE);
-	std::vector<util::Polygon> polygons = util::findContours(img);
+	std::vector<util::Polygon> polygons = util::findContours(img, false);
 
 	if (polygons.size() == 0) {
 		std::cout << "no polygon is found." << std::endl;

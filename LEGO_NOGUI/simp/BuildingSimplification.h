@@ -4,7 +4,6 @@
 #include <opencv2/opencv.hpp>
 #include "../util/BuildingLayer.h"
 #include "../util/DisjointVoxelData.h"
-#include "../util/LayerVoxelData.h"
 
 namespace simp {
 	
@@ -16,16 +15,16 @@ namespace simp {
 		BuildingSimplification() {}
 
 	public:
-		static std::vector<std::shared_ptr<util::BuildingLayer>> simplifyBuildings(const util::DisjointVoxelData& disjointed_voxel_data, int ground_level, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold);
+		static std::vector<std::shared_ptr<util::BuildingLayer>> simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold);
 		static std::vector<float> sumCost(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
 
 	private:
-		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByAll(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float angle, int dx, int dy);
-		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByDP(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon);
-		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByRightAngle(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, int resolution, float angle, int dx, int dy);
-		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByCurve(int building_id, const cv::Size& size, std::shared_ptr<util::Layer> layer, float alpha, float epsilon, float curve_threshold);
+		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float angle, int dx, int dy);
+		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByDP(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon);
+		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer,  float alpha, int resolution, float angle, int dx, int dy);
+		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByCurve(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold);
 
-		static std::vector<float> calculateCost(const cv::Size& size, const util::Polygon& polygon, std::shared_ptr<util::Layer> layer, float alpha);
+		static std::vector<float> calculateCost(const util::Polygon& polygon, std::shared_ptr<util::BuildingLayer> layer);
 	};
 
 }

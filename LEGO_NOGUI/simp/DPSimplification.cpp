@@ -10,28 +10,29 @@ namespace simp {
 	 * @param epsilon	simplification parameter
 	 * @return			simplified footprint
 	 */
-	util::Polygon DPSimplification::simplify(const cv::Mat& slice, float epsilon) {
-		// make sure there is a building in the layer
-		std::vector<util::Polygon> polygons = util::findContours(slice);
-		if (polygons.size() == 0) throw "No building is found.";
-
+	util::Polygon DPSimplification::simplify(const util::Polygon& polygon, float epsilon) {
 		util::Polygon ans;
-		cv::approxPolyDP(polygons[0].contour.points, ans.contour.points, epsilon, true);
+		cv::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon, true);
 		if (ans.contour.size() < 3) {
 			// If the simplification makes the polygon a line, gradually increase the epsilon 
 			// until it becomes a polygon with at least 3 vertices.
 			float epsilon2 = epsilon - 0.3;
 			while (epsilon2 >= 0 && ans.contour.size() < 3) {
-				cv::approxPolyDP(polygons[0].contour.points, ans.contour.points, epsilon2, true);
+				cv::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon2, true);
 				epsilon2 -= 0.3;
 			}
 			if (ans.contour.size() < 3) throw "No building is found";
 		}
+
+		// HACK
+		// If the input polygon is not triangle, but it is simplified to a triangle,
+		// cancel the simplification.
+		if (polygon.contour.size() > 3 && ans.contour.size() == 3) ans.contour = polygon.contour;
 	
 		// simplify the hole as well
-		for (int i = 0; i < polygons[0].holes.size(); i++) {
+		for (int i = 0; i < polygon.holes.size(); i++) {
 			util::Ring simplified_hole;
-			cv::approxPolyDP(polygons[0].holes[i].points, simplified_hole.points, epsilon, true);
+			cv::approxPolyDP(polygon.holes[i].points, simplified_hole.points, epsilon, true);
 			if (simplified_hole.size() >= 3) {
 				ans.holes.push_back(simplified_hole);
 			}

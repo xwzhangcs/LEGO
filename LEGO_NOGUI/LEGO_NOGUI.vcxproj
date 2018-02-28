@@ -27,7 +27,6 @@
     <ClCompile Include="util\BuildingLayer.cpp" />
     <ClCompile Include="util\ContourUtils.cpp" />
     <ClCompile Include="util\DisjointVoxelData.cpp" />
-    <ClCompile Include="util\LayerVoxelData.cpp" />
     <ClCompile Include="util\PlyWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -38,7 +37,6 @@
     <ClInclude Include="util\BuildingLayer.h" />
     <ClInclude Include="util\ContourUtils.h" />
     <ClInclude Include="util\DisjointVoxelData.h" />
-    <ClInclude Include="util\LayerVoxelData.h" />
     <ClInclude Include="util\PlyWriter.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -106,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\opencv3.4\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -138,6 +136,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\opencv3.4\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS  /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

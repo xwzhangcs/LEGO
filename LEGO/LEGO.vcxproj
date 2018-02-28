@@ -145,7 +145,6 @@
     <ClCompile Include="..\LEGO_NOGUI\util\BuildingLayer.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\ContourUtils.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\DisjointVoxelData.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\LayerVoxelData.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\PlyWriter.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CurveOptionDialog.cpp" />
@@ -246,7 +245,6 @@
     <ClInclude Include="..\LEGO_NOGUI\util\BuildingLayer.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\ContourUtils.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\DisjointVoxelData.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\LayerVoxelData.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\PlyWriter.h" />
     <ClInclude Include="Camera.h" />
     <CustomBuild Include="CurveOptionDialog.h">

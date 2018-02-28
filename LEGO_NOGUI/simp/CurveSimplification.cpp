@@ -10,13 +10,10 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-	util::Polygon CurveSimplification::simplify(const cv::Mat& slice, float epsilon, float curve_threshold) {
-		std::vector<util::Polygon> polygons = findContours(slice, epsilon, curve_threshold);
-		if (polygons.size() == 0) throw "No building is found.";
-
+	util::Polygon CurveSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold) {
 		util::Polygon ans;
 
-		decomposePolygon(polygons[0], ans, epsilon, curve_threshold);
+		decomposePolygon(polygon, ans, epsilon, curve_threshold);
 		if (ans.contour.size() < 3){
 			throw "No building is found.";
 		}

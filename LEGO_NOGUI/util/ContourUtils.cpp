@@ -435,6 +435,72 @@ namespace util {
 		return (float)inter_cnt / union_cnt;
 	}
 
+	/**
+	 * Calculate the intersection over union (IOU) between two polygons.
+	 * Since calculating the polygon intersecion and union exactly is very expensive,
+	 * we resort to an image-based approach that can quickly calculate the approximate IOU.
+	 */
+	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2) {
+		int min_x = INT_MAX;
+		int min_y = INT_MAX;
+		int max_x = INT_MIN;
+		int max_y = INT_MIN;
+		for (int i = 0; i < polygon1.contour.size(); i++) {
+			min_x = std::min(min_x, (int)polygon1.contour[i].x);
+			min_y = std::min(min_y, (int)polygon1.contour[i].y);
+			max_x = std::max(max_x, (int)(polygon1.contour[i].x + 0.5));
+			max_y = std::max(max_y, (int)(polygon1.contour[i].y + 0.5));
+		}
+		for (int i = 0; i < polygon2.contour.size(); i++) {
+			min_x = std::min(min_x, (int)polygon2.contour[i].x);
+			min_y = std::min(min_y, (int)polygon2.contour[i].y);
+			max_x = std::max(max_x, (int)(polygon2.contour[i].x + 0.5));
+			max_y = std::max(max_y, (int)(polygon2.contour[i].y + 0.5));
+		}
+
+		cv::Mat_<uchar> img1 = cv::Mat_<uchar>::zeros(max_y - min_y + 1, max_x - min_x + 1);
+		
+		std::vector<std::vector<cv::Point>> contour_points1(1 + polygon1.holes.size());
+		contour_points1[0].resize(polygon1.contour.size());
+		for (int i = 0; i < polygon1.contour.size(); i++) {
+			contour_points1[0][i] = cv::Point(polygon1.contour[i].x - min_x, polygon1.contour[i].y - min_y);
+		}
+		for (int i = 0; i < polygon1.holes.size(); i++) {
+			contour_points1[i + 1].resize(polygon1.holes[i].size());
+			for (int j = 0; j < polygon1.holes[i].size(); j++) {
+				contour_points1[i + 1][j] = cv::Point(polygon1.holes[i][j].x - min_x, polygon1.holes[i][j].y - min_y);
+			}
+		}
+		cv::fillPoly(img1, contour_points1, cv::Scalar(255), cv::LINE_4);
+
+		cv::Mat_<uchar> img2 = cv::Mat_<uchar>::zeros(max_y - min_y + 1, max_x - min_x + 1);
+
+		std::vector<std::vector<cv::Point>> contour_points2(1 + polygon2.holes.size());
+		contour_points2[0].resize(polygon2.contour.size());
+		for (int i = 0; i < polygon2.contour.size(); i++) {
+			contour_points2[0][i] = cv::Point(polygon2.contour[i].x - min_x, polygon2.contour[i].y - min_y);
+		}
+		for (int i = 0; i < polygon2.holes.size(); i++) {
+			contour_points2[i + 1].resize(polygon2.holes[i].size());
+			for (int j = 0; j < polygon2.holes[i].size(); j++) {
+				contour_points2[i + 1][j] = cv::Point(polygon2.holes[i][j].x - min_x, polygon2.holes[i][j].y - min_y);
+			}
+		}
+		cv::fillPoly(img2, contour_points2, cv::Scalar(255), cv::LINE_4);
+
+		int inter_cnt = 0;
+		int union_cnt = 0;
+		for (int r = 0; r < img1.rows; r++) {
+			for (int c = 0; c < img1.cols; c++) {
+				if (img1(r, c) == 255 && img2(r, c) == 255) inter_cnt++;
+				if (img1(r, c) == 255 || img2(r, c) == 255) union_cnt++;
+			}
+		}
+
+		return (double)inter_cnt / union_cnt;
+	}
+
+	/*
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2) {
 		CGAL::Polygon_2<Kernel> P1;
 		for (int i = 0; i < polygon1.contour.size(); i++) {
@@ -471,9 +537,9 @@ namespace util {
 			return 0;
 		}
 
-		double union_area = std::abs(unionR.outer_boundary().area());
+		double union_area = std::abs(unionR.outer_boundary().area().exact().to_double());
 		for (auto it = unionR.holes_begin(); it != unionR.holes_end(); it++) {
-			union_area -= std::abs(it->area());
+			union_area -= std::abs(it->area().exact().to_double());
 		}
 
 		// calculate intersection
@@ -484,16 +550,18 @@ namespace util {
 
 		double intersection_area = 0;
 		for (it = intR.begin(); it != intR.end(); ++it) {
-			intersection_area += std::abs(it->outer_boundary().area());
+			intersection_area += std::abs(it->outer_boundary().area().exact().to_double());
 			for (auto it2 = it->holes_begin(); it2 != it->holes_end(); it2++) {
-				intersection_area -= std::abs(it2->area());
+				intersection_area -= std::abs(it2->area().exact().to_double());
 			}
 			
 		}
 
 		return intersection_area / union_area;
 	}
+	*/
 	
+	/*
 	double calculateIOU(const Ring& polygon1, const Ring& polygon2) {
 		CGAL::Polygon_2<Kernel> P1;
 		for (int i = 0; i < polygon1.size(); i++) {
@@ -514,9 +582,9 @@ namespace util {
 			return 0;
 		}
 
-		double union_area = std::abs(unionR.outer_boundary().area());
+		double union_area = std::abs(unionR.outer_boundary().area().exact().to_double());
 		for (auto it = unionR.holes_begin(); it != unionR.holes_end(); it++) {
-			union_area -= std::abs(it->area());
+			union_area -= std::abs(it->area().exact().to_double());
 		}
 
 		// calculate intersection
@@ -527,24 +595,27 @@ namespace util {
 
 		double intersection_area = 0;
 		for (it = intR.begin(); it != intR.end(); ++it) {
-			intersection_area += std::abs(it->outer_boundary().area());
+			intersection_area += std::abs(it->outer_boundary().area().exact().to_double());
 			for (auto it2 = it->holes_begin(); it2 != it->holes_end(); it2++) {
-				intersection_area -= std::abs(it2->area());
+				intersection_area -= std::abs(it2->area().exact().to_double());
 			}
 
 		}
 
 		return intersection_area / union_area;
 	}
+	*/
+
+	double calculateArea(const Polygon& polygon) {
+		double ans = cv::contourArea(polygon.contour.points);
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			ans -= cv::contourArea(polygon.holes[i].points);
+		}
+		return ans;
+	}
 
 	double calculateArea(const cv::Mat_<uchar>& img) {
-		double area = 0.0;
-		for (int r = 0; r < img.rows; r++) {
-			for (int c = 0; c < img.cols; c++) {
-				area += img(r, c);
-			}
-		}
-		return area / 255;
+		return cv::sum(img)[0] / 255;
 	}
 
 	/**
@@ -552,7 +623,7 @@ namespace util {
 	 * The image has to be of type CV_8U, and has values either 0 or 255.
 	 * Note that the input image is not modified by this function.
 	 */
-	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img) {
+	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner) {
 		std::vector<Polygon> ans;
 
 		// resize x2
@@ -577,21 +648,39 @@ namespace util {
 			if (contours[i].size() < 3) continue;
 
 			Polygon polygon;
-			Ring contour = addCornerToOpenCVContour(contours[i], padded);
-			polygon.contour.resize(contour.size());
-			for (int j = 0; j < contour.size(); j++) {
-				polygon.contour[j] = cv::Point2f(contour[j].x * 0.5, contour[j].y * 0.5);
+			if (add_right_corner) {
+				Ring contour = addCornerToOpenCVContour(contours[i], padded);
+				polygon.contour.resize(contour.size());
+				for (int j = 0; j < contour.size(); j++) {
+					polygon.contour[j] = cv::Point2f(contour[j].x * 0.5, contour[j].y * 0.5);
+				}
+			}
+			else {
+				polygon.contour.resize(contours[i].size());
+				for (int j = 0; j < contours[i].size(); j++) {
+					polygon.contour[j] = cv::Point2f(contours[i][j].x * 0.5, contours[i][j].y * 0.5);
+				}
 			}
 			
 			if (polygon.contour.size() >= 3) {
 				// obtain all the holes inside this contour
 				int hole_id = hierarchy[i][2];
 				while (hole_id != -1) {
-					Ring hole = addCornerToOpenCVContour(contours[hole_id], img2);
-					for (int j = 0; j < hole.size(); j++) {
-						hole[j] = cv::Point2f(hole[j].x * 0.5, hole[j].y * 0.5);
+					if (add_right_corner) {
+						Ring hole = addCornerToOpenCVContour(contours[hole_id], img2);
+						for (int j = 0; j < hole.size(); j++) {
+							hole[j] = cv::Point2f(hole[j].x * 0.5, hole[j].y * 0.5);
+						}
+						polygon.holes.push_back(hole);
 					}
-					polygon.holes.push_back(hole);
+					else {
+						Ring hole;
+						hole.resize(contours[hole_id].size());
+						for (int j = 0; j < contours[hole_id].size(); j++) {
+							hole[j] = cv::Point2f(contours[hole_id][j].x * 0.5, contours[hole_id][j].y * 0.5);
+						}
+						polygon.holes.push_back(hole);
+					}
 					hole_id = hierarchy[hole_id][0];
 				}
 
@@ -909,7 +998,7 @@ namespace util {
 					std::vector<cv::Point2f> pol;
 					for (int i = 0; i < 3; i++) {
 						CDT::Vertex_handle vh = fit->vertex(i);
-						pol.push_back(cv::Point2f(vh->point().x(), vh->point().y()));
+						pol.push_back(cv::Point2f(vh->point().exact().x().to_double(), vh->point().exact().y().to_double()));
 					}
 
 					util::counterClockwise(pol);

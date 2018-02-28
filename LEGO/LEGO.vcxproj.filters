@@ -113,9 +113,6 @@
     <ClCompile Include="..\LEGO_NOGUI\util\DisjointVoxelData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\LayerVoxelData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\LEGO_NOGUI\util\PlyWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -220,9 +217,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\LEGO_NOGUI\util\DisjointVoxelData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\LayerVoxelData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\LEGO_NOGUI\util\PlyWriter.h">

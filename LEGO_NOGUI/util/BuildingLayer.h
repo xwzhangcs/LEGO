@@ -10,6 +10,7 @@ namespace util {
 	class BuildingLayer {
 	public:
 		int building_id;
+		std::vector<util::Polygon> raw_footprints;
 		util::Polygon footprint;
 		float bottom_height;
 		float top_height;
@@ -18,7 +19,10 @@ namespace util {
 
 	public:
 		BuildingLayer() {}
+		BuildingLayer(int building_id, float bottom_height, float top_height);
 		BuildingLayer(int building_id, const util::Polygon& footprint, float bottom_height, float top_height);
+
+		util::Polygon selectRepresentativeContour() const;
 	};
 
 }

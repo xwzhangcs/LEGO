@@ -11,7 +11,6 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "util/BuildingLayer.h"
 #include "GLUtils.h"
-#include "util/LayerVoxelData.h"
 #include "util/DisjointVoxelData.h"
 
 class MainWindow;
@@ -33,11 +32,9 @@ public:
 	glm::vec3 spot_light_pos;
 
 	// input voxel data
-	util::DisjointVoxelData disjoint_voxel_data;
-	std::vector<std::shared_ptr<util::Layer>> layers;
+	std::vector<cv::Mat_<uchar>> voxel_data;
+	std::vector<std::shared_ptr<util::BuildingLayer>> raw_buildings;
 	std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
-	float voxel_count;
-	int ground_level;
 
 	// rendering engine
 	RenderManager renderManager;
@@ -67,10 +64,10 @@ public:
 	void rightAngleTest();
 	void curveTest();
 	void update3DGeometry();
-	void update3DGeometry(const std::vector<std::shared_ptr<util::Layer>>& layers);
-	void update3DGeometry(std::shared_ptr<util::Layer> layer, const cv::Size& size, glm::vec4& color, std::vector<Vertex>& vertices);
 	void update3DGeometry(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
-	void update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
+	void update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices);
+	void update3DGeometryWithRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
+	void update3DGeometryWithRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	void createFace(const std::vector<glm::dvec2>& coords, double h, int floor_tile_width, int floor_tile_height, const glm::mat4& mat, glm::vec4& color, const QString& facade_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	double dotProductBetweenThreePoints(const glm::dvec2& a, const glm::dvec2& b, const glm::dvec2& c);
 	double getLength(const std::vector<glm::dvec2>& points);

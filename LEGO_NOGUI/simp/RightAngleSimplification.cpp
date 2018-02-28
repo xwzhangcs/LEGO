@@ -10,29 +10,25 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-	util::Polygon RightAngleSimplification::simplify(const cv::Mat& slice, int resolution, float& angle, int& dx, int& dy) {
-		// make sure there is a building in the layer
-		std::vector<util::Polygon> polygons = util::findContours(slice);
-		if (polygons.size() == 0) throw "No building is found.";
-
+	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float& angle, int& dx, int& dy) {
 		util::Polygon ans;
 
 		if (angle == -1) {
-			std::tuple<float, int, int> best_mat = simplifyContour(polygons[0].contour, ans.contour, resolution);
+			std::tuple<float, int, int> best_mat = simplifyContour(polygon.contour, ans.contour, resolution);
 			angle = std::get<0>(best_mat);
 			dx = std::get<1>(best_mat);
 			dy = std::get<2>(best_mat);
 		}
 		else {
-			simplifyContour(polygons[0].contour, ans.contour, resolution, angle, dx, dy);
+			simplifyContour(polygon.contour, ans.contour, resolution, angle, dx, dy);
 		}
 		if (ans.contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
 
 		// simplify the hole as well
-		for (int i = 0; i < polygons[0].holes.size(); i++) {
+		for (int i = 0; i < polygon.holes.size(); i++) {
 			try {
 				util::Ring simplified_hole;
-				simplifyContour(polygons[0].holes[i], simplified_hole, resolution, angle, dx, dy);
+				simplifyContour(polygon.holes[i], simplified_hole, resolution, angle, dx, dy);
 				if (simplified_hole.size() >= 3) {
 					ans.holes.push_back(simplified_hole);
 				}
@@ -140,7 +136,7 @@ namespace simp {
 		cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
 		util::createImageFromContour(bbox.width, bbox.height, small_aa_polygon, cv::Point(-bbox.x, -bbox.y), img);
 
-		std::vector<util::Polygon> polygons = util::findContours(img);
+		std::vector<util::Polygon> polygons = util::findContours(img, true);
 		if (polygons.size() == 0) throw "No contour is found.";
 
 		// offset back and scale up the simplified scale-down polygon
@@ -155,7 +151,7 @@ namespace simp {
 		// generate a simplified contour removing self-intersections
 		bbox = util::boundingBox(simplified_aa_contour);
 		util::createImageFromContour(bbox.width, bbox.height, simplified_aa_contour, cv::Point(-bbox.x, -bbox.y), img);
-		polygons = util::findContours(img);
+		polygons = util::findContours(img, false);
 		if (polygons.size() == 0) throw "No valid contour is generated.";
 		for (int i = 0; i < polygons[0].contour.size(); i++) {
 			polygons[0].contour[i] += cv::Point2f(bbox.x, bbox.y);

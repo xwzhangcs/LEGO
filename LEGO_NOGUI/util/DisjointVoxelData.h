@@ -1,25 +1,23 @@
 #pragma once
 
 #include <vector>
+#include <unordered_map>
 #include <opencv2/opencv.hpp>
+#include "BuildingLayer.h"
 
 namespace util {
 
 	class DisjointVoxelData {
-	public:
-		std::vector<cv::Mat_<uchar>> voxel_data;
-		std::vector<cv::Mat_<int>> clustered_voxel_data;
-		int num_buildings;
-
-	public:
+	protected:
 		DisjointVoxelData();
 
-		void disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data, float threshold);
-		size_t size() const { return num_buildings; }
-		std::vector<cv::Mat_<uchar>> getDisjointedVoxelData(int building_id) const;
+	public:
+		static std::vector<std::shared_ptr<BuildingLayer>> disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data);
+		static std::shared_ptr<BuildingLayer> layering(const std::shared_ptr<BuildingLayer>& building, float threshold);
 
 	private:
-		void traverse(const std::vector<cv::Mat_<uchar>>& voxel_data, float threshold, std::vector<cv::Mat_<int>>& clustered_voxel_data, int cluster_id, int slice_id, int r, int c);
+		static cv::Mat_<uchar> getSliceOfCluster(const std::vector<cv::Mat_<uchar>>& voxel_data, int slice_id, const cv::Mat_<unsigned short>& cluster_data, int cluster_id);
+		static void traverseInSlice(const std::vector<cv::Mat_<uchar>>& voxel_data, cv::Mat_<unsigned short>& cluster, int cluster_id, int slice_id, int r, int c);
 	};
 
 }
