@@ -95,6 +95,7 @@ namespace util {
 	public:
 		Ring();
 		Ring(const Ring& ring);
+		Ring(const std::vector<cv::Point2f>& points);
 
 		Ring& operator=(const Ring& ring);
 		Ring& operator=(const std::vector<cv::Point2f>& points);
@@ -155,7 +156,7 @@ namespace util {
 	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2);
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);
-	//double calculateIOU(const Ring& polygon1, const Ring& polygon2);
+	double calculateIOU(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2);
 	double calculateArea(const Polygon& polygon);
 	double calculateArea(const cv::Mat_<uchar>& img);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner);

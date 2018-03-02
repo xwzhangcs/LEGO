@@ -20,7 +20,7 @@ namespace simp {
 			dy = std::get<2>(best_mat);
 		}
 		else {
-			simplifyContour(polygon.contour, ans.contour, resolution, angle, dx, dy);
+			simplifyContour(polygon.contour, ans.contour, resolution, angle, dx, dy, true);
 		}
 		if (ans.contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
 
@@ -28,7 +28,7 @@ namespace simp {
 		for (int i = 0; i < polygon.holes.size(); i++) {
 			try {
 				util::Ring simplified_hole;
-				simplifyContour(polygon.holes[i], simplified_hole, resolution, angle, dx, dy);
+				simplifyContour(polygon.holes[i], simplified_hole, resolution, angle, dx, dy, true);
 				if (simplified_hole.size() >= 3) {
 					ans.holes.push_back(simplified_hole);
 				}
@@ -71,7 +71,7 @@ namespace simp {
 				for (int dy = 0; dy < resolution; dy++) {
 					util::Ring simplified_contour;
 					try {
-						double cost = simplifyContour(contour, simplified_contour, resolution, angle, dx, dy);
+						double cost = simplifyContour(contour, simplified_contour, resolution, angle, dx, dy, false);
 
 						if (cost < min_cost) {
 							min_cost = cost;
@@ -90,6 +90,9 @@ namespace simp {
 
 		if (min_cost == std::numeric_limits<double>::max()) throw "No simplified polygon was found.";
 
+		// refine the simplified contour
+		simplifyContour(contour, result, resolution, best_angle, best_dx, best_dy, true);
+
 		return std::make_tuple(best_angle, best_dx, best_dy);
 	}
 
@@ -101,7 +104,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy) {
+	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy, bool refine) {
 		double theta = angle / 180 * CV_PI;
 
 		// create a transformation matrix
@@ -140,28 +143,39 @@ namespace simp {
 		if (polygons.size() == 0) throw "No contour is found.";
 
 		// offset back and scale up the simplified scale-down polygon
-		std::vector<cv::Point> simplified_aa_contour(polygons[0].contour.size());
+		std::vector<cv::Point2f> simplified_aa_contour(polygons[0].contour.size());
 		for (int i = 0; i < polygons[0].contour.size(); i++) {
-			simplified_aa_contour[i] = cv::Point((polygons[0].contour[i].x + bbox.x) * resolution, (polygons[0].contour[i].y + bbox.y) * resolution);
+			simplified_aa_contour[i] = cv::Point2f((polygons[0].contour[i].x + bbox.x) * resolution, (polygons[0].contour[i].y + bbox.y) * resolution);
 		}
 		
-		// refine the simplified contour
-		double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour));
-		
-		// generate a simplified contour removing self-intersections
-		bbox = util::boundingBox(simplified_aa_contour);
-		util::createImageFromContour(bbox.width, bbox.height, simplified_aa_contour, cv::Point(-bbox.x, -bbox.y), img);
-		polygons = util::findContours(img, false);
-		if (polygons.size() == 0) throw "No valid contour is generated.";
-		for (int i = 0; i < polygons[0].contour.size(); i++) {
-			polygons[0].contour[i] += cv::Point2f(bbox.x, bbox.y);
+		if (refine) {
+			// refine the simplified contour
+			std::vector<cv::Point> simplified_aa_contour_int(simplified_aa_contour.size());
+			for (int i = 0; i < simplified_aa_contour.size(); i++) {
+				simplified_aa_contour_int[i] = cv::Point(std::round(simplified_aa_contour[i].x), std::round(simplified_aa_contour[i].y));
+			}
+			double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour_int));
+
+			// generate a simplified contour removing self-intersections
+			bbox = util::boundingBox(simplified_aa_contour);
+			util::createImageFromContour(bbox.width, bbox.height, simplified_aa_contour_int, cv::Point(-bbox.x, -bbox.y), img);
+			polygons = util::findContours(img, false);
+			if (polygons.size() == 0) throw "No valid contour is generated.";
+			for (int i = 0; i < polygons[0].contour.size(); i++) {
+				polygons[0].contour[i] += cv::Point2f(bbox.x, bbox.y);
+			}
+
+			simplified_aa_contour = polygons[0].contour.points;
 		}
+
+		double cost = 1.0 / (0.01 + util::calculateIOU(aa_contour, simplified_aa_contour));
+
 
 		// calculate the cost
-		cost += polygons[0].contour.size() * 0.2;
+		cost += simplified_aa_contour.size() * 0.2;
 
 		// transform back the simplified contour
-		util::Ring simplified_contour = polygons[0].contour;
+		util::Ring simplified_contour = simplified_aa_contour;
 		simplified_contour.mat = invM;
 
 		result = simplified_contour;

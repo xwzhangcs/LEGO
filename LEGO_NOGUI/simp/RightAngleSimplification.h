@@ -17,7 +17,7 @@ namespace simp {
 
 	private:
 		static std::tuple<float, int, int> simplifyContour(const util::Ring& contour, util::Ring& result, int resolution = 5.0);
-		static double simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy);
+		static double simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy, bool refine);
 
 		static double optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour);
 		static std::vector<cv::Point> proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map);
