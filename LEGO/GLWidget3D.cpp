@@ -332,7 +332,17 @@ void GLWidget3D::showInputVoxel() {
 }
 
 void GLWidget3D::simplifyByAll(double alpha) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, alpha, 0, 0, 0, 0);
+	// determine the layering threshold based on the weight ratio
+	float threshold;
+	if (alpha < 0.2) threshold = 0.0;
+	else if (alpha < 0.4) threshold = 0.1;
+	else if (alpha < 0.6) threshold = 0.4;
+	else if (alpha < 0.7) threshold = 0.5;
+	else if (alpha < 0.8) threshold = 0.6;
+	else if (alpha < 1.0) threshold = 0.9;
+	else threshold = 1.0;
+
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, alpha, threshold, 0, 0, 0);
 
 	show_mode = SHOW_ALL;
 	update3DGeometry();

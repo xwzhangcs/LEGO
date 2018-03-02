@@ -453,34 +453,38 @@ namespace util {
 	 * we resort to an image-based approach that can quickly calculate the approximate IOU.
 	 */
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2) {
+		Ring contour1 = polygon1.contour.getActualPoints();
+		Ring contour2 = polygon2.contour.getActualPoints();
+
 		int min_x = INT_MAX;
 		int min_y = INT_MAX;
 		int max_x = INT_MIN;
 		int max_y = INT_MIN;
-		for (int i = 0; i < polygon1.contour.size(); i++) {
-			min_x = std::min(min_x, (int)polygon1.contour[i].x);
-			min_y = std::min(min_y, (int)polygon1.contour[i].y);
-			max_x = std::max(max_x, (int)(polygon1.contour[i].x + 0.5));
-			max_y = std::max(max_y, (int)(polygon1.contour[i].y + 0.5));
+		for (int i = 0; i < contour1.size(); i++) {
+			min_x = std::min(min_x, (int)contour1[i].x);
+			min_y = std::min(min_y, (int)contour1[i].y);
+			max_x = std::max(max_x, (int)(contour1[i].x + 0.5));
+			max_y = std::max(max_y, (int)(contour1[i].y + 0.5));
 		}
-		for (int i = 0; i < polygon2.contour.size(); i++) {
-			min_x = std::min(min_x, (int)polygon2.contour[i].x);
-			min_y = std::min(min_y, (int)polygon2.contour[i].y);
-			max_x = std::max(max_x, (int)(polygon2.contour[i].x + 0.5));
-			max_y = std::max(max_y, (int)(polygon2.contour[i].y + 0.5));
+		for (int i = 0; i < contour2.size(); i++) {
+			min_x = std::min(min_x, (int)contour2[i].x);
+			min_y = std::min(min_y, (int)contour2[i].y);
+			max_x = std::max(max_x, (int)(contour2[i].x + 0.5));
+			max_y = std::max(max_y, (int)(contour2[i].y + 0.5));
 		}
 
 		cv::Mat_<uchar> img1 = cv::Mat_<uchar>::zeros(max_y - min_y + 1, max_x - min_x + 1);
 		
 		std::vector<std::vector<cv::Point>> contour_points1(1 + polygon1.holes.size());
-		contour_points1[0].resize(polygon1.contour.size());
-		for (int i = 0; i < polygon1.contour.size(); i++) {
-			contour_points1[0][i] = cv::Point(polygon1.contour[i].x - min_x, polygon1.contour[i].y - min_y);
+		contour_points1[0].resize(contour1.size());
+		for (int i = 0; i < contour1.size(); i++) {
+			contour_points1[0][i] = cv::Point(contour1[i].x - min_x, contour1[i].y - min_y);
 		}
 		for (int i = 0; i < polygon1.holes.size(); i++) {
-			contour_points1[i + 1].resize(polygon1.holes[i].size());
-			for (int j = 0; j < polygon1.holes[i].size(); j++) {
-				contour_points1[i + 1][j] = cv::Point(polygon1.holes[i][j].x - min_x, polygon1.holes[i][j].y - min_y);
+			Ring hole = polygon1.holes[i].getActualPoints();
+			contour_points1[i + 1].resize(hole.size());
+			for (int j = 0; j < hole.size(); j++) {
+				contour_points1[i + 1][j] = cv::Point(hole[j].x - min_x, hole[j].y - min_y);
 			}
 		}
 		cv::fillPoly(img1, contour_points1, cv::Scalar(255), cv::LINE_4);
@@ -488,14 +492,15 @@ namespace util {
 		cv::Mat_<uchar> img2 = cv::Mat_<uchar>::zeros(max_y - min_y + 1, max_x - min_x + 1);
 
 		std::vector<std::vector<cv::Point>> contour_points2(1 + polygon2.holes.size());
-		contour_points2[0].resize(polygon2.contour.size());
-		for (int i = 0; i < polygon2.contour.size(); i++) {
-			contour_points2[0][i] = cv::Point(polygon2.contour[i].x - min_x, polygon2.contour[i].y - min_y);
+		contour_points2[0].resize(contour2.size());
+		for (int i = 0; i < contour2.size(); i++) {
+			contour_points2[0][i] = cv::Point(contour2[i].x - min_x, contour2[i].y - min_y);
 		}
 		for (int i = 0; i < polygon2.holes.size(); i++) {
-			contour_points2[i + 1].resize(polygon2.holes[i].size());
-			for (int j = 0; j < polygon2.holes[i].size(); j++) {
-				contour_points2[i + 1][j] = cv::Point(polygon2.holes[i][j].x - min_x, polygon2.holes[i][j].y - min_y);
+			Ring hole = polygon2.holes[i].getActualPoints();
+			contour_points2[i + 1].resize(hole.size());
+			for (int j = 0; j < hole.size(); j++) {
+				contour_points2[i + 1][j] = cv::Point(hole[j].x - min_x, hole[j].y - min_y);
 			}
 		}
 		cv::fillPoly(img2, contour_points2, cv::Scalar(255), cv::LINE_4);

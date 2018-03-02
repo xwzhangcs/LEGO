@@ -10,6 +10,8 @@ namespace simp {
 	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
+		std::vector<std::tuple<float, long long, int>> records;
+
 		time_t start = clock();
 		setbuf(stdout, NULL);
 		printf("Processing building");
@@ -23,7 +25,7 @@ namespace simp {
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
-					building = simplifyBuildingByAll(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, angle, dx, dy);
+					building = simplifyBuildingByAll(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, angle, dx, dy, records);
 				}
 				else if (algorithm == ALG_DP) {
 					cv::Point2f hoge = raw_buildings[i]->footprint.contour.getActualPoint(0);
@@ -47,6 +49,15 @@ namespace simp {
 		time_t end = clock();
 		std::cout << "Time elapsed " << (double)(end - start) / CLOCKS_PER_SEC << " sec." << std::endl;
 
+		std::ofstream out("records.txt");
+		for (int i = 0; i < records.size(); i++) {
+			float error = std::get<0>(records[i]);
+			long long num_primitive_shapes = std::get<1>(records[i]);
+			int selected_algorithm = std::get<2>(records[i]);
+			out << error << " " << num_primitive_shapes << " " << selected_algorithm << std::endl;
+		}
+		out.close();
+
 		return buildings;
 	}
 
@@ -64,7 +75,7 @@ namespace simp {
 		return costs;
 	}
 
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float angle, int dx, int dy) {
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float angle, int dx, int dy, std::vector<std::tuple<float, long long, int>>& records) {
 		float best_cost = std::numeric_limits<float>::max();
 		util::Polygon best_simplified_polygon;
 
@@ -73,6 +84,8 @@ namespace simp {
 		std::vector<float> baseline_costs = calculateCost(baseline_polygon, layer);
 		
 		int best_algorithm = ALG_UNKNOWN;
+		float best_error = 0.0f;
+		int best_num_primitive_shapes = 0;
 
 		// try Douglas-Peucker
 		try {
@@ -91,6 +104,9 @@ namespace simp {
 				best_algorithm = ALG_DP;
 				best_cost = cost;
 				best_simplified_polygon = simplified_polygon;
+
+				best_error = costs[0] / costs[1];
+				best_num_primitive_shapes = costs[2];
 			}
 		}
 		catch (...) {
@@ -110,6 +126,9 @@ namespace simp {
 				best_algorithm = ALG_RIGHTANGLE;
 				best_cost = cost;
 				best_simplified_polygon = simplified_polygon;
+
+				best_error = costs[0] / costs[1];
+				best_num_primitive_shapes = costs[2];
 			}
 		}
 		catch (...) {
@@ -136,12 +155,17 @@ namespace simp {
 				best_algorithm = ALG_CURVE;
 				best_cost = cost;
 				best_simplified_polygon = simplified_polygon;
+
+				best_error = costs[0] / costs[1];
+				best_num_primitive_shapes = costs[2];
 			}
 		}
 		catch (...) {
 		}
 
 		if (best_algorithm == ALG_UNKNOWN) throw "No valid simplification is found.";
+
+		records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
 
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygon, layer->bottom_height, layer->top_height));
 
@@ -152,7 +176,7 @@ namespace simp {
 					dx = -1;
 					dy = -1;
 				}
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, layer->children[i], alpha, angle, dx, dy);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, layer->children[i], alpha, angle, dx, dy, records);
 				building->children.push_back(child);
 			}
 			catch (...) {
