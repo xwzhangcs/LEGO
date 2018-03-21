@@ -55,6 +55,7 @@
     <addaction name="actionSimplifyByDP"/>
     <addaction name="actionSimplifyByRightAngle"/>
     <addaction name="actionSimplifyByCurve"/>
+    <addaction name="actionSimplifyByCurveRightAngle"/>
     <addaction name="separator"/>
     <addaction name="actionDPTest"/>
     <addaction name="actionRightAngleTest"/>
@@ -237,6 +238,11 @@
   <action name="actionCurveTest">
    <property name="text">
     <string>Curve Test</string>
+   </property>
+  </action>
+  <action name="actionSimplifyByCurveRightAngle">
+   <property name="text">
+    <string>Curve + Right Angle</string>
    </property>
   </action>
  </widget>

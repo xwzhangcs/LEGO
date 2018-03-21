@@ -42,6 +42,9 @@
     <ClCompile Include="simp\DPSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="simp\CurveRightAngleSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="simp\DPSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="simp\CurveRightAngleSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

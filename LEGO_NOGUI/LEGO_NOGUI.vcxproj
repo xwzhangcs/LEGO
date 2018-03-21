@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="simp\BuildingSimplification.cpp" />
+    <ClCompile Include="simp\CurveRightAngleSimplification.cpp" />
     <ClCompile Include="simp\CurveSimplification.cpp" />
     <ClCompile Include="simp\DPSimplification.cpp" />
     <ClCompile Include="simp\RightAngleSimplification.cpp" />
@@ -31,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h" />
+    <ClInclude Include="simp\CurveRightAngleSimplification.h" />
     <ClInclude Include="simp\CurveSimplification.h" />
     <ClInclude Include="simp\DPSimplification.h" />
     <ClInclude Include="simp\RightAngleSimplification.h" />

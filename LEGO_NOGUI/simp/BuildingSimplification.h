@@ -9,7 +9,7 @@ namespace simp {
 	
 	class BuildingSimplification {
 	public:
-		enum ALGORITHM { ALG_UNKNOWN = 0, ALG_ALL, ALG_DP, ALG_RIGHTANGLE, ALG_CURVE };
+		enum ALGORITHM { ALG_UNKNOWN = 0, ALG_ALL, ALG_DP, ALG_RIGHTANGLE, ALG_CURVE, ALG_CURVE_RIGHTANGLE };
 
 	protected:
 		BuildingSimplification() {}
@@ -23,6 +23,7 @@ namespace simp {
 		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByDP(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon);
 		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer,  float alpha, int resolution, float angle, int dx, int dy);
 		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByCurve(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold);
+		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByCurveRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold);
 
 		static std::vector<float> calculateCost(const util::Polygon& polygon, std::shared_ptr<util::BuildingLayer> layer);
 	};

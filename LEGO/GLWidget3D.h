@@ -60,6 +60,7 @@ public:
 	void simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void simplifyByCurveRightAngle(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
 	void dpTest();
 	void rightAngleTest();
 	void curveTest();

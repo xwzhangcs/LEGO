@@ -46,6 +46,7 @@ public:
     QAction *actionDPTest;
     QAction *actionRightAngleTest;
     QAction *actionCurveTest;
+    QAction *actionSimplifyByCurveRightAngle;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -120,6 +121,8 @@ public:
         actionRightAngleTest->setObjectName(QStringLiteral("actionRightAngleTest"));
         actionCurveTest = new QAction(MainWindowClass);
         actionCurveTest->setObjectName(QStringLiteral("actionCurveTest"));
+        actionSimplifyByCurveRightAngle = new QAction(MainWindowClass);
+        actionSimplifyByCurveRightAngle->setObjectName(QStringLiteral("actionSimplifyByCurveRightAngle"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -161,6 +164,7 @@ public:
         menuSimplify->addAction(actionSimplifyByDP);
         menuSimplify->addAction(actionSimplifyByRightAngle);
         menuSimplify->addAction(actionSimplifyByCurve);
+        menuSimplify->addAction(actionSimplifyByCurveRightAngle);
         menuSimplify->addSeparator();
         menuSimplify->addAction(actionDPTest);
         menuSimplify->addAction(actionRightAngleTest);
@@ -198,6 +202,7 @@ public:
         actionDPTest->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker Test", 0));
         actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", 0));
         actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", 0));
+        actionSimplifyByCurveRightAngle->setText(QApplication::translate("MainWindowClass", "Curve + Right Angle", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));

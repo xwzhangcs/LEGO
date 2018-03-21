@@ -26,6 +26,7 @@ public slots:
 	void onSimplifyByDP();
 	void onSimplifyByRightAngle();
 	void onSimplifyByCurve();
+	void onSimplifyByCurveRightAngle();
 	void onDPTest();
 	void onRightAngleTest();
 	void onCurveTest();

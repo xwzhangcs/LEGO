@@ -139,6 +139,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\LEGO_NOGUI\simp\BuildingSimplification.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\CurveSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\DPSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\RightAngleSimplification.cpp" />
@@ -239,6 +240,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LEGO_NOGUI\simp\BuildingSimplification.h" />
+    <ClInclude Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\CurveSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\DPSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\RightAngleSimplification.h" />

@@ -369,6 +369,13 @@ void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double 
 	update3DGeometry();
 }
 
+void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, 0.5, layering_threshold, epsilon, 0, curve_threshold);
+
+	show_mode = SHOW_CURVE;
+	update3DGeometry();
+}
+
 void GLWidget3D::dpTest() {
 	/*
 	for (int alpha_idx = 0; alpha_idx <= 10; alpha_idx++) {

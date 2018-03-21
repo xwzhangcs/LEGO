@@ -8,7 +8,7 @@
 
 namespace simp {
 
-	class CurveSimplification {
+	class CurveRightAngleSimplification {
 
 		// In dlib, the general purpose solvers optimize functions that take a column
 		// vector as input and return a double.  So here we make a typedef for a
@@ -64,7 +64,7 @@ namespace simp {
 		};
 
 	protected:
-		CurveSimplification() {}
+		CurveRightAngleSimplification() {}
 
 	public:
 		static util::Polygon simplify(const util::Polygon& polygon, float epsilon, float curve_threshold);

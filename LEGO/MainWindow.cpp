@@ -39,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionSimplifyByDP, SIGNAL(triggered()), this, SLOT(onSimplifyByDP()));
 	connect(ui.actionSimplifyByRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByRightAngle()));
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
+	connect(ui.actionSimplifyByCurveRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByCurveRightAngle()));
 	connect(ui.actionDPTest, SIGNAL(triggered()), this, SLOT(onDPTest()));
 	connect(ui.actionRightAngleTest, SIGNAL(triggered()), this, SLOT(onRightAngleTest()));
 	connect(ui.actionCurveTest, SIGNAL(triggered()), this, SLOT(onCurveTest()));
@@ -126,6 +127,14 @@ void MainWindow::onSimplifyByCurve() {
 	CurveOptionDialog dlg;
 	if (dlg.exec()) {
 		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
+		glWidget->update();
+	}
+}
+
+void MainWindow::onSimplifyByCurveRightAngle() {
+	CurveOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }

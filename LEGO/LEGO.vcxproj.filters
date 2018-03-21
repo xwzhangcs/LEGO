@@ -134,6 +134,9 @@
     <ClCompile Include="..\LEGO_NOGUI\simp\DPSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.ui">
@@ -229,6 +232,9 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="..\LEGO_NOGUI\simp\DPSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
