@@ -318,7 +318,7 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 }
 
 void GLWidget3D::savePLY(const QString& filename) {
-	util::ply::PlyWriter::write(filename.toUtf8().constData(), buildings);
+	util::ply::PlyWriter::write(filename.toUtf8().constData(), 0.0, 0.0, 0.0, 1.0, buildings);
 }
 
 void GLWidget3D::saveImage(const QString& filename) {
