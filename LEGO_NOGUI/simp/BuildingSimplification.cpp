@@ -8,7 +8,7 @@
 
 namespace simp {
 
-	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold) {
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold, float angle_threshold) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		std::vector<std::tuple<float, long long, int>> records;
@@ -42,7 +42,7 @@ namespace simp {
 					building = simplifyBuildingByCurve(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, epsilon, curve_threshold);
 				}
 				else if (algorithm == ALG_CURVE_RIGHTANGLE) {
-					building = simplifyBuildingByCurveRightAngle(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, epsilon, curve_threshold);
+					building = simplifyBuildingByCurveRightAngle(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, epsilon, curve_threshold, angle_threshold);
 				}
 
 				buildings.push_back(building);
@@ -180,7 +180,9 @@ namespace simp {
 			if (alpha == 0.0) curve_threshold = 4.0f;
 			else curve_threshold = 1.0f;
 
-			util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(layer->selectRepresentativeContour(), epsilon, curve_threshold);
+			float angle_threshold = 15.0f / 180.0f * CV_PI;
+
+			util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(layer->selectRepresentativeContour(), epsilon, curve_threshold, angle_threshold);
 			std::vector<float> costs = calculateCost(simplified_polygon, layer);
 			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
@@ -298,8 +300,8 @@ namespace simp {
 		return building;
 	}
 
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByCurveRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold) {
-		util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(layer->selectRepresentativeContour(), epsilon, curve_threshold);
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByCurveRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold, float angle_threshold) {
+		util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(layer->selectRepresentativeContour(), epsilon, curve_threshold, angle_threshold);
 
 		// calculate cost
 		std::vector<float> costs = calculateCost(simplified_polygon, layer);
@@ -309,7 +311,7 @@ namespace simp {
 
 		for (int i = 0; i < layer->children.size(); i++) {
 			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByCurveRightAngle(building_id, layer->children[i], alpha, epsilon, curve_threshold);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByCurveRightAngle(building_id, layer->children[i], alpha, epsilon, curve_threshold, angle_threshold);
 				building->children.push_back(child);
 			}
 			catch (...) {

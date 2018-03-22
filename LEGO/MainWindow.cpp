@@ -7,6 +7,7 @@
 #include "DPOptionDialog.h"
 #include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
+#include "CurveRightAngleOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -132,9 +133,9 @@ void MainWindow::onSimplifyByCurve() {
 }
 
 void MainWindow::onSimplifyByCurveRightAngle() {
-	CurveOptionDialog dlg;
+	CurveRightAngleOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
+		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnapVertexThreshold(), dlg.getSnapEdgeThreshold());
 		glWidget->update();
 	}
 }
