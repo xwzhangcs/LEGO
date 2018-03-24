@@ -43,7 +43,10 @@ int main(int argc, const char* argv[]) {
 	else if (alpha < 1.0) threshold = 0.9;
 	else threshold = 1.0;
 
+	time_t start = clock();
 	std::vector<std::shared_ptr<util::BuildingLayer>> raw_buildings = util::DisjointVoxelData::disjoint(voxel_data);
+	time_t end = clock();
+	std::cout << "Time elapsed: " << (double)(end - start) / CLOCKS_PER_SEC << " sec." << std::endl;
 
 	std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 	if (std::stoi(argv[3]) == 1) {
@@ -51,6 +54,15 @@ int main(int argc, const char* argv[]) {
 	}
 	else if (std::stoi(argv[3]) == 2) {
 		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_DP, alpha, 0.5, 2, 4, 1, 0);
+	}
+	else if (std::stoi(argv[3]) == 3) {
+		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_RIGHTANGLE, alpha, 0.5, 2, 4, 1, 0);
+	}
+	else if (std::stoi(argv[3]) == 4) {
+		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE, alpha, 0.5, 2, 4, 1, 0);
+	}
+	else if (std::stoi(argv[3]) == 5) {
+		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, alpha, 0.5, 2, 4, 1, 0);
 	}
 	util::ply::PlyWriter::write(argv[8], std::stod(argv[4]), std::stod(argv[5]), std::stod(argv[6]), std::stod(argv[7]), buildings);
 
