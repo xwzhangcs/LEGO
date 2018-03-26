@@ -123,6 +123,7 @@ public:
         actionCurveTest->setObjectName(QStringLiteral("actionCurveTest"));
         actionSimplifyByCurveRightAngle = new QAction(MainWindowClass);
         actionSimplifyByCurveRightAngle->setObjectName(QStringLiteral("actionSimplifyByCurveRightAngle"));
+        actionSimplifyByCurveRightAngle->setCheckable(true);
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);

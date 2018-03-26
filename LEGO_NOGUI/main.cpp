@@ -62,7 +62,7 @@ int main(int argc, const char* argv[]) {
 		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE, alpha, 0.5, 2, 4, 1, 0);
 	}
 	else if (std::stoi(argv[3]) == 5) {
-		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, alpha, 0.5, 2, 4, 1, 0);
+		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, alpha, 0.5, 2, 4, 1, 15.0f / 180.0f * CV_PI);
 	}
 	util::ply::PlyWriter::write(argv[8], std::stod(argv[4]), std::stod(argv[5]), std::stod(argv[6]), std::stod(argv[7]), buildings);
 

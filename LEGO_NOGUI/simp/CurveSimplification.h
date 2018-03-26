@@ -80,6 +80,7 @@ namespace simp {
 		static float compute_abs_angle(cv::Point2d a, cv::Point2d b);
 		static float compute_interval(cv::Point2d start, cv::Point2d mid, cv::Point2d end);
 		static bool valid_curve(double threshold, const std::vector<cv::Point2d>& points, cv::Point2d center, double radius, cv::Rect bbox);
+		static cv::Point2f find_center(cv::Point2f p1, cv::Point2f p2, cv::Point2f p3);
 	};
 
 }

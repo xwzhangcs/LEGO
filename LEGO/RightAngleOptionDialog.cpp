@@ -4,7 +4,7 @@ RightAngleOptionDialog::RightAngleOptionDialog(QWidget *parent) : QDialog(parent
 	ui.setupUi(this);
 
 	ui.spinBoxResolution->setValue(4);
-	ui.doubleSpinBoxLayeringThreshold->setValue(0.1);
+	ui.doubleSpinBoxLayeringThreshold->setValue(0.6);
 	ui.doubleSpinBoxLayeringThreshold->setSingleStep(0.1);
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
 	ui.doubleSpinBoxLayeringThreshold->setMaximum(1.0);

@@ -37,65 +37,20 @@ namespace simp {
 			contour.resize(input.contour.size());
 			for (int i = 0; i < input.contour.size(); i++)
 				contour[i] = input.contour[i];
-			if (contour.size() > 80){
-				util::Polygon output;
-				bool bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
-				if (bContainCurve)
-				{
-					polygon.contour = output.contour;
-					polygon.mat = polygon.contour.mat;
-					polygon.primitive_shapes = output.primitive_shapes;
-					//std::vector<std::vector<cv::Point2f>> contours;
-					//contours = util::tessellate(polygon.contour);
-
-					//for (int i = 0; i < contours.size(); i++) {
-					//	util::clockwise(contours[i]);
-
-					//	for (int j = 1; j < contours[i].size() - 1; j++) {
-					//		boost::shared_ptr<util::PrimitiveTriangle> pol = boost::shared_ptr<util::PrimitiveTriangle>(new util::PrimitiveTriangle(polygon.mat));
-					//		pol->points.push_back(cv::Point2f(contours[i][0].x, contours[i][0].y));
-					//		pol->points.push_back(cv::Point2f(contours[i][j].x, contours[i][j].y));
-					//		pol->points.push_back(cv::Point2f(contours[i][j + 1].x, contours[i][j + 1].y));
-					//		polygon.primitive_shapes.push_back(pol);
-					//	}
-					//}
-				}
-				else{
-					cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
-
-					if (polygon.contour.points.size() < 3) {
-						// If the simplification makes the polygon a line, gradually increase the epsilon 
-						// until it becomes a polygon with at least 3 vertices.
-						float epsilon2 = epsilon - 0.3;
-						while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
-							cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-							epsilon2 -= 0.3;
-						}
-						if (polygon.contour.points.size() < 3) {
-							polygon.contour.points = contour;
-						}
-					}
-
-					polygon.mat = polygon.contour.mat;
-					std::vector<std::vector<cv::Point2f>> contours;
-					contours = util::tessellate(polygon.contour);
-
-					for (int i = 0; i < contours.size(); i++) {
-						util::clockwise(contours[i]);
-
-						for (int j = 1; j < contours[i].size() - 1; j++) {
-							boost::shared_ptr<util::PrimitiveTriangle> pol = boost::shared_ptr<util::PrimitiveTriangle>(new util::PrimitiveTriangle(polygon.mat));
-							pol->points.push_back(cv::Point2f(contours[i][0].x, contours[i][0].y));
-							pol->points.push_back(cv::Point2f(contours[i][j].x, contours[i][j].y));
-							pol->points.push_back(cv::Point2f(contours[i][j + 1].x, contours[i][j + 1].y));
-							polygon.primitive_shapes.push_back(pol);
-						}
-					}
-					
-				}
+			util::Polygon output;
+			bool bContainCurve = false;
+			if (contour.size() > 100){
+				bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
+			}
+			if (bContainCurve)
+			{
+				polygon.contour = output.contour;
+				polygon.mat = polygon.contour.mat;
+				polygon.primitive_shapes = output.primitive_shapes;
 			}
 			else{
 				cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+
 				if (polygon.contour.points.size() < 3) {
 					// If the simplification makes the polygon a line, gradually increase the epsilon 
 					// until it becomes a polygon with at least 3 vertices.
@@ -124,6 +79,7 @@ namespace simp {
 						polygon.primitive_shapes.push_back(pol);
 					}
 				}
+					
 			}
 		}
 		else{
@@ -134,31 +90,16 @@ namespace simp {
 			for (int i = 0; i < input.contour.size(); i++)
 				contour[i] = input.contour[i];
 			//std::cout << "contour size " << contour.size() << std::endl;
-			if (contour.size() > 80){
-				util::Polygon output;
-				bool bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
-				//std::cout << "after approxContour" << std::endl;
-				if (bContainCurve)
-				{
-					//std::cout << "bContainCurve" << std::endl;
-					polygon.contour = output.contour;
-				}
-				else{
-					cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
-
-					if (polygon.contour.points.size() < 3) {
-						// If the simplification makes the polygon a line, gradually increase the epsilon 
-						// until it becomes a polygon with at least 3 vertices.
-						float epsilon2 = epsilon - 0.3;
-						while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
-							cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-							epsilon2 -= 0.3;
-						}
-						if (polygon.contour.points.size() < 3) {
-							polygon.contour.points = contour;
-						}
-					}
-				}
+			util::Polygon output;
+			bool bContainCurve = false;
+			if (contour.size() > 100){
+				bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
+			}
+			//std::cout << "after approxContour" << std::endl;
+			if (bContainCurve)
+			{
+				//std::cout << "bContainCurve" << std::endl;
+				polygon.contour = output.contour;
 			}
 			else{
 				cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
@@ -176,6 +117,7 @@ namespace simp {
 					}
 				}
 			}
+
 			// holes
 			for (int holeId = 0; holeId < input.holes.size(); holeId++){
 				util::Ring simplified_hole;
@@ -183,18 +125,16 @@ namespace simp {
 				contour.resize(input.holes[holeId].size());
 				for (int k = 0; k < input.holes[holeId].size(); k++)
 					contour[k] = input.holes[holeId][k];
-				if (contour.size() > 80){
-					util::Polygon output;
-					bool bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
-					if (bContainCurve)
-					{
-						simplified_hole.resize(output.contour.size());
-						for (int k = 0; k < output.contour.size(); k++) {
-							simplified_hole[k] = output.contour[k];
-						}
-					}
-					else{
-						cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
+				util::Polygon output;
+				bool bContainCurve = false;
+				if (contour.size() > 100){
+					bContainCurve = approxContour(contour, output, epsilon, curve_threshold);
+				}
+				if (bContainCurve)
+				{
+					simplified_hole.resize(output.contour.size());
+					for (int k = 0; k < output.contour.size(); k++) {
+						simplified_hole[k] = output.contour[k];
 					}
 				}
 				else{
@@ -312,6 +252,8 @@ namespace simp {
 			dis = (int)(percentage * input.size());
 			if (dis < 50 && input.size() > 50)
 				dis = 50;
+			if (dis > 100)
+				dis = 100;
 			bValid = false;
 			next_p = 1;
 			do{
@@ -392,6 +334,7 @@ namespace simp {
 					if (index >= contour_points_type.size())
 						break;
 				} while (contour_points_type[index] == 1);
+
 				cv::approxPolyDP(cv::Mat(simplified_tmp), simplified_poly, epsilon, false);
 				for (int k = 0; k < simplified_poly.size(); k++){
 					final_contour.push_back(simplified_poly[k]);
@@ -458,6 +401,7 @@ namespace simp {
 					bCurve = true;
 				}
 				if (bCurve){
+					center = find_center(curve_poitns[0], curve_poitns[curve_poitns.size() / 2], curve_poitns[curve_poitns.size() - 1]);
 					cv::Point2f start = (curve_poitns[0] - center);
 					cv::Point2f mid = (curve_poitns[curve_poitns.size() / 2] - center);
 					cv::Point2f end = (curve_poitns[curve_poitns.size() - 1] - center);
@@ -480,7 +424,8 @@ namespace simp {
 					float theta_start = compute_angle(x_axis, start);
 					float theta_start_end = compute_interval(start, mid, end);
 					float theta_end = theta_start + theta_start_end;
-
+					radius = cv::norm(start);
+				
 					boost::shared_ptr<util::PrimitiveCurve> pol = boost::shared_ptr<util::PrimitiveCurve>(new util::PrimitiveCurve(output.mat, theta_start, theta_end, center, radius));
 					output.primitive_shapes.push_back(pol);
 					num_curves++;
@@ -495,14 +440,47 @@ namespace simp {
 			}
 			if (regular_points == 0)
 				return bContainCurve;
-			util::Polygon new_polygon;
-			new_polygon.contour.resize(regular_points);
-			int index = 0;
-			for (int i = 0; i < final_contour.size(); i++){
-				if (type_final_contour[i] == 1 || type_final_contour[i] == 3){
-					new_polygon.contour[index++] = final_contour[i];
+
+			// determine regular points
+			std::vector<cv::Point2f> output_regular;
+			for (int i = start_index; i < start_index + final_contour.size();){
+				if (type_final_contour[i % final_contour.size()] == 1 || type_final_contour[i % final_contour.size()] == 3){
+					output_regular.push_back(final_contour[i % final_contour.size()]);
+					i++;
 				}
+				bool curveHead = false;
+				while (type_final_contour[i % final_contour.size()] == 2 && i < start_index + final_contour.size()){
+					if (!curveHead){
+						curveHead = true;
+						output_regular.push_back(final_contour[i % final_contour.size()]);
+						//std::cout << "start " << final_contour[i % final_contour.size()]<<std::endl;
+					}
+					i++;
+					if (type_final_contour[i % final_contour.size()] == 1 || type_final_contour[i % final_contour.size()] == 3){
+						output_regular.push_back(final_contour[(i - 1) % final_contour.size()]);
+						//std::cout << "end " << final_contour[(i - 1) % final_contour.size()] << std::endl;
+					}
+
+				}
+
 			}
+
+			util::Polygon new_polygon;
+			//new_polygon.contour.resize(regular_points);
+			//int index = 0;
+			//for (int i = 0; i < final_contour.size(); i++){
+			//	if (type_final_contour[i] == 1 || type_final_contour[i] == 3){
+			//		new_polygon.contour[index++] = final_contour[i];
+			//	}
+			//}
+
+			new_polygon.contour.resize(output_regular.size());
+			int index = 0;
+			for (int i = 0; i < output_regular.size(); i++){
+				new_polygon.contour[i] = output_regular[i];
+
+			}
+
 			std::vector<std::vector<cv::Point2f>> contours;
 			contours = util::tessellate(new_polygon.contour);
 
@@ -543,6 +521,25 @@ namespace simp {
 		else
 			return false;
 
+	}
+
+	cv::Point2f CurveSimplification::find_center(cv::Point2f p1, cv::Point2f p2, cv::Point2f p3){
+		double ax, ay, bx, by, cx, cy, x1, y11, dx1, dy1, x2, y2, dx2, dy2, ox, oy, dx, dy, radius;
+		ax = p1.x; ay = p1.y;
+		bx = p2.x; by = p2.y;
+		cx = p3.x; cy = p3.y;
+
+		x1 = (bx + ax) / 2;
+		y11 = (by + ay) / 2;
+		dy1 = bx - ax;
+		dx1 = -(by - ay);
+		x2 = (cx + bx) / 2;
+		y2 = (cy + by) / 2;
+		dy2 = cx - bx;
+		dx2 = -(cy - by);
+		ox = (y11 * dx1 * dx2 + x2 * dx1 * dy2 - x1 * dy1 * dx2 - y2 * dx1 * dx2) / (dx1 * dy2 - dy1 * dx2);
+		oy = (ox - x1) * dy1 / dx1 + y11;
+		return cv::Point2f(ox, oy);
 	}
 
 	cv::Point3f CurveSimplification::optimizeByBFGS(const std::vector<cv::Point2d>& points, cv::Point3d init_points) {

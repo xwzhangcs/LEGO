@@ -5,7 +5,8 @@ CurveOptionDialog::CurveOptionDialog(QWidget *parent) : QDialog(parent) {
 
 	ui.spinBoxEpsilon->setValue(2);
 	ui.doubleSpinBoxCurveThreshold->setValue(1.0);
-	ui.doubleSpinBoxLayeringThreshold->setValue(0.1);
+	ui.doubleSpinBoxCurveThreshold->setSingleStep(0.1);
+	ui.doubleSpinBoxLayeringThreshold->setValue(0.6);
 	ui.doubleSpinBoxLayeringThreshold->setSingleStep(0.1);
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
 	ui.doubleSpinBoxLayeringThreshold->setMaximum(1.0);
