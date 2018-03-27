@@ -27,8 +27,13 @@ namespace util {
 						traverseInSlice(voxel_data, next_cluster, next_cluster_id, h, r, c);
 
 						// extract contour
-						cv::Mat_<uchar> slice = getSliceOfCluster(voxel_data, h, next_cluster, next_cluster_id);
-						std::vector<Polygon> polygons = findContours(slice, false);
+						int min_x, min_y, max_x, max_y;
+						cv::Mat_<uchar> slice = getSliceOfCluster(voxel_data, h, next_cluster, next_cluster_id, min_x, min_y, max_x, max_y);
+						cv::Mat_<uchar> roi_slice(slice, cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
+						std::vector<Polygon> polygons = findContours(roi_slice, false);
+						for (int i = 0; i < polygons.size(); i++) {
+							polygons[i].translate(min_x, min_y);
+						}
 
 						// convert the polygon coordinates to the world coordinate system
 						for (int i = 0; i < polygons[0].contour.size(); i++) {
@@ -62,8 +67,13 @@ namespace util {
 						traverseInSlice(voxel_data, next_cluster, next_cluster_id, h, r, c);
 
 						// extract contour
-						cv::Mat_<uchar> slice = getSliceOfCluster(voxel_data, h, next_cluster, next_cluster_id);
-						std::vector<Polygon> polygons = findContours(slice, false);
+						int min_x, min_y, max_x, max_y;
+						cv::Mat_<uchar> slice = getSliceOfCluster(voxel_data, h, next_cluster, next_cluster_id, min_x, min_y, max_x, max_y);
+						cv::Mat_<uchar> roi_slice(slice, cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
+						std::vector<Polygon> polygons = findContours(roi_slice, false);
+						for (int i = 0; i < polygons.size(); i++) {
+							polygons[i].translate(min_x, min_y);
+						}
 
 						// convert the polygon coordinates to the world coordinate system
 						for (int i = 0; i < polygons[0].contour.size(); i++) {
@@ -139,12 +149,21 @@ namespace util {
 		return bottom_building_layer;
 	}
 	
-	cv::Mat_<uchar> DisjointVoxelData::getSliceOfCluster(const std::vector<cv::Mat_<uchar>>& voxel_data, int slice_id, const cv::Mat_<unsigned short>& cluster_data, int cluster_id) {
+	cv::Mat_<uchar> DisjointVoxelData::getSliceOfCluster(const std::vector<cv::Mat_<uchar>>& voxel_data, int slice_id, const cv::Mat_<unsigned short>& cluster_data, int cluster_id, int& min_x, int& min_y, int& max_x, int& max_y) {
+		min_x = std::numeric_limits<int>::max();
+		min_y = std::numeric_limits<int>::max();
+		max_x = 0;
+		max_y = 0;
+
 		cv::Mat_<uchar> ans = cv::Mat_<uchar>::zeros(voxel_data[slice_id].size());
 		for (int r = 0; r < voxel_data[slice_id].rows; r++) {
 			for (int c = 0; c < voxel_data[slice_id].cols; c++) {
 				if (voxel_data[slice_id](r, c) == 255 && cluster_data(r, c) == cluster_id) {
 					ans(r, c) = 255;
+					min_x = std::min(min_x, c);
+					min_y = std::min(min_y, r);
+					max_x = std::max(max_x, c);
+					max_y = std::max(max_y, r);
 				}
 			}
 		}

@@ -19,6 +19,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupSimplify->addAction(ui.actionSimplifyByDP);
 	groupSimplify->addAction(ui.actionSimplifyByRightAngle);
 	groupSimplify->addAction(ui.actionSimplifyByCurve);
+	groupSimplify->addAction(ui.actionSimplifyByCurveRightAngle);
 
 	// group for rendering modes
 	QActionGroup* groupColoring = new QActionGroup(this);

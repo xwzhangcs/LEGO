@@ -48,7 +48,7 @@ namespace simp {
 			if (contour.size() > 100){
 				bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold);
 			}
-			std::cout << "bContainCurve is " << bContainCurve << std::endl;
+			//std::cout << "bContainCurve is " << bContainCurve << std::endl;
 			if (bContainCurve)
 			{
 				polygon.contour = output.contour;
@@ -79,6 +79,7 @@ namespace simp {
 				cv::Mat_<uchar> img;
 				util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point2f(-bbox.x, -bbox.y), img);
 				float angle = axis_align(img);
+				angle = 180 - angle;
 				//if (angle > 90)
 					//angle = 360 - angle;
 
@@ -275,7 +276,7 @@ namespace simp {
 		bool bValid = false;
 		int next_p = 1;
 		cv::Point3f last_result;
-		std::cout << "input.size() size is " << input.size() << std::endl;
+		//std::cout << "input.size() size is " << input.size() << std::endl;
 		for (int i = 0; i < input.size();){
 			// initialize variables
 			points.clear();
@@ -299,7 +300,7 @@ namespace simp {
 				if (valid_curve(threshold, points, center, result.z, bbox) && points.size() <= input.size()){
 					bValid = true;
 					next_p = dis;
-					dis+=3;
+					dis++;
 				}
 				else{
 					if (next_p == 1){
@@ -387,7 +388,7 @@ namespace simp {
 				cv::Mat_<uchar> img;
 				util::createImageFromContour(bbox.width, bbox.height, final_tmp, cv::Point2f(-bbox.x, -bbox.y), img);
 				angle = axis_align(img);
-				std::cout << "angle is " << angle << std::endl;
+				angle = 180 - angle;
 			}
 			// transform
 			cv::Mat_<float> M;
@@ -412,30 +413,6 @@ namespace simp {
 			// check whether the polygon is simple
 			if (!util::isSimple(output.contour))
 				return false;
-
-			// determine regular points
-			std::vector<cv::Point2f> output_regular;
-			std::vector<int> change_index;
-			for (int i = start_index; i < start_index + final_contour.size();){
-				if (type_final_contour[i % final_contour.size()] == 1){
-					output_regular.push_back(final_contour[i % final_contour.size()]);
-					i++;
-				}
-				bool curveHead = false;
-				while (type_final_contour[i % final_contour.size()] == 2 && i < start_index + final_contour.size()){
-					if (!curveHead){
-						curveHead = true;
-						change_index.push_back(i % final_contour.size());
-						output_regular.push_back(final_contour[i % final_contour.size()]);
-					}
-					i++;
-					if (type_final_contour[i % final_contour.size()] == 1){
-						output_regular.push_back(final_contour[(i - 1) % final_contour.size()]);
-					}
-
-				}
-
-			}
 
 			// determine curves
 
@@ -500,6 +477,29 @@ namespace simp {
 					output_curves_attrs.push_back(one_curve_attrs);
 				}
 			}
+
+			// determine regular points
+			std::vector<cv::Point2f> output_regular;
+			for (int i = start_index; i < start_index + final_contour.size();){
+				if (type_final_contour[i % final_contour.size()] == 1 || type_final_contour[i % final_contour.size()] == 3){
+					output_regular.push_back(final_contour[i % final_contour.size()]);
+					i++;
+				}
+				bool curveHead = false;
+				while (type_final_contour[i % final_contour.size()] == 2 && i < start_index + final_contour.size()){
+					if (!curveHead){
+						curveHead = true;
+						output_regular.push_back(final_contour[i % final_contour.size()]);
+					}
+					i++;
+					if (type_final_contour[i % final_contour.size()] == 1 || type_final_contour[i % final_contour.size()] == 3){
+						output_regular.push_back(final_contour[(i - 1) % final_contour.size()]);
+					}
+
+				}
+
+			}
+
 			// The transfomration matrix should be same for the external contour and the internal holes
 			// because for OpenCV simplification, transformation is just to trasnform from OpenCV image coordinates
 			// to the world coordinate system.
@@ -537,12 +537,18 @@ namespace simp {
 				if (regular_points == 0)
 					return bContainCurve;
 				util::Polygon new_polygon;
-				new_polygon.contour.resize(regular_points);
+				//new_polygon.contour.resize(regular_points);
+				//int index = 0;
+				//for (int i = 0; i < final_contour.size(); i++){
+				//	if (type_final_contour[i] == 1 || type_final_contour[i] == 3){
+				//		new_polygon.contour[index++] = final_contour[i];
+				//	}
+				//}
+				new_polygon.contour.resize(output_regular.size());
 				int index = 0;
-				for (int i = 0; i < final_contour.size(); i++){
-					if (type_final_contour[i] == 1 || type_final_contour[i] == 3){
-						new_polygon.contour[index++] = final_contour[i];
-					}
+				for (int i = 0; i < output_regular.size(); i++){
+					new_polygon.contour[i] = output_regular[i];
+
 				}
 
 				new_polygon.contour.points = transform(new_polygon.contour.points, M.inv());
@@ -564,6 +570,16 @@ namespace simp {
 				return bContainCurve;
 			}
 			else{
+
+				regular_points = 0;
+				for (int i = 0; i < final_contour.size(); i++){
+					if (type_final_contour[i] == 1 || type_final_contour[i] == 3){
+						regular_points++;
+					}
+				}
+				//if (regular_points == 0)
+				//	return bContainCurve;
+				//std::cout << "regular_points is " << regular_points << std::endl;
 				//std::cout << "output_regular is " << output_regular.size() << std::endl;
 				output.contour.clear();
 				//
@@ -801,6 +817,17 @@ namespace simp {
 			cv::Point2d vec1(tail.x - head.x, tail.y - head.y);
 			cv::Point2d vec2(1, 0);
 			cv::Point2d vec3(0, 1);
+			if (l[1] > l[3])
+				vec1 = cv::Point2d(tail.x - head.x, tail.y - head.y);
+			else if (l[1] = l[3])
+			{
+				if (l[0] >= l[2])
+					vec1 = cv::Point2d(tail.x - head.x, tail.y - head.y);
+				else
+					vec1 = -cv::Point2d(tail.x - head.x, tail.y - head.y);
+			}
+			else
+				vec1 = -cv::Point2d(tail.x - head.x, tail.y - head.y);
 			float angle = compute_abs_angle(vec1, vec2);
 			edges[i] = std::make_pair(angle, cv::norm(tail - head));
 		}
@@ -941,8 +968,6 @@ namespace simp {
 			if (start_index != -1 && end_index != -1){
 				start_dis = cv::norm(start_point - contour[start_index]);
 				end_dis = cv::norm(end_point - contour[end_index]);
-				//std::cout << "start_dis is " << start_dis << std::endl;
-				//std::cout << "end_dis is " << end_dis << std::endl;
 				if (start_dis <= snap_threshold && start_index != end_index){
 					start_point = contour[start_index];
 				}
@@ -991,13 +1016,19 @@ namespace simp {
 			}
 			if (bInsert){
 				for (int k = 0; k < curves_rectify[insert_index].size(); k++){
-					result_contour.push_back(curves_rectify[insert_index][k]);
+					if (insert_pos[insert_index] == contour.size() - 1 && k == curves_rectify[insert_index].size() - 1)
+						continue;
+					else
+						result_contour.push_back(curves_rectify[insert_index][k]);
 				}
 				i++;
 			}
 			else
 				result_contour.push_back(contour[i]);
 		}
+		// output
+		//for (int i = 0; i < result_contour.size(); i++)
+		//	std::cout << result_contour[i] << std::endl;
 		return result_contour;
 	}
 

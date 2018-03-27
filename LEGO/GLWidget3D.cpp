@@ -564,7 +564,7 @@ void GLWidget3D::update3DGeometry() {
 		update3DGeometry(raw_buildings);
 	}
 	else {
-		update3DGeometryWithRoof(buildings);
+		update3DGeometryWithoutRoof(buildings);
 	}
 }
 
@@ -676,10 +676,148 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::BuildingLayer> building,
 }
 
 /**
-* Update 3D geometry using the simplified building shapes.
-*
-* @param buildings		buildings
-*/
+ * Update 3D geometry using the simplified building shapes.
+ * Use the generated primitive shapes to create the 3D mesh.
+ *
+ * @param buildings		buildings
+ */
+void GLWidget3D::update3DGeometryWithoutRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings) {
+	renderManager.removeObjects();
+
+	glm::vec4 color(0.7, 1, 0.7, 1);
+
+	QMap<QString, std::vector<Vertex>> vertices;
+	for (int i = 0; i < buildings.size(); i++) {
+		// randomly select a texture file
+		int facade_texture_id = rand() % 13;
+		if (color_mode == TEXTURE) {
+			if (facade_texture_id == 0) {
+				color = glm::vec4(0.741, 0.623, 0.490, 1.0);
+			}
+			else if (facade_texture_id == 1) {
+				color = glm::vec4(0.792, 0.768, 0.721, 1.0);
+			}
+			else if (facade_texture_id == 2) {
+				color = glm::vec4(0.772, 0.709, 0.647, 1.0);
+			}
+			else if (facade_texture_id == 3) {
+				color = glm::vec4(0.674, 0.639, 0.572, 1.0);
+			}
+			else if (facade_texture_id == 4) {
+				color = glm::vec4(0.776, 0.819, 0.843, 1.0);
+			}
+			else if (facade_texture_id == 5) {
+				color = glm::vec4(0.882, 0.882, 0.874, 1.0);
+			}
+			else if (facade_texture_id == 6) {
+				color = glm::vec4(0.811, 0.811, 0.803, 1.0);
+			}
+			else if (facade_texture_id == 7) {
+				color = glm::vec4(0.850, 0.831, 0.815, 1.0);
+			}
+			else if (facade_texture_id == 8) {
+				color = glm::vec4(0.811, 0.831, 0.843, 1.0);
+			}
+			else if (facade_texture_id == 9) {
+				color = glm::vec4(0.784, 0.721, 0.623, 1.0);
+			}
+			else if (facade_texture_id == 10) {
+				color = glm::vec4(0.494, 0.388, 0.321, 1.0);
+			}
+			else if (facade_texture_id == 11) {
+				color = glm::vec4(0.756, 0.780, 0.772, 1.0);
+			}
+			else if (facade_texture_id == 12) {
+				color = glm::vec4(0.764, 0.768, 0.788, 1.0);
+			}
+		}
+
+		QString facade_texture = QString("textures/window_tile%1.png").arg(facade_texture_id);
+		QString roof_texture = QString("textures/roof%1.png").arg(rand() % 4);
+		update3DGeometryWithoutRoof(buildings[i], color, facade_texture, roof_texture, vertices);
+	}
+	for (auto it = vertices.begin(); it != vertices.end(); it++) {
+		renderManager.addObject("building", it.key(), it.value(), true);
+	}
+
+	std::vector<Vertex> vertices2;
+	glutils::drawBox(1500, 1500, 0.5, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, -0.5)), vertices2);
+	renderManager.addObject("ground", "", vertices2, true);
+
+	// update shadow map
+	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
+}
+
+void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices) {
+	for (int i = 0; i < building->footprint.primitive_shapes.size(); i++) {
+		//
+		std::vector<cv::Point2f> points = building->footprint.primitive_shapes[i]->getActualPoints();
+		std::vector<glm::dvec2> pol(points.size());
+		for (int j = 0; j < points.size(); j++) {
+			pol[j] = glm::dvec2(points[j].x, points[j].y);
+		}
+
+		glutils::correct(pol);
+		glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height));
+		double h = building->top_height - building->bottom_height;
+
+		// top face
+		glutils::drawPolygon(pol, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->top_height)), vertices[""]);
+
+		// bottom face
+		glutils::drawPolygon(pol, color, mat, vertices[""], true);
+
+		// side faces
+		float floor_tile_width = 3.0f;
+		float floor_tile_height = 3.0f;
+
+		// At first, find the first point that has angle close to 90 degrees.
+		int start_index = 0;
+		for (int j = 0; j < pol.size(); j++) {
+			int prev = (j + pol.size() - 1) % pol.size();
+			int next = (j + 1) % pol.size();
+
+			if (dotProductBetweenThreePoints(pol[prev], pol[i], pol[next]) < 0.8) {
+				start_index = i;
+				break;
+			}
+		}
+
+		std::vector<glm::dvec2> coords;
+		for (int i = 0; i <= pol.size(); i++) {
+			int prev = (start_index + i - 1 + pol.size()) % pol.size();
+			int cur = (start_index + i) % pol.size();
+			int next = (start_index + i + 1) % pol.size();
+
+			if (dotProductBetweenThreePoints(pol[prev], pol[cur], pol[next]) < 0.8) {
+				// create a face
+				if (coords.size() > 0) {
+					coords.push_back(pol[cur]);
+					createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+				}
+				coords.clear();
+			}
+
+			coords.push_back(pol[cur]);
+		}
+
+		// create a face
+		if (coords.size() >= 2) {
+			createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+		}
+	}
+
+	for (int i = 0; i < building->children.size(); i++) {
+		update3DGeometryWithoutRoof(building->children[i], color, facade_texture, roof_texture, vertices);
+	}
+}
+
+/**
+ * Update 3D geometry using the simplified building shapes.
+ * Use the contour polygon to generate a flat roof.
+ *
+ * @param buildings		buildings
+ */
 void GLWidget3D::update3DGeometryWithRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings) {
 	renderManager.removeObjects();
 
@@ -746,7 +884,6 @@ void GLWidget3D::update3DGeometryWithRoof(const std::vector<std::shared_ptr<util
 	// update shadow map
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
 }
-
 
 void GLWidget3D::update3DGeometryWithRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices) {
 	if (building->footprint.contour.size() < 3) return;
