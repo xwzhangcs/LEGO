@@ -82,18 +82,36 @@ namespace util {
 
 	std::vector<cv::Point2f> PrimitiveCurve::getActualPoints() const {
 		float angle_start_end = this->theta_end - this->theta_start;
+
+		// For the edge case where the angle difference is 0 degree.
+		// You should not instantiate this case in the first place!
+		// Ideally, we should throw an exception for this case.
+		if (angle_start_end == 0.0f) {
+			return {};
+		}
+
 		float angle_between = 5;
-		int num_points = abs(angle_start_end / 5);
+		int num_points = std::ceil(abs(angle_start_end / 5));
 		angle_between = angle_start_end / num_points;
 		num_points = num_points + 1;
 		std::vector<cv::Point2f> ans(num_points);
-		for (int k = 0; k < num_points; k++){
+		for (int k = 0; k < num_points - 1; k++) {
 			double x = abs(this->radius) * cos(CV_PI * (this->theta_start + angle_between * k) / 180) + this->center.x;
 			double y = abs(this->radius) * sin(CV_PI * (this->theta_start + angle_between * k) / 180) + this->center.y;
 			cv::Mat_<float> p = (cv::Mat_<float>(3, 1) << x, y, 1);
 			cv::Mat_<float> q = mat * p;
 			ans[k] = cv::Point2f(q(0, 0), q(1, 0));
 		}
+
+		// for the last point
+		{
+			double x = abs(this->radius) * cos(CV_PI * (this->theta_end) / 180) + this->center.x;
+			double y = abs(this->radius) * sin(CV_PI * (this->theta_end) / 180) + this->center.y;
+			cv::Mat_<float> p = (cv::Mat_<float>(3, 1) << x, y, 1);
+			cv::Mat_<float> q = mat * p;
+			ans.back() = cv::Point2f(q(0, 0), q(1, 0));
+		}
+
 		return ans;
 	}
 
