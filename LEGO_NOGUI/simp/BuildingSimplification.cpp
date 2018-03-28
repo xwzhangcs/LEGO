@@ -8,7 +8,7 @@
 
 namespace simp {
 
-	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold, float angle_threshold) {
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, bool record_stats, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold, float angle_threshold) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		std::vector<std::tuple<float, long long, int>> records;
@@ -53,14 +53,16 @@ namespace simp {
 		time_t end = clock();
 		std::cout << "Time elapsed " << (double)(end - start) / CLOCKS_PER_SEC << " sec." << std::endl;
 
-		std::ofstream out("records.txt");
-		for (int i = 0; i < records.size(); i++) {
-			float error = std::get<0>(records[i]);
-			long long num_primitive_shapes = std::get<1>(records[i]);
-			int selected_algorithm = std::get<2>(records[i]);
-			out << error << " " << num_primitive_shapes << " " << selected_algorithm << std::endl;
+		if (record_stats) {
+			std::ofstream out("records.txt");
+			for (int i = 0; i < records.size(); i++) {
+				float error = std::get<0>(records[i]);
+				long long num_primitive_shapes = std::get<1>(records[i]);
+				int selected_algorithm = std::get<2>(records[i]);
+				out << error << " " << num_primitive_shapes << " " << selected_algorithm << std::endl;
+			}
+			out.close();
 		}
-		out.close();
 
 		return buildings;
 	}
