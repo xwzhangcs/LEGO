@@ -73,6 +73,8 @@ namespace util {
 		this->theta_end = theta_end;
 		this->center = center;
 		this->radius = radius;
+		if (std::isnan(theta_start) || std::isnan(theta_end) || std::isnan(radius)) throw "Invalid angle or radius";
+		if (theta_start == theta_end) throw "Two angles have to be different";
 	}
 
 	boost::shared_ptr<PrimitiveShape> PrimitiveCurve::clone() const {
@@ -82,13 +84,6 @@ namespace util {
 
 	std::vector<cv::Point2f> PrimitiveCurve::getActualPoints() const {
 		float angle_start_end = this->theta_end - this->theta_start;
-
-		// For the edge case where the angle difference is 0 degree.
-		// You should not instantiate this case in the first place!
-		// Ideally, we should throw an exception for this case.
-		if (angle_start_end == 0.0f) {
-			return {};
-		}
 
 		float angle_between = 5;
 		int num_points = std::ceil(abs(angle_start_end / 5));

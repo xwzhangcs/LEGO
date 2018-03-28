@@ -163,8 +163,8 @@ namespace util {
 					pts[3] = Point3d(polygon[i].x, polygon[i].y, building->top_height);
 
 					std::vector<int> indices(4);
-					for (int i = 0; i < 4; i++) {
-						indices[i] = findClosestVertexIndex(pts[i], vertices_map);
+					for (int k = 0; k < 4; k++) {
+						indices[k] = findClosestVertexIndex(pts[k], vertices_map);
 					}
 
 					faces.push_back(indices);
