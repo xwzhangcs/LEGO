@@ -523,6 +523,12 @@ namespace simp {
 					float theta_start_end = compute_interval(start, mid, end);
 					float theta_end = theta_start + theta_start_end;
 					radius = cv::norm(start);
+					//if (abs(theta_start_end) <= 5){
+					//	std::cout << "theta_start_end " << theta_start_end << std::endl;
+					//}
+					//if (std::isnan(theta_start) || std::isnan(theta_end)) {
+					//	std::cout << "NaN " << std::endl;
+					//}
 					boost::shared_ptr<util::PrimitiveCurve> pol = boost::shared_ptr<util::PrimitiveCurve>(new util::PrimitiveCurve(output.mat, theta_start, theta_end, center, radius));
 					output.primitive_shapes.push_back(pol);
 				}
@@ -612,6 +618,12 @@ namespace simp {
 					float theta_end = theta_start + theta_start_end;
 					center = output_curves_attrs_rectify[i][3];
 					radius = cv::norm(start);
+					//if (abs(theta_start_end) <= 5){
+					//	std::cout << "theta_start_end " << theta_start_end << std::endl;
+					//}
+					//if (std::isnan(theta_start) || std::isnan(theta_end)) {
+					//	std::cout << "NaN " << std::endl;
+					//}
 					boost::shared_ptr<util::PrimitiveCurve> pol = boost::shared_ptr<util::PrimitiveCurve>(new util::PrimitiveCurve(output.mat, theta_start, theta_end, center, radius));
 					output.primitive_shapes.push_back(pol);
 				}
@@ -903,6 +915,7 @@ namespace simp {
 		std::vector<cv::Point2f> curve_attrs_tmp;
 		std::vector<cv::Point2f> result_contour;
 		std::vector<int> insert_pos;
+		insert_pos.resize(curves.size());
 		for (int i = 0; i < curves.size(); i++){
 			curve_tmp.clear();
 			curve_attrs_tmp.clear();
@@ -911,29 +924,6 @@ namespace simp {
 			mid_point = cv::Point2f(curves_attrs[i][1].x, curves_attrs[i][1].y);
 			end_point = cv::Point2f(curves_attrs[i][2].x, curves_attrs[i][2].y);
 			center = cv::Point2f(curves_attrs[i][3].x, curves_attrs[i][3].y);
-
-			{
-				//old method
-				//double start_dis = 10000.0f, end_dis = 10000.0f;
-				//int start_index = 0, end_index = 0;
-				//for (int j = 0; j < contour.size(); j++){
-				//	if (cv::norm(start_point - contour[j]) < start_dis){
-				//		start_dis = cv::norm(start_point - contour[j]);
-				//		start_index = j;
-				//	}
-				//	if (cv::norm(end_point - contour[j]) < end_dis){
-				//		end_dis = cv::norm(end_point - contour[j]);
-				//		end_index = j;
-				//	}
-				//}
-				//std::cout << "start_dis is " << start_dis << std::endl;
-				//std::cout << "end_dis is " << end_dis << std::endl;
-				//if (start_dis <= snap_threshold && start_index != end_index)
-				//	start_point = contour[start_index];
-				//if (end_dis <= snap_threshold && start_index != end_index)
-				//	end_point = contour[end_index];
-				//insert_pos.push_back(start_index);
-			}
 			//std::cout << "start_point is " << start_point << std::endl;
 			//std::cout << "end_point is " << end_point << std::endl;
 			//std::cout << "mid_point is " << mid_point << std::endl;
@@ -942,30 +932,29 @@ namespace simp {
 			cv::Point2f dir = (tmp - mid_point) / cv::norm(tmp - mid_point);
 			cv::Point2f new_point = tmp + 5 * dir;
 			Segment CD(point_t(mid_point.x, mid_point.y), point_t(new_point.x, new_point.y));
-			//std::cout << "tmp is " << tmp << std::endl;
-			//std::cout << "dir is " << dir << std::endl;
-			//std::cout << "new_point is " << new_point << std::endl;
+
 			int start_index = -1, end_index = -1;
 			for (int j = 0; j < contour.size(); j++){
 				int tail = j;
 				int head = (j + 1) % contour.size();
-				//std::cout << "point is " << contour[tail] << std::endl;
 				Segment AB(point_t(contour[tail].x, contour[tail].y), point_t(contour[head].x, contour[head].y));
-				//cv::Point2f tmp = (start_point + end_point) * 0.5;
-				//cv::Point2f dir = (tmp - mid_point) / cv::norm(tmp - mid_point);
-				//cv::Point2f new_point = tmp + 3 * dir;
-				//Segment CD(point_t(mid_point.x, mid_point.y), point_t(new_point.x, new_point.y));
 				bool result = boost::geometry::intersects(AB, CD);
 				if (result){
-					//start_dis = cv::norm(start_point - contour[tail]);
-					//end_dis = cv::norm(end_point - contour[tail]);
-					insert_pos.push_back(tail);
 					start_index = tail;
 					end_index = head;
 					break;
 				}
 			}
 			if (start_index != -1 && end_index != -1){
+				// decide swap start point or not
+				float dis_1 = cv::norm(start_point - contour[start_index]);
+				float dis_2 = cv::norm(end_point - contour[start_index]);
+				insert_pos[i] = start_index;
+				if (dis_1 > dis_2){
+					cv::Point2f tmp = start_point;
+					start_point = end_point;
+					end_point = tmp;
+				}
 				start_dis = cv::norm(start_point - contour[start_index]);
 				end_dis = cv::norm(end_point - contour[end_index]);
 				if (start_dis <= snap_threshold && start_index != end_index){
@@ -973,17 +962,38 @@ namespace simp {
 				}
 				if (end_dis <= snap_threshold && start_index != end_index)
 					end_point = contour[end_index];
+
+			}
+			else{
+				insert_pos[i] = -1;
 			}
 
 
 			// get the new curve
 			center = find_center(start_point, mid_point, end_point);
+			//if (std::isnan(center.x)) {
+			//	std::cout << "center NAN " << std::endl;
+			//	std::cout << "contour.size() is " << contour.size() << std::endl;
+			//	for (int k = 0; k < contour.size(); k++)
+			//		std::cout << "point is " << contour[k] << std::endl;
+			//	std::cout << "ori start_point is " << cv::Point2f(curves_attrs[i][0].x, curves_attrs[i][0].y) << std::endl;
+			//	std::cout << "ori mid_point is " << cv::Point2f(curves_attrs[i][1].x, curves_attrs[i][1].y) << std::endl;
+			//	std::cout << "ori end_point is " << cv::Point2f(curves_attrs[i][2].x, curves_attrs[i][2].y) << std::endl;
+			//	std::cout << "start_point is " << start_point << std::endl;
+			//	std::cout << "mid_point is " << mid_point << std::endl;
+			//	std::cout << "end_point is " << end_point << std::endl;
+			//	std::cout << "start_index is " << start_index << std::endl;
+			//}
 			cv::Point2f start = start_point - center;
 			cv::Point2f mid = mid_point - center;
 			cv::Point2f end = end_point - center;
 			cv::Point2f x_axis(1.0, 0);
 			float angle_start = compute_angle(x_axis, start);
 			float angle_start_end = compute_interval(start, mid, end);
+			if (abs(angle_start_end) < 5){
+				insert_pos[i] = -2;
+				continue;
+			}
 			int degrees = 5;
 			int interval_points = abs(angle_start_end / degrees);
 			float interval_degrees = angle_start_end / interval_points;
@@ -1026,9 +1036,16 @@ namespace simp {
 			else
 				result_contour.push_back(contour[i]);
 		}
-		// output
-		//for (int i = 0; i < result_contour.size(); i++)
-		//	std::cout << result_contour[i] << std::endl;
+		// update
+		int count = 0;
+		for (int i = 0; i < curves.size(); i++){
+			if (insert_pos[i] == -2){
+				curves_rectify.erase(curves_rectify.begin() + i - count);
+				curves_attrs_rectify.erase(curves_attrs_rectify.begin() + i - count);
+				count++;
+			}
+		}
+
 		return result_contour;
 	}
 
