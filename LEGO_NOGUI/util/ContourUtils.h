@@ -157,6 +157,7 @@ namespace util {
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);
 	double calculateIOU(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2);
+	double calculateIOU(const std::vector<Polygon>& polygons1, const std::vector<Polygon>& polygons2);
 	double calculateArea(const Polygon& polygon);
 	double calculateArea(const cv::Mat_<uchar>& img);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner);

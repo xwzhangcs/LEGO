@@ -7,101 +7,84 @@ namespace util {
 	}
 	
 	std::vector<std::shared_ptr<BuildingLayer>> DisjointVoxelData::disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data) {
+		// initialize the clustering
+		std::vector<cv::Mat_<unsigned short>> clustering(voxel_data.size());
+		for (int h = 0; h < voxel_data.size(); h++) {
+			clustering[h] = cv::Mat_<unsigned short>::zeros(voxel_data[h].size());
+		}
+
+		// perform 3D dfs to cluster the voxel data
+		printf("Clustering the voxel data...\n");
+		int cluster_id = 1;
+		for (int h = 0; h < voxel_data.size(); h++) {
+			for (int r = 0; r < voxel_data[h].rows; r++) {
+				for (int c = 0; c < voxel_data[h].cols; c++) {
+					if (voxel_data[h](r, c) == 255 && clustering[h](r, c) == 0) {
+						dfs3D(voxel_data, clustering, r, c, h, cluster_id);
+						cluster_id++;
+					}
+				}
+			}
+		}
+
+		int num_cluster_id = cluster_id - 1;
+
 		std::vector<std::shared_ptr<BuildingLayer>> buildings;
-		
 		std::vector<std::shared_ptr<BuildingLayer>> layers;
-		cv::Mat_<unsigned short> cluster = cv::Mat_<unsigned short>::zeros(voxel_data[0].size());
 
 		setbuf(stdout, NULL);
 		printf("Processing slice");
 		for (int h = 0; h < voxel_data.size(); h++) {
 			printf("\rProcessing slice %d  ", h);
-			int next_cluster_id = 1;
-			cv::Mat_<unsigned short> next_cluster = cv::Mat_<unsigned short>::zeros(cluster.size());
-			std::vector<std::shared_ptr<BuildingLayer>> next_layers;
 
-			for (int r = 0; r < voxel_data[h].rows; r++) {
-				for (int c = 0; c < voxel_data[h].cols; c++) {
-					if (voxel_data[h](r, c) == 255 && cluster(r, c) > 0 && next_cluster(r, c) == 0) {
-						int cluster_id = cluster(r, c);
-						traverseInSlice(voxel_data, next_cluster, next_cluster_id, h, r, c);
+			for (int cluster_id = 1; cluster_id <= num_cluster_id; cluster_id++) {
+				try {
+					// extract contour
+					int min_x, min_y, max_x, max_y;
+					cv::Mat_<uchar> slice = getSliceOfCluster(clustering[h], cluster_id, min_x, min_y, max_x, max_y);
+					cv::Mat_<uchar> roi_slice(slice, cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
+					std::vector<Polygon> polygons = findContours(roi_slice, false);
+					for (int i = 0; i < polygons.size(); i++) {
+						polygons[i].translate(min_x, min_y);
+					}
 
-						// extract contour
-						int min_x, min_y, max_x, max_y;
-						cv::Mat_<uchar> slice = getSliceOfCluster(voxel_data, h, next_cluster, next_cluster_id, min_x, min_y, max_x, max_y);
-						cv::Mat_<uchar> roi_slice(slice, cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
-						std::vector<Polygon> polygons = findContours(roi_slice, false);
-						for (int i = 0; i < polygons.size(); i++) {
-							polygons[i].translate(min_x, min_y);
+					// convert the polygon coordinates to the world coordinate system
+					for (auto& polygon : polygons) {
+						for (int i = 0; i < polygon.contour.size(); i++) {
+							polygon.contour[i].x = polygon.contour[i].x - voxel_data[0].cols / 2;
+							polygon.contour[i].y = voxel_data[0].rows / 2 - polygon.contour[i].y;
 						}
-
-						// convert the polygon coordinates to the world coordinate system
-						for (int i = 0; i < polygons[0].contour.size(); i++) {
-							polygons[0].contour[i].x = polygons[0].contour[i].x - voxel_data[0].cols / 2;
-							polygons[0].contour[i].y = voxel_data[0].rows / 2 - polygons[0].contour[i].y;
-						}
-						for (int i = 0; i < polygons[0].holes.size(); i++) {
-							for (int j = 0; j < polygons[0].holes[i].size(); j++) {
-								polygons[0].holes[i][j].x = polygons[0].holes[i][j].x - voxel_data[0].cols / 2;
-								polygons[0].holes[i][j].y = voxel_data[0].rows / 2 - polygons[0].holes[i][j].y;
+						for (auto& hole : polygon.holes) {
+							for (int j = 0; j < hole.size(); j++) {
+								hole[j].x = hole[j].x - voxel_data[0].cols / 2;
+								hole[j].y = voxel_data[0].rows / 2 - hole[j].y;
 							}
 						}
+					}
 
-						// Create the next building layer
-						std::shared_ptr<BuildingLayer> next_layer = std::shared_ptr<BuildingLayer>(new BuildingLayer(layers[cluster_id - 1]->building_id, h, h + 1));
-						next_layer->raw_footprints.push_back(polygons[0]);
-						next_layer->footprint = polygons[0];
-						layers[cluster_id - 1]->children.push_back(next_layer);
+					// Create the next building layer
+					int building_id;
+					if (cluster_id - 1 >= buildings.size()) {
+						building_id = buildings.size();
+						layers.resize(layers.size() + 1);
+						layers[cluster_id - 1] = std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, h, h + 1));
+						layers[cluster_id - 1]->raw_footprints.push_back(polygons);
+						layers[cluster_id - 1]->footprints = polygons;
+						buildings.push_back(layers[cluster_id - 1]);
+					}
+					else {
+						building_id = layers[cluster_id - 1]->building_id;
 
-						next_layers.push_back(next_layer);
-
-						next_cluster_id++;
+						layers[cluster_id - 1]->child = std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, h, h + 1));
+						layers[cluster_id - 1] = layers[cluster_id - 1]->child;
+						layers[cluster_id - 1]->raw_footprints.push_back(polygons);
+						layers[cluster_id - 1]->footprints = polygons;
 					}
 				}
-			}
-
-			// If there is a voxel that has not been visited, it should belong to the bottom layer.
-			for (int r = 0; r < voxel_data[h].rows; r++) {
-				for (int c = 0; c < voxel_data[h].cols; c++) {
-					if (voxel_data[h](r, c) == 255 && next_cluster(r, c) == 0) {
-						traverseInSlice(voxel_data, next_cluster, next_cluster_id, h, r, c);
-
-						// extract contour
-						int min_x, min_y, max_x, max_y;
-						cv::Mat_<uchar> slice = getSliceOfCluster(voxel_data, h, next_cluster, next_cluster_id, min_x, min_y, max_x, max_y);
-						cv::Mat_<uchar> roi_slice(slice, cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
-						std::vector<Polygon> polygons = findContours(roi_slice, false);
-						for (int i = 0; i < polygons.size(); i++) {
-							polygons[i].translate(min_x, min_y);
-						}
-
-						// convert the polygon coordinates to the world coordinate system
-						for (int i = 0; i < polygons[0].contour.size(); i++) {
-							polygons[0].contour[i].x = polygons[0].contour[i].x - voxel_data[0].cols / 2;
-							polygons[0].contour[i].y = voxel_data[0].rows / 2 - polygons[0].contour[i].y;
-						}
-						for (int i = 0; i < polygons[0].holes.size(); i++) {
-							for (int j = 0; j < polygons[0].holes[i].size(); j++) {
-								polygons[0].holes[i][j].x = polygons[0].holes[i][j].x - voxel_data[0].cols / 2;
-								polygons[0].holes[i][j].y = voxel_data[0].rows / 2 - polygons[0].holes[i][j].y;
-							}
-						}
-
-						// Create the bottom layer of the building.
-						std::shared_ptr<BuildingLayer> building = std::shared_ptr<BuildingLayer>(new BuildingLayer(buildings.size(), h, h + 1));
-						building->raw_footprints.push_back(polygons[0]);
-						building->footprint = polygons[0];
-						buildings.push_back(building);
-
-						next_layers.push_back(building);
-
-						next_cluster_id++;
-					}
+				catch (...) {
 				}
-			}
 
-			layers = next_layers;
-			cluster = next_cluster;
+			}
 		}
 		printf("\n");
 
@@ -109,103 +92,94 @@ namespace util {
 	}
 
 	std::shared_ptr<BuildingLayer> DisjointVoxelData::layering(const std::shared_ptr<BuildingLayer>& building, float threshold) {
-		std::shared_ptr<BuildingLayer> bottom_building_layer = std::shared_ptr<BuildingLayer>(new BuildingLayer(building->building_id, building->bottom_height, building->top_height));
+		std::shared_ptr<BuildingLayer> bottom_building_layer = std::shared_ptr<BuildingLayer>(new BuildingLayer(building->building_id, building->footprints, building->bottom_height, building->top_height));
 		bottom_building_layer->raw_footprints = building->raw_footprints;
-		bottom_building_layer->footprint = building->footprint;
 
-		if (building->children.size() == 0) return bottom_building_layer;
-
-		std::queue<std::pair<std::shared_ptr<BuildingLayer>, std::shared_ptr<BuildingLayer>>> Q;
-		Q.push({ building, bottom_building_layer });
-		while (!Q.empty()) {
-			std::shared_ptr<BuildingLayer> parent = Q.front().first;
-			std::shared_ptr<BuildingLayer> new_parent = Q.front().second;
-			Q.pop();
-
-			// remove too small layers
-			float parent_area = calculateArea(parent->raw_footprints.front());
-			for (int i = (int)parent->children.size() - 1; i >= 0; i--) {
-				if (parent->children[i]->children.size() == 0 && calculateArea(parent->children[i]->raw_footprints.front()) / parent_area < 0.1) parent->children.erase(parent->children.begin() + i);
-			}
-
-			if (parent->children.size() == 1 && calculateIOU(parent->raw_footprints.front(), parent->children[0]->raw_footprints.front()) >= threshold) {
-				new_parent->raw_footprints.push_back(parent->children[0]->raw_footprints.front());
-				new_parent->top_height = parent->children[0]->top_height;
-
-				Q.push({ parent->children[0], new_parent });
+		std::shared_ptr<BuildingLayer> cur = bottom_building_layer;
+		std::shared_ptr<BuildingLayer> child = building->child;
+		while (child) {
+			if (calculateIOU(cur->raw_footprints[0], child->raw_footprints[0]) >= threshold) {
+				cur->raw_footprints.push_back(child->raw_footprints[0]);
+				cur->top_height = child->top_height;
 			}
 			else {
-				for (int i = 0; i < parent->children.size(); i++) {
-					std::shared_ptr<BuildingLayer> new_building_layer = std::shared_ptr<BuildingLayer>(new BuildingLayer(parent->children[i]->building_id, parent->children[i]->bottom_height, parent->children[i]->top_height));
-					new_building_layer->raw_footprints = parent->children[i]->raw_footprints;
-					new_building_layer->footprint = parent->children[i]->footprint;
-					new_parent->children.push_back(new_building_layer);
+				cur->child = std::shared_ptr<BuildingLayer>(new BuildingLayer(child->building_id, child->footprints, child->bottom_height, child->top_height));
+				cur = cur->child;
+				cur->raw_footprints = child->raw_footprints;
+			}
 
-					Q.push({ parent->children[i], new_building_layer });
+			child = child->child;
+		}
+		if (cur) cur->child.reset();
+		
+		return bottom_building_layer;
+	}
+
+	/**
+	 * Traverse the voxel data with value of 255 and are not visited yet.
+	 *
+	 * @param voxel_data	voxel data
+	 * @param clustering	save the clustering information
+	 * @param r				row of current voxel
+	 * @param c				column of current voxel
+	 * @param h				height of current voxel
+	 * @param cluster_id	current cluster id
+	 */
+	void DisjointVoxelData::dfs3D(const std::vector<cv::Mat_<uchar>>&voxel_data, std::vector<cv::Mat_<unsigned short>>&clustering, int r, int c, int h, int cluster_id) {
+		const std::vector<std::pair<int, std::pair<int, int>>> dirs = { { 0, { 1, 0 } }, { 0, { -1, 0 } }, { 0, { 0, 1 } }, { 0, { 0, -1 } }, { 1, { 0, 0 } }, { -1, { 0, 0 } } };
+
+		int R = voxel_data[0].rows;
+		int C = voxel_data[0].cols;
+
+		std::queue<std::pair<int, std::pair<int, int>>> Q;
+		Q.push({ h, { r, c } });
+
+		clustering[h](r, c) = cluster_id;
+
+		while (!Q.empty()) {
+			int h = Q.front().first;
+			int r = Q.front().second.first;
+			int c = Q.front().second.second;
+			Q.pop();
+
+			for (int i = 0; i < dirs.size(); i++) {
+				int h2 = h + dirs[i].first;
+				int r2 = r + dirs[i].second.first;
+				int c2 = c + dirs[i].second.second;
+
+				if (r2 >= 0 && r2 < R && c2 >= 0 && c2 < C && h2 >= 0 && h2 < voxel_data.size() && voxel_data[h2](r2, c2) == 255 && clustering[h2](r2, c2) == 0) {
+					clustering[h2](r2, c2) = cluster_id;
+					Q.push({ h2, { r2, c2 } });
 				}
 			}
 		}
-
-		return bottom_building_layer;
 	}
-	
-	cv::Mat_<uchar> DisjointVoxelData::getSliceOfCluster(const std::vector<cv::Mat_<uchar>>& voxel_data, int slice_id, const cv::Mat_<unsigned short>& cluster_data, int cluster_id, int& min_x, int& min_y, int& max_x, int& max_y) {
+
+	cv::Mat_<uchar> DisjointVoxelData::getSliceOfCluster(const cv::Mat_<unsigned short>& clustering, int cluster_id, int& min_x, int& min_y, int& max_x, int& max_y) {
 		min_x = std::numeric_limits<int>::max();
 		min_y = std::numeric_limits<int>::max();
 		max_x = 0;
 		max_y = 0;
 
-		cv::Mat_<uchar> ans = cv::Mat_<uchar>::zeros(voxel_data[slice_id].size());
-		for (int r = 0; r < voxel_data[slice_id].rows; r++) {
-			for (int c = 0; c < voxel_data[slice_id].cols; c++) {
-				if (voxel_data[slice_id](r, c) == 255 && cluster_data(r, c) == cluster_id) {
+		bool found = false;
+
+		cv::Mat_<uchar> ans = cv::Mat_<uchar>::zeros(clustering.size());
+		for (int r = 0; r < clustering.rows; r++) {
+			for (int c = 0; c < clustering.cols; c++) {
+				if (clustering(r, c) == cluster_id) {
 					ans(r, c) = 255;
 					min_x = std::min(min_x, c);
 					min_y = std::min(min_y, r);
 					max_x = std::max(max_x, c);
 					max_y = std::max(max_y, r);
+					found = true;
 				}
 			}
 		}
+
+		if (!found) throw "No specified cluster was found.";
+
 		return ans;
 	}
-
-	/**
-	 * Traverse the pixels in the slice with value of 255 and are not visited yet.
-	 *
-	 * @param cluster		save the clustering information
-	 * @param cluster_id	current cluster id
-	 * @param slice			slice image
-	 * @param r				row of current pixel
-	 * @param c				column of current pixel
-	 */
-	void DisjointVoxelData::traverseInSlice(const std::vector<cv::Mat_<uchar>>& voxel_data, cv::Mat_<unsigned short>& cluster, int cluster_id, int slice_id, int r, int c) {
-		std::queue<std::pair<int, int>> Q;
-		Q.push(std::make_pair(r, c));
-
-		while (!Q.empty()) {
-			std::pair<int, int> t = Q.front();
-			Q.pop();
-			int r = t.first;
-			int c = t.second;
-
-			if (voxel_data[slice_id](r, c) == 255 && cluster(r, c) == 0) {
-				cluster(r, c) = cluster_id;
-
-				if (r > 0) {
-					Q.push(std::make_pair(r - 1, c));
-				}
-				if (r < voxel_data[slice_id].rows - 1) {
-					Q.push(std::make_pair(r + 1, c));
-				}
-				if (c > 0) {
-					Q.push(std::make_pair(r, c - 1));
-				}
-				if (c < voxel_data[slice_id].cols - 1) {
-					Q.push(std::make_pair(r, c + 1));
-				}
-			}
-		}
-	}
-	
+		
 }

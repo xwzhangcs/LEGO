@@ -54,20 +54,22 @@ namespace util {
 		int PlyWriter::writeBuilding(std::shared_ptr<BuildingLayer> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces) {
 			std::vector<std::vector<cv::Point2f>> polygons;
 
-			if (building->footprint.primitive_shapes.size() == 0) {
-				if (building->footprint.holes.size() == 0) {
-					polygons = tessellate(building->footprint.contour);
+			for (auto& footprint : building->footprints) {
+				if (footprint.primitive_shapes.size() == 0) {
+					if (footprint.holes.size() == 0) {
+						polygons = tessellate(footprint.contour);
+					}
+					else {
+						polygons = tessellate(footprint.contour, footprint.holes);
+					}
 				}
 				else {
-					polygons = tessellate(building->footprint.contour, building->footprint.holes);
+					for (int i = 0; i < footprint.primitive_shapes.size(); i++) {
+						std::vector<cv::Point2f> points = footprint.primitive_shapes[i]->getActualPoints();
+						polygons.push_back(points);
+					}
 				}
-			}
-			else {
-				for (int i = 0; i < building->footprint.primitive_shapes.size(); i++) {
-					std::vector<cv::Point2f> points = building->footprint.primitive_shapes[i]->getActualPoints();
-					polygons.push_back(points);
-				}
-			}
+			}		
 
 			for (auto polygon : polygons) {
 				util::clockwise(polygon);
@@ -172,8 +174,8 @@ namespace util {
 			}
 
 			int num_polygons = polygons.size();
-			for (int i = 0; i < building->children.size(); i++) {
-				num_polygons += writeBuilding(building->children[i], vertices_map, vertices, faces);
+			if (building->child) {
+				num_polygons += writeBuilding(building->child, vertices_map, vertices, faces);
 			}
 
 			return num_polygons;

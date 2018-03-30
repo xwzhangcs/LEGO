@@ -10,19 +10,19 @@ namespace util {
 	class BuildingLayer {
 	public:
 		int building_id;
-		std::vector<util::Polygon> raw_footprints;
-		util::Polygon footprint;
+		std::vector<std::vector<util::Polygon>> raw_footprints;
+		std::vector<util::Polygon> footprints;
 		float bottom_height;
 		float top_height;
 		std::vector<float> costs;	// error, error_denominator, #primitives
-		std::vector<std::shared_ptr<BuildingLayer>> children;
+		std::shared_ptr<BuildingLayer> child;
 
 	public:
 		BuildingLayer() {}
 		BuildingLayer(int building_id, float bottom_height, float top_height);
-		BuildingLayer(int building_id, const util::Polygon& footprint, float bottom_height, float top_height);
+		BuildingLayer(int building_id, const std::vector<util::Polygon>& footprints, float bottom_height, float top_height);
 
-		util::Polygon selectRepresentativeContour() const;
+		std::vector<util::Polygon> selectRepresentativeContours() const;
 	};
 
 }
