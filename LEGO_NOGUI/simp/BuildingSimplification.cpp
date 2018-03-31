@@ -17,7 +17,7 @@ namespace simp {
 		setbuf(stdout, NULL);
 		printf("Processing building");
 		for (int i = 0; i < raw_buildings.size(); i++) {
-			printf("\rProcessing building %d  ", i);
+			printf("\rProcessing building %d  ", i + 1);
 
 			try {
 				
@@ -82,14 +82,8 @@ namespace simp {
 	}
 
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float angle, int dx, int dy, std::vector<std::tuple<float, long long, int>>& records) {
-		float best_cost = std::numeric_limits<float>::max();
-		std::vector<util::Polygon> best_simplified_polygons;
-
-
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
-
-
+		
 		// get baseline cost
 		std::vector<util::Polygon> baseline_polygons;
 		for (int i = 0; i < contours.size(); i++) {
@@ -97,143 +91,135 @@ namespace simp {
 		}
 		std::vector<float> baseline_costs = calculateCost(baseline_polygons, layer);
 		
-		int best_algorithm = ALG_UNKNOWN;
-		float best_error = 0.0f;
-		int best_num_primitive_shapes = 0;
+		std::vector<util::Polygon> best_simplified_polygons;
+		for (int i = 0; i < contours.size(); i++) {
+			util::Polygon best_simplified_polygon;
 
-		// try Douglas-Peucker
-		try {
-			float epsilon;
-			if (alpha == 0.0) epsilon = 10;
-			else if (alpha < 0.2) epsilon = 6;
-			else if (alpha < 0.4) epsilon = 4;
-			else if (alpha < 0.9) epsilon = 2;
-			else epsilon = 0;
+			float best_cost = std::numeric_limits<float>::max();
+			int best_algorithm = ALG_UNKNOWN;
+			float best_error = 0.0f;
+			int best_num_primitive_shapes = 0;
 
-			std::vector<util::Polygon> simplified_polygons;
-			for (int i = 0; i < contours.size(); i++) {
-				simplified_polygons.push_back(DPSimplification::simplify(contours[i], epsilon));
+			// try Douglas-Peucker
+			try {
+				float epsilon;
+				if (alpha == 0.0) epsilon = 10;
+				else if (alpha < 0.2) epsilon = 6;
+				else if (alpha < 0.4) epsilon = 4;
+				else if (alpha < 0.9) epsilon = 2;
+				else epsilon = 0;
+
+				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
+				std::vector<float> costs = calculateCost({ simplified_polygon }, layer);
+				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+				if (cost < best_cost) {
+					best_algorithm = ALG_DP;
+					best_cost = cost;
+					best_simplified_polygon = simplified_polygon;
+
+					best_error = costs[0] / costs[1];
+					best_num_primitive_shapes = costs[2];
+				}
 			}
-			std::vector<float> costs = calculateCost(simplified_polygons, layer);
-			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+			catch (...) {}
 
-			if (cost < best_cost) {
-				best_algorithm = ALG_DP;
-				best_cost = cost;
-				best_simplified_polygons = simplified_polygons;
+			// try right angle
+			try {
+				int resolution;
+				if (alpha == 0.0) resolution = 6;
+				else if (alpha < 1.0) resolution = 4;
+				else resolution = 1;
 
-				best_error = costs[0] / costs[1];
-				best_num_primitive_shapes = costs[2];
+				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
+				std::vector<float> costs = calculateCost({ simplified_polygon }, layer);
+				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+				if (cost < best_cost) {
+					best_algorithm = ALG_RIGHTANGLE;
+					best_cost = cost;
+					best_simplified_polygon = simplified_polygon;
+
+					best_error = costs[0] / costs[1];
+					best_num_primitive_shapes = costs[2];
+				}
 			}
-		}
-		catch (...) {
-		}
+			catch (...) {}
 
-		// try right angle
-		try {
-			int resolution;
-			if (alpha == 0.0) resolution = 6;
-			else if (alpha < 1.0) resolution = 4;
-			else resolution = 1;
+			// try curve
+			try {
+				float epsilon;
+				if (alpha == 0.0) epsilon = 10;
+				else if (alpha < 0.2) epsilon = 6;
+				else if (alpha < 0.4) epsilon = 4;
+				else if (alpha < 0.9) epsilon = 2;
+				else epsilon = 0;
 
-			std::vector<util::Polygon> simplified_polygons;
-			for (int i = 0; i < contours.size(); i++) {
-				simplified_polygons.push_back(RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy));
+				float curve_threshold;
+				if (alpha == 0.0) curve_threshold = 4.0f;
+				else curve_threshold = 1.0f;
+
+				util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold);
+				std::vector<float> costs = calculateCost({ simplified_polygon }, layer);
+				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+				if (cost < best_cost) {
+					best_algorithm = ALG_CURVE;
+					best_cost = cost;
+					best_simplified_polygon = simplified_polygon;
+
+					best_error = costs[0] / costs[1];
+					best_num_primitive_shapes = costs[2];
+				}
 			}
-			std::vector<float> costs = calculateCost(simplified_polygons, layer);
-			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-			if (cost < best_cost) {
-				best_algorithm = ALG_RIGHTANGLE;
-				best_cost = cost;
-				best_simplified_polygons = simplified_polygons;
+			catch (...) {}
 
-				best_error = costs[0] / costs[1];
-				best_num_primitive_shapes = costs[2];
+			// try curve + right angle
+			try {
+				float epsilon;
+				if (alpha == 0.0) epsilon = 10;
+				else if (alpha < 0.2) epsilon = 6;
+				else if (alpha < 0.4) epsilon = 4;
+				else if (alpha < 0.9) epsilon = 2;
+				else epsilon = 0;
+
+				float curve_threshold;
+				if (alpha == 0.0) curve_threshold = 4.0f;
+				else curve_threshold = 1.0f;
+
+				float angle_threshold = 15.0f / 180.0f * CV_PI;
+
+				util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold);
+				std::vector<float> costs = calculateCost({ simplified_polygon }, layer);
+				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+				if (cost < best_cost) {
+					best_algorithm = ALG_CURVE_RIGHTANGLE;
+					best_cost = cost;
+					best_simplified_polygon = simplified_polygon;
+
+					best_error = costs[0] / costs[1];
+					best_num_primitive_shapes = costs[2];
+				}
 			}
-		}
-		catch (...) {
-		}
+			catch (...) {}
 
-		// try curve
-		try {
-			float epsilon;
-			if (alpha == 0.0) epsilon = 10;
-			else if (alpha < 0.2) epsilon = 6;
-			else if (alpha < 0.4) epsilon = 4;
-			else if (alpha < 0.9) epsilon = 2;
-			else epsilon = 0;
 
-			float curve_threshold;
-			if (alpha == 0.0) curve_threshold = 4.0f;
-			else curve_threshold = 1.0f;
 
-			std::vector<util::Polygon> simplified_polygons;
-			for (int i = 0; i < contours.size(); i++) {
-				simplified_polygons.push_back(CurveSimplification::simplify(contours[i], epsilon, curve_threshold));
-			}
-			std::vector<float> costs = calculateCost(simplified_polygons, layer);
-			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+			if (best_algorithm == ALG_UNKNOWN) continue;
 
-			if (cost < best_cost) {
-				best_algorithm = ALG_CURVE;
-				best_cost = cost;
-				best_simplified_polygons = simplified_polygons;
-
-				best_error = costs[0] / costs[1];
-				best_num_primitive_shapes = costs[2];
-			}
-		}
-		catch (...) {
-		}
-
-		// try curve + right angle
-		try {
-			float epsilon;
-			if (alpha == 0.0) epsilon = 10;
-			else if (alpha < 0.2) epsilon = 6;
-			else if (alpha < 0.4) epsilon = 4;
-			else if (alpha < 0.9) epsilon = 2;
-			else epsilon = 0;
-
-			float curve_threshold;
-			if (alpha == 0.0) curve_threshold = 4.0f;
-			else curve_threshold = 1.0f;
-
-			float angle_threshold = 15.0f / 180.0f * CV_PI;
-
-			std::vector<util::Polygon> simplified_polygons;
-			for (int i = 0; i < contours.size(); i++) {
-				simplified_polygons.push_back(CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold));
-			}
-			std::vector<float> costs = calculateCost(simplified_polygons, layer);
-			float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-
-			if (cost < best_cost) {
-				best_algorithm = ALG_CURVE_RIGHTANGLE;
-				best_cost = cost;
-				best_simplified_polygons = simplified_polygons;
-
-				best_error = costs[0] / costs[1];
-				best_num_primitive_shapes = costs[2];
-			}
-		}
-		catch (...) {
+			best_simplified_polygons.push_back(best_simplified_polygon);
+			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
 		}
 
-		if (best_algorithm == ALG_UNKNOWN) throw "No valid simplification is found.";
 
-		records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
+
+
 
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygons, layer->bottom_height, layer->top_height));
 
 		if (layer->child) {
 			try {
-				if (best_algorithm != ALG_RIGHTANGLE) {
-					angle = -1;
-					dx = -1;
-					dy = -1;
-				}
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, layer->child, alpha, angle, dx, dy, records);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, layer->child, alpha, -1, -1, -1, records);
 				building->child = child;
 			}
 			catch (...) {
@@ -254,8 +240,12 @@ namespace simp {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 		std::vector<util::Polygon> simplified_polygons;
 		for (int i = 0; i < contours.size(); i++) {
-			simplified_polygons.push_back(DPSimplification::simplify(contours[i], epsilon));
+			try {
+				simplified_polygons.push_back(DPSimplification::simplify(contours[i], epsilon));
+			}
+			catch (...) {}
 		}
+		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 		
 		// calculate cost
 		std::vector<float> costs = calculateCost(simplified_polygons, layer);
@@ -289,8 +279,12 @@ namespace simp {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 		std::vector<util::Polygon> simplified_polygons;
 		for (int i = 0; i < contours.size(); i++) {
-			simplified_polygons.push_back(RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy));
+			try {
+				simplified_polygons.push_back(RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy));
+			}
+			catch (...) {}
 		}
+		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
 		// calculate cost
 		std::vector<float> costs = calculateCost(simplified_polygons, layer);
@@ -317,8 +311,12 @@ namespace simp {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 		std::vector<util::Polygon> simplified_polygons;
 		for (int i = 0; i < contours.size(); i++) {
-			simplified_polygons.push_back(CurveSimplification::simplify(contours[i], epsilon, curve_threshold));
+			try {
+				simplified_polygons.push_back(CurveSimplification::simplify(contours[i], epsilon, curve_threshold));
+			}
+			catch (...) {}
 		}
+		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
 		// calculate cost
 		std::vector<float> costs = calculateCost(simplified_polygons, layer);
@@ -342,8 +340,12 @@ namespace simp {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 		std::vector<util::Polygon> simplified_polygons;
 		for (int i = 0; i < contours.size(); i++) {
-			simplified_polygons.push_back(CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold));
+			try {
+				simplified_polygons.push_back(CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold));
+			}
+			catch (...) {}
 		}
+		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
 		// calculate cost
 		std::vector<float> costs = calculateCost(simplified_polygons, layer);

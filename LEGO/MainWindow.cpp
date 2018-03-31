@@ -8,6 +8,7 @@
 #include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
 #include "CurveRightAngleOptionDialog.h"
+#include "PLYOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -80,10 +81,10 @@ void MainWindow::onSavePLY() {
 		return;
 	}
 
-	QString filename = QFileDialog::getSaveFileName(this, tr("Save PLY file..."), "", tr("PLY files (*.ply)"));
-	if (filename.isEmpty()) return;
-
-	glWidget->savePLY(filename);
+	PLYOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->savePLY(dlg.getFileName(), dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ(), dlg.getScale());
+	}
 }
 
 void MainWindow::onSaveImage() {

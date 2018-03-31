@@ -960,8 +960,60 @@ namespace simp {
 				if (start_dis <= snap_threshold && start_index != end_index){
 					start_point = contour[start_index];
 				}
+				else{
+					// find intersection
+					//cv::Point2f dir = (start_point - mid_point) / cv::norm(start_point - mid_point);
+					//cv::Point2f new_point = start_point + 10 * dir;
+					//Segment seg_tmp1(point_t(new_point.x, new_point.y), point_t(start_point.x, start_point.y));
+					//Segment seg_tmp2(point_t(contour[start_index].x, contour[start_index].y), point_t(contour[end_index].x, contour[end_index].y));
+					//std::vector<point_t> output;
+					//boost::geometry::intersection(seg_tmp1, seg_tmp2, output);
+					//std::cout << "output size  is  " << output.size() << std::endl;
+					//std::cout << "start_point  is  " << start_point << std::endl;
+					//std::cout << "new_point  is  " << new_point << std::endl;
+					//if (output.size() == 1){
+					//	start_point = cv::Point2f(output[0].x(), output[0].y());
+					//}
+					// sample some points on the line
+					std::vector<cv::Point2f> smaple_points;
+					int sample_num = 50;
+					float tmp_dis = 1000;
+					int tmp_index = 0;
+					float interval_x = (contour[end_index].x - contour[start_index].x) / sample_num;
+					float interval_y = (contour[end_index].y - contour[start_index].y) / sample_num;
+					for (int k = 0; k <= sample_num; k++){
+						cv::Point2f new_point(contour[start_index].x + interval_x * k, contour[start_index].y + interval_y * k);
+						smaple_points.push_back(new_point);
+						float new_dis = cv::norm(new_point - start_point);
+						if (tmp_dis > new_dis){
+							tmp_index = k;
+							tmp_dis = new_dis;
+						}
+					}
+					start_point = smaple_points[tmp_index];
+
+
+				}
 				if (end_dis <= snap_threshold && start_index != end_index)
 					end_point = contour[end_index];
+				else{
+					std::vector<cv::Point2f> smaple_points;
+					int sample_num = 50;
+					float tmp_dis = 1000;
+					int tmp_index = 0;
+					float interval_x = (contour[end_index].x - contour[start_index].x) / sample_num;
+					float interval_y = (contour[end_index].y - contour[start_index].y) / sample_num;
+					for (int k = 0; k <= sample_num; k++){
+						cv::Point2f new_point(contour[start_index].x + interval_x * k, contour[start_index].y + interval_y * k);
+						smaple_points.push_back(new_point);
+						float new_dis = cv::norm(new_point - end_point);
+						if (tmp_dis > new_dis){
+							tmp_index = k;
+							tmp_dis = new_dis;
+						}
+					}
+					end_point = smaple_points[tmp_index];
+				}
 
 			}
 			else{

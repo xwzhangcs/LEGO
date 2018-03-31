@@ -53,7 +53,7 @@ public:
 	void drawScene();
 	void render();
 	void loadVoxelData(const QString& filename);
-	void savePLY(const QString& filename);
+	void savePLY(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
 	void saveImage(const QString& filename);
 	void showInputVoxel();
 	void simplifyByAll(double alpha);

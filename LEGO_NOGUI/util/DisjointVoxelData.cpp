@@ -14,6 +14,7 @@ namespace util {
 		}
 
 		// perform 3D dfs to cluster the voxel data
+		setbuf(stdout, NULL);
 		printf("Clustering the voxel data...\n");
 		int cluster_id = 1;
 		for (int h = 0; h < voxel_data.size(); h++) {
@@ -32,10 +33,9 @@ namespace util {
 		std::vector<std::shared_ptr<BuildingLayer>> buildings;
 		std::vector<std::shared_ptr<BuildingLayer>> layers;
 
-		setbuf(stdout, NULL);
 		printf("Processing slice");
 		for (int h = 0; h < voxel_data.size(); h++) {
-			printf("\rProcessing slice %d  ", h);
+			printf("\rProcessing slice %d  ", h + 1);
 
 			for (int cluster_id = 1; cluster_id <= num_cluster_id; cluster_id++) {
 				try {

@@ -56,7 +56,7 @@ int main(int argc, const char* argv[]) {
 
 	std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 	if (std::stoi(argv[3]) == 1) {
-		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, record_stats, alpha, 0.5, 2, 4, 1, 0);
+		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, record_stats, alpha, 0.5, 2, 4, 1, 10.0f / 180.0f * CV_PI);
 	}
 	else if (std::stoi(argv[3]) == 2) {
 		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_DP, record_stats, alpha, 0.5, 2, 4, 1, 0);
@@ -68,9 +68,15 @@ int main(int argc, const char* argv[]) {
 		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE, record_stats, alpha, 0.5, 2, 4, 1, 0);
 	}
 	else if (std::stoi(argv[3]) == 5) {
-		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, record_stats, alpha, 0.5, 2, 4, 1, 15.0f / 180.0f * CV_PI);
+		buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, record_stats, alpha, 0.5, 2, 4, 1, 10.0f / 180.0f * CV_PI);
 	}
-	util::ply::PlyWriter::write(argv[8], std::stod(argv[4]), std::stod(argv[5]), std::stod(argv[6]), std::stod(argv[7]), buildings);
+
+	double offset_x = std::stod(argv[4]);
+	double offset_y = std::stod(argv[5]);
+	double offset_z = std::stod(argv[6]);
+	double scale = std::stod(argv[7]);
+
+	util::ply::PlyWriter::write(argv[8], voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
 

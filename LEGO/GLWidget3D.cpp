@@ -317,8 +317,8 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 	update3DGeometry();
 }
 
-void GLWidget3D::savePLY(const QString& filename) {
-	util::ply::PlyWriter::write(filename.toUtf8().constData(), 0.0, 0.0, 0.0, 1.0, buildings);
+void GLWidget3D::savePLY(const QString& filename, double offset_x, double offset_y, double offset_z, double scale) {
+	util::ply::PlyWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 }
 
 void GLWidget3D::saveImage(const QString& filename) {
@@ -769,8 +769,8 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 			glutils::drawPolygon(pol, color, mat, vertices[""], true);
 
 			// side faces
-			float floor_tile_width = 3.0f;
-			float floor_tile_height = 3.0f;
+			float floor_tile_width = 10.0f;
+			float floor_tile_height = 10.0f;
 
 			// At first, find the first point that has angle close to 90 degrees.
 			int start_index = 0;
