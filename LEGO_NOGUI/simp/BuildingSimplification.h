@@ -25,7 +25,7 @@ namespace simp {
 		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByCurve(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold);
 		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByCurveRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold, float angle_threshold);
 
-		static std::vector<float> calculateCost(const std::vector<util::Polygon>& simplified_polygons, std::shared_ptr<util::BuildingLayer> layer);
+		static std::vector<float> calculateCost(const util::Polygon& simplified_polygon, const util::Polygon& polygon, int height);
 	};
 
 }

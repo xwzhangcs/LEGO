@@ -335,13 +335,11 @@ void GLWidget3D::simplifyByAll(double alpha) {
 	// determine the layering threshold based on the weight ratio
 	float threshold;
 	if (alpha < 0.2) threshold = 0.2;
-	else if (alpha < 0.3) threshold = 0.3;
-	else if (alpha < 0.4) threshold = 0.4;
-	else if (alpha < 0.6) threshold = 0.6;
+	else if (alpha < 0.3) threshold = 0.4;
+	else if (alpha < 0.4) threshold = 0.5;
+	else if (alpha < 0.5) threshold = 0.6;
 	else if (alpha < 0.7) threshold = 0.7;
-	else if (alpha < 0.8) threshold = 0.8;
-	else if (alpha < 1.0) threshold = 0.9;
-	else threshold = 1.0;
+	else threshold = 0.9;
 
 	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, true, alpha, threshold, 0, 0, 0, 0);
 
@@ -586,7 +584,7 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Buildi
 	renderManager.addObject("building", "", vertices, true);
 
 	std::vector<Vertex> vertices2;
-	glutils::drawBox(1500, 1500, 0.5, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, -0.5)), vertices2);
+	glutils::drawBox(3000, 3000, 0.5, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, -0.5)), vertices2);
 	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
@@ -742,7 +740,7 @@ void GLWidget3D::update3DGeometryWithoutRoof(const std::vector<std::shared_ptr<u
 	}
 
 	std::vector<Vertex> vertices2;
-	glutils::drawBox(1500, 1500, 0.5, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, -0.5)), vertices2);
+	glutils::drawBox(3000, 3000, 0.5, glm::vec4(0.9, 1, 0.9, 1), glm::translate(glm::mat4(), glm::vec3(0, 0, -0.5)), vertices2);
 	renderManager.addObject("ground", "", vertices2, true);
 
 	// update shadow map
@@ -769,7 +767,7 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 			glutils::drawPolygon(pol, color, mat, vertices[""], true);
 
 			// side faces
-			float floor_tile_width = 10.0f;
+			float floor_tile_width = 8.0f;
 			float floor_tile_height = 10.0f;
 
 			// At first, find the first point that has angle close to 90 degrees.

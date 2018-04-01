@@ -21,6 +21,10 @@ public:
 	QString getFileName();
 
 public slots:
+	void onD1();
+	void onD2();
+	void onD3();
+	void onD4();
 	void onFileName();
 	void onOK();
 	void onCancel();

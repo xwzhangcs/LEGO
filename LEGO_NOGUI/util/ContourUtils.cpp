@@ -375,6 +375,24 @@ namespace util {
 		return ans;
 	}
 
+	Ring resolveSelfIntersection(const Ring& ring) {
+		cv::Rect rect = util::boundingBox(ring.points);
+
+
+		std::vector<cv::Point> contour(ring.size());
+		for (int i = 0; i < ring.size(); i++) {
+			contour[i] = cv::Point(ring[i].x, ring[i].y);
+		}
+
+		cv::Mat_<uchar> img;
+		util::createImageFromContour(rect.width, rect.height, contour, cv::Point(-rect.x, -rect.y), img);
+		std::vector<util::Polygon> polygons = util::findContours(img, false);
+		
+		Ring ans = polygons[0].contour;
+		ans.translate(rect.x, rect.y);
+		return ans;
+	}
+
 	cv::Rect boundingBox(const std::vector<cv::Point>& polygon) {
 		int min_x = std::numeric_limits<int>::max();
 		int max_x = -std::numeric_limits<int>::max();

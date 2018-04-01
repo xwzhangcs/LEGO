@@ -148,6 +148,7 @@ namespace util {
 	bool isSimple(const Ring& points);
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
 	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
+	Ring resolveSelfIntersection(const Ring& ring);
 
 	cv::Rect boundingBox(const std::vector<cv::Point>& polygon);
 	cv::Rect boundingBox(const std::vector<cv::Point2f>& polygon);

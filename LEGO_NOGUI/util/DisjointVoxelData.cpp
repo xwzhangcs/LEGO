@@ -111,6 +111,9 @@ namespace util {
 			child = child->child;
 		}
 		if (cur) cur->child.reset();
+
+		// Recursively remove too small layer if it has no child layer.
+		removeSmallLayers(bottom_building_layer);
 		
 		return bottom_building_layer;
 	}
@@ -181,5 +184,14 @@ namespace util {
 
 		return ans;
 	}
-		
+
+	void DisjointVoxelData::removeSmallLayers(std::shared_ptr<BuildingLayer> layer) {
+		while (layer) {
+			for (int i = layer->footprints.size() - 1; i >= 0; i--) {
+				if (util::calculateArea(layer->footprints[i]) < 5) layer->footprints.erase(layer->footprints.begin() + i);
+			}
+			layer = layer->child;
+		} 
+	}
+
 }

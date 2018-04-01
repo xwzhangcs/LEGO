@@ -38,6 +38,10 @@ public:
     QLabel *label_5;
     QLineEdit *lineEditFileName;
     QPushButton *pushButtonFileName;
+    QPushButton *pushButtonD1;
+    QPushButton *pushButtonD2;
+    QPushButton *pushButtonD4;
+    QPushButton *pushButtonD3;
 
     void setupUi(QDialog *PLYOptionDialog)
     {
@@ -83,6 +87,18 @@ public:
         pushButtonFileName = new QPushButton(PLYOptionDialog);
         pushButtonFileName->setObjectName(QStringLiteral("pushButtonFileName"));
         pushButtonFileName->setGeometry(QRect(390, 130, 31, 21));
+        pushButtonD1 = new QPushButton(PLYOptionDialog);
+        pushButtonD1->setObjectName(QStringLiteral("pushButtonD1"));
+        pushButtonD1->setGeometry(QRect(250, 10, 71, 31));
+        pushButtonD2 = new QPushButton(PLYOptionDialog);
+        pushButtonD2->setObjectName(QStringLiteral("pushButtonD2"));
+        pushButtonD2->setGeometry(QRect(340, 10, 71, 31));
+        pushButtonD4 = new QPushButton(PLYOptionDialog);
+        pushButtonD4->setObjectName(QStringLiteral("pushButtonD4"));
+        pushButtonD4->setGeometry(QRect(340, 50, 71, 31));
+        pushButtonD3 = new QPushButton(PLYOptionDialog);
+        pushButtonD3->setObjectName(QStringLiteral("pushButtonD3"));
+        pushButtonD3->setGeometry(QRect(250, 50, 71, 31));
 
         retranslateUi(PLYOptionDialog);
 
@@ -100,6 +116,10 @@ public:
         label_3->setText(QApplication::translate("PLYOptionDialog", "Offset Z:", 0));
         label_5->setText(QApplication::translate("PLYOptionDialog", "File name:", 0));
         pushButtonFileName->setText(QApplication::translate("PLYOptionDialog", "...", 0));
+        pushButtonD1->setText(QApplication::translate("PLYOptionDialog", "D1", 0));
+        pushButtonD2->setText(QApplication::translate("PLYOptionDialog", "D2", 0));
+        pushButtonD4->setText(QApplication::translate("PLYOptionDialog", "D4", 0));
+        pushButtonD3->setText(QApplication::translate("PLYOptionDialog", "D3", 0));
     } // retranslateUi
 
 };
