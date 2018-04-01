@@ -28,12 +28,24 @@ namespace simp {
 		// If the input polygon is not triangle, but it is simplified to a triangle,
 		// cancel the simplification.
 		if (polygon.contour.size() > 3 && ans.contour.size() == 3) ans.contour = polygon.contour;
+
+		// If the polygon is self-intersecting, resolve it.
+		if (!util::isSimple(ans.contour)) {
+			util::Ring ring = resolveSelfIntersection(ans.contour);
+			cv::approxPolyDP(ring.points, ans.contour.points, epsilon, true);
+		}
 	
 		// simplify the hole as well
 		for (int i = 0; i < polygon.holes.size(); i++) {
 			util::Ring simplified_hole;
 			cv::approxPolyDP(polygon.holes[i].points, simplified_hole.points, epsilon, true);
 			if (simplified_hole.size() >= 3) {
+				// If the hole is self-intersecting, resolve it.
+				if (!util::isSimple(simplified_hole)) {
+					util::Ring ring = resolveSelfIntersection(simplified_hole);
+					cv::approxPolyDP(ring.points, simplified_hole.points, epsilon, true);
+				}
+
 				ans.holes.push_back(simplified_hole);
 			}
 		}
