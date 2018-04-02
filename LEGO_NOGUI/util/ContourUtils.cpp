@@ -377,8 +377,7 @@ namespace util {
 
 	Ring resolveSelfIntersection(const Ring& ring) {
 		cv::Rect rect = util::boundingBox(ring.points);
-
-
+		
 		std::vector<cv::Point> contour(ring.size());
 		for (int i = 0; i < ring.size(); i++) {
 			contour[i] = cv::Point(ring[i].x, ring[i].y);
@@ -887,7 +886,7 @@ namespace util {
 	/**
 	 * Create image from the contour.
 	 */
-	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result) {
+	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result, bool erode) {
 		result = cv::Mat_<uchar>::zeros(height * 2, width * 2);
 		std::vector<std::vector<cv::Point>> contour_points(1);
 
@@ -899,8 +898,10 @@ namespace util {
 		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4);
 
 		// erode image
-		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);
-		cv::erode(result, result, kernel);
+		if (erode) {
+			cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);
+			cv::erode(result, result, kernel);
+		}
 
 		cv::resize(result, result, cv::Size(width, height), 0, 0, cv::INTER_NEAREST);
 	}
@@ -926,6 +927,36 @@ namespace util {
 		cv::erode(result, result, kernel);
 
 		cv::resize(result, result, cv::Size(width, height), 0, 0, cv::INTER_NEAREST);
+	}
+
+	/**
+	 * Approximate a polygon using DP algorithm.
+	 * This function uses the OpenCV DP function, but if the resultant polygon is self-intersecting,
+	 * it resolves the self-intersecting using an image-based approach.
+	 */
+	void approxPolyDP(const std::vector<cv::Point2f>& input_polygon, std::vector<cv::Point2f>& output_polygon, double epsilon, bool closed, bool allowLessThanThreePoints) {
+		cv::approxPolyDP(input_polygon, output_polygon, epsilon, true);
+		if (output_polygon.size() < 3 && !allowLessThanThreePoints) {
+			// If the simplification makes the polygon a line, gradually increase the epsilon 
+			// until it becomes a polygon with at least 3 vertices.
+			float epsilon2 = epsilon - 0.3;
+			while (epsilon2 >= 0 && output_polygon.size() < 3) {
+				cv::approxPolyDP(input_polygon, output_polygon, epsilon2, true);
+				epsilon2 -= 0.3;
+			}
+			if (output_polygon.size() < 3) output_polygon = input_polygon;
+		}
+		
+		// If the polygon is self-intersecting, resolve it.
+		while (!util::isSimple(output_polygon)) {
+			util::Ring ring = resolveSelfIntersection(output_polygon);
+			cv::approxPolyDP(ring.points, output_polygon, 1, closed);
+
+			if (output_polygon.size() < 3 && !allowLessThanThreePoints) {
+				output_polygon = input_polygon;
+				break;
+			}
+		}
 	}
 
 	void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold) {

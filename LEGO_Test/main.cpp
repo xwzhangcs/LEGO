@@ -1,6 +1,22 @@
 #include <iostream>
 #include "util/ContourUtils.h"
 
+void testApproxPolyDP(const char* filename) {
+	std::cout << "------------------------------------------------" << std::endl;
+	std::cout << "approxPolyDP testing..." << std::endl;
+	std::cout << filename << std::endl;
+
+	cv::Mat img = cv::imread(filename, cv::IMREAD_GRAYSCALE);
+	std::vector<util::Polygon> polygons = util::findContours(img, false);
+
+	util::Polygon simplified_polygon;
+	util::approxPolyDP(polygons[0].contour.points, simplified_polygon.contour.points, 2, true, true);
+
+	for (int i = 0; i < simplified_polygon.contour.size(); i++) {
+		std::cout << "(" << simplified_polygon.contour[i].x << "," << simplified_polygon.contour[i].y << ")" << std::endl;
+	}
+}
+
 void testFindContour(const char* filename) {
 	std::cout << "------------------------------------------------" << std::endl;
 	std::cout << "findContour testing..." << std::endl;
@@ -30,6 +46,9 @@ void testFindContour(const char* filename) {
 }
 
 int main() {
+	testApproxPolyDP("complex_contour.png");
+
+	/*
 	testFindContour("contour_test1.png");
 	testFindContour("contour_test2.png");
 	testFindContour("contour_test3.png");
@@ -38,7 +57,7 @@ int main() {
 	testFindContour("contour_test6.png");
 	testFindContour("contour_test7.png");
 	testFindContour("contour_test8.png");
-
+	*/
 
 	return 0;
 }

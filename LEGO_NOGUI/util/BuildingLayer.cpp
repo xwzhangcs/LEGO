@@ -62,6 +62,33 @@ namespace util {
 		cv::Mat_<uchar> mean_img;
 		total_img.convertTo(mean_img, CV_8U);
 
+		cv::Mat_<uchar> mean_img_thresholded;
+		cv::threshold(mean_img, mean_img_thresholded, 128, 255, cv::THRESH_BINARY);
+
+		// extract contours
+		std::vector<util::Polygon> contours = util::findContours(mean_img_thresholded, false);
+		for (int i = 0; i < contours.size(); i++) {
+			contours[i].translate(min_x, min_y);
+		}
+
+		// Remove too small contours
+		float max_polygon_area = 0;
+		std::vector<float> polygon_areas;
+		for (int i = 0; i < contours.size(); i++) {
+			float polygon_area = util::calculateArea(contours[i]);
+			polygon_areas.push_back(polygon_area);
+			max_polygon_area = std::max(max_polygon_area, polygon_area);
+		}
+		for (int i = contours.size() - 1; i >= 0; i--) {
+			if (polygon_areas[i] < max_polygon_area * 0.1) {
+				polygon_areas.erase(polygon_areas.begin() + i);
+				contours.erase(contours.begin() + i);
+			}
+		}
+
+		return contours;
+
+		/*
 		// find the most representative slice
 		double best_iou = 0;
 		int best_slice = -1;
@@ -92,6 +119,7 @@ namespace util {
 		}
 
 		return raw_footprints[best_slice];
+		*/
 	}
 
 }

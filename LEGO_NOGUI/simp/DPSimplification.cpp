@@ -12,42 +12,18 @@ namespace simp {
 	 */
 	util::Polygon DPSimplification::simplify(const util::Polygon& polygon, float epsilon) {
 		util::Polygon ans;
-		cv::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon, true);
-		if (ans.contour.size() < 3) {
-			// If the simplification makes the polygon a line, gradually increase the epsilon 
-			// until it becomes a polygon with at least 3 vertices.
-			float epsilon2 = epsilon - 0.3;
-			while (epsilon2 >= 0 && ans.contour.size() < 3) {
-				cv::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon2, true);
-				epsilon2 -= 0.3;
-			}
-			if (ans.contour.size() < 3) throw "No building is found";
-		}
-
-		// HACK
-		// If the input polygon is not triangle, but it is simplified to a triangle,
-		// cancel the simplification.
-		if (polygon.contour.size() > 3 && ans.contour.size() == 3) ans.contour = polygon.contour;
-
-		// If the polygon is self-intersecting, resolve it.
-		if (!util::isSimple(ans.contour)) {
-			util::Ring ring = resolveSelfIntersection(ans.contour);
-			cv::approxPolyDP(ring.points, ans.contour.points, epsilon, true);
-		}
+		util::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon, true, false);
 	
 		// simplify the hole as well
 		for (int i = 0; i < polygon.holes.size(); i++) {
-			util::Ring simplified_hole;
-			cv::approxPolyDP(polygon.holes[i].points, simplified_hole.points, epsilon, true);
-			if (simplified_hole.size() >= 3) {
-				// If the hole is self-intersecting, resolve it.
-				if (!util::isSimple(simplified_hole)) {
-					util::Ring ring = resolveSelfIntersection(simplified_hole);
-					cv::approxPolyDP(ring.points, simplified_hole.points, epsilon, true);
+			try {
+				util::Ring simplified_hole;
+				util::approxPolyDP(polygon.holes[i].points, simplified_hole.points, epsilon, true, true);
+				if (simplified_hole.size() >= 3) {
+					ans.holes.push_back(simplified_hole);
 				}
-
-				ans.holes.push_back(simplified_hole);
 			}
+			catch (...) {}
 		}
 
 		// The transfomration matrix should be same for the external contour and the internal holes

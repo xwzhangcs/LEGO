@@ -6,7 +6,7 @@ namespace util {
 	DisjointVoxelData::DisjointVoxelData() {
 	}
 	
-	std::vector<std::shared_ptr<BuildingLayer>> DisjointVoxelData::disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data) {
+	std::vector<std::shared_ptr<BuildingLayer>> DisjointVoxelData::disjoint(const std::vector<cv::Mat_<uchar>>& voxel_data, int voxel_value_threshold) {
 		// initialize the clustering
 		std::vector<cv::Mat_<unsigned short>> clustering(voxel_data.size());
 		for (int h = 0; h < voxel_data.size(); h++) {
@@ -17,11 +17,15 @@ namespace util {
 		setbuf(stdout, NULL);
 		printf("Clustering the voxel data...\n");
 		int cluster_id = 1;
+		int max_voxel_count = 0;
+		std::vector<int> voxel_counts;	// this array stores the number of voxels for each cluster.
 		for (int h = 0; h < voxel_data.size(); h++) {
 			for (int r = 0; r < voxel_data[h].rows; r++) {
 				for (int c = 0; c < voxel_data[h].cols; c++) {
-					if (voxel_data[h](r, c) == 255 && clustering[h](r, c) == 0) {
-						dfs3D(voxel_data, clustering, r, c, h, cluster_id);
+					if (voxel_data[h](r, c) > voxel_value_threshold && clustering[h](r, c) == 0) {
+						int voxel_count = dfs3D(voxel_data, clustering, r, c, h, cluster_id, voxel_value_threshold);
+						voxel_counts.push_back(voxel_count);
+						max_voxel_count = std::max(max_voxel_count, voxel_count);
 						cluster_id++;
 					}
 				}
@@ -32,12 +36,16 @@ namespace util {
 
 		std::vector<std::shared_ptr<BuildingLayer>> buildings;
 		std::vector<std::shared_ptr<BuildingLayer>> layers;
+		std::vector<int> cluster_id_to_building_id(num_cluster_id, -1);
 
 		printf("Processing slice");
 		for (int h = 0; h < voxel_data.size(); h++) {
 			printf("\rProcessing slice %d  ", h + 1);
 
 			for (int cluster_id = 1; cluster_id <= num_cluster_id; cluster_id++) {
+				// Skip the building if its voxel count is too small.
+				if (voxel_counts[cluster_id - 1] < max_voxel_count * 0.1) continue;
+
 				try {
 					// extract contour
 					int min_x, min_y, max_x, max_y;
@@ -62,28 +70,30 @@ namespace util {
 						}
 					}
 
-					// Create the next building layer
+					// Create the building layer
 					int building_id;
-					if (cluster_id - 1 >= buildings.size()) {
+					if (cluster_id_to_building_id[cluster_id - 1] == -1) {
+					//if (cluster_id - 1 >= buildings.size()) {
 						building_id = buildings.size();
+						cluster_id_to_building_id[cluster_id - 1] = building_id;
 						layers.resize(layers.size() + 1);
-						layers[cluster_id - 1] = std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, h, h + 1));
-						layers[cluster_id - 1]->raw_footprints.push_back(polygons);
-						layers[cluster_id - 1]->footprints = polygons;
-						buildings.push_back(layers[cluster_id - 1]);
+						layers[building_id] = std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, h, h + 1));
+						layers[building_id]->raw_footprints.push_back(polygons);
+						layers[building_id]->footprints = polygons;
+						buildings.push_back(layers[building_id]);
 					}
 					else {
-						building_id = layers[cluster_id - 1]->building_id;
+						building_id = cluster_id_to_building_id[cluster_id - 1];
+						//building_id = layers[cluster_id - 1]->building_id;
 
-						layers[cluster_id - 1]->child = std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, h, h + 1));
-						layers[cluster_id - 1] = layers[cluster_id - 1]->child;
-						layers[cluster_id - 1]->raw_footprints.push_back(polygons);
-						layers[cluster_id - 1]->footprints = polygons;
+						layers[building_id]->child = std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, h, h + 1));
+						layers[building_id] = layers[building_id]->child;
+						layers[building_id]->raw_footprints.push_back(polygons);
+						layers[building_id]->footprints = polygons;
 					}
 				}
 				catch (...) {
 				}
-
 			}
 		}
 		printf("\n");
@@ -113,7 +123,7 @@ namespace util {
 		if (cur) cur->child.reset();
 
 		// Recursively remove too small layer if it has no child layer.
-		removeSmallLayers(bottom_building_layer);
+		//removeSmallLayers(bottom_building_layer);
 		
 		return bottom_building_layer;
 	}
@@ -128,7 +138,7 @@ namespace util {
 	 * @param h				height of current voxel
 	 * @param cluster_id	current cluster id
 	 */
-	void DisjointVoxelData::dfs3D(const std::vector<cv::Mat_<uchar>>&voxel_data, std::vector<cv::Mat_<unsigned short>>&clustering, int r, int c, int h, int cluster_id) {
+	int DisjointVoxelData::dfs3D(const std::vector<cv::Mat_<uchar>>&voxel_data, std::vector<cv::Mat_<unsigned short>>&clustering, int r, int c, int h, int cluster_id, int voxel_value_threshold) {
 		const std::vector<std::pair<int, std::pair<int, int>>> dirs = { { 0, { 1, 0 } }, { 0, { -1, 0 } }, { 0, { 0, 1 } }, { 0, { 0, -1 } }, { 1, { 0, 0 } }, { -1, { 0, 0 } } };
 
 		int R = voxel_data[0].rows;
@@ -138,24 +148,28 @@ namespace util {
 		Q.push({ h, { r, c } });
 
 		clustering[h](r, c) = cluster_id;
+		int count = 0;
 
 		while (!Q.empty()) {
 			int h = Q.front().first;
 			int r = Q.front().second.first;
 			int c = Q.front().second.second;
 			Q.pop();
+			count++;
 
 			for (int i = 0; i < dirs.size(); i++) {
 				int h2 = h + dirs[i].first;
 				int r2 = r + dirs[i].second.first;
 				int c2 = c + dirs[i].second.second;
 
-				if (r2 >= 0 && r2 < R && c2 >= 0 && c2 < C && h2 >= 0 && h2 < voxel_data.size() && voxel_data[h2](r2, c2) == 255 && clustering[h2](r2, c2) == 0) {
+				if (r2 >= 0 && r2 < R && c2 >= 0 && c2 < C && h2 >= 0 && h2 < voxel_data.size() && voxel_data[h2](r2, c2) > voxel_value_threshold && clustering[h2](r2, c2) == 0) {
 					clustering[h2](r2, c2) = cluster_id;
 					Q.push({ h2, { r2, c2 } });
 				}
 			}
 		}
+
+		return count;
 	}
 
 	cv::Mat_<uchar> DisjointVoxelData::getSliceOfCluster(const cv::Mat_<unsigned short>& clustering, int cluster_id, int& min_x, int& min_y, int& max_x, int& max_y) {

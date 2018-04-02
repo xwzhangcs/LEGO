@@ -137,10 +137,14 @@ namespace simp {
 		cv::Rect bbox = util::boundingBox(small_aa_polygon);
 
 		cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
-		util::createImageFromContour(bbox.width, bbox.height, small_aa_polygon, cv::Point(-bbox.x, -bbox.y), img);
+		util::createImageFromContour(bbox.width, bbox.height, small_aa_polygon, cv::Point(-bbox.x, -bbox.y), img, false);
 
 		std::vector<util::Polygon> polygons = util::findContours(img, true);
 		if (polygons.size() == 0) throw "No contour is found.";
+
+		if (polygons.size() == 2) {
+			std::cout << "Multiple polygons!!!" << std::endl;
+		}
 
 		// offset back and scale up the simplified scale-down polygon
 		std::vector<cv::Point2f> simplified_aa_contour(polygons[0].contour.size());
@@ -158,7 +162,7 @@ namespace simp {
 
 			// generate a simplified contour removing self-intersections
 			bbox = util::boundingBox(simplified_aa_contour);
-			util::createImageFromContour(bbox.width, bbox.height, simplified_aa_contour_int, cv::Point(-bbox.x, -bbox.y), img);
+			util::createImageFromContour(bbox.width, bbox.height, simplified_aa_contour_int, cv::Point(-bbox.x, -bbox.y), img, false);
 			polygons = util::findContours(img, false);
 			if (polygons.size() == 0) throw "No valid contour is generated.";
 			for (int i = 0; i < polygons[0].contour.size(); i++) {

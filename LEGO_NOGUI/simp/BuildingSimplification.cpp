@@ -107,12 +107,12 @@ namespace simp {
 			// try Douglas-Peucker
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 10;
-				else if (alpha < 0.2) epsilon = 8;
-				else if (alpha < 0.4) epsilon = 6;
-				else if (alpha < 0.6) epsilon = 4;
-				else if (alpha < 0.8) epsilon = 2;
-				else epsilon = 2;
+				if (alpha == 0.0) epsilon = 20;
+				else if (alpha < 0.2) epsilon = 16;
+				else if (alpha < 0.4) epsilon = 12;
+				else if (alpha < 0.6) epsilon = 10;
+				else if (alpha < 0.8) epsilon = 6;
+				else epsilon = 4;
 
 				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -132,12 +132,12 @@ namespace simp {
 			// try right angle
 			try {
 				int resolution;
-				if (alpha == 0.0) resolution = 10;
-				else if (alpha < 0.2) resolution = 8;
-				else if (alpha < 0.4) resolution = 6;
-				else if (alpha < 0.6) resolution = 4;
-				else if (alpha < 0.8) resolution = 2;
-				else resolution = 2;
+				if (alpha == 0.0) resolution = 30;
+				else if (alpha < 0.2) resolution = 30;
+				else if (alpha < 0.4) resolution = 26;
+				else if (alpha < 0.6) resolution = 20;
+				else if (alpha < 0.8) resolution = 14;
+				else resolution = 10;
 
 				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -154,22 +154,21 @@ namespace simp {
 			catch (...) {}
 
 			// try curve
-			/*
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 100;
-				else if (alpha < 0.2) epsilon = 60;
-				else if (alpha < 0.4) epsilon = 40;
-				else if (alpha < 0.9) epsilon = 20;
-				else epsilon = 0;
+				if (alpha == 0.0) epsilon = 20;
+				else if (alpha < 0.2) epsilon = 16;
+				else if (alpha < 0.4) epsilon = 14;
+				else if (alpha < 0.6) epsilon = 12;
+				else if (alpha < 0.8) epsilon = 8;
+				else epsilon = 6;
 
 				float curve_threshold;
-				if (alpha == 0.0) curve_threshold = 10.0f;
-				else if (alpha < 0.5) curve_threshold = 5.0f;
-				else curve_threshold = 4.0f;
+				if (alpha < 0.2) curve_threshold = 1.5f;
+				else curve_threshold = 1.0f;
 
 				util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold);
-				std::vector<float> costs = calculateCost({ simplified_polygon }, layer);
+				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
 				if (cost < best_cost) {
@@ -182,17 +181,16 @@ namespace simp {
 				}
 			}
 			catch (...) {}
-			*/
 
 			// try curve + right angle
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 10;
-				else if (alpha < 0.2) epsilon = 8;
-				else if (alpha < 0.4) epsilon = 6;
-				else if (alpha < 0.6) epsilon = 4;
-				else if (alpha < 0.8) epsilon = 2;
-				else epsilon = 2;
+				if (alpha == 0.0) epsilon = 20;
+				else if (alpha < 0.2) epsilon = 16;
+				else if (alpha < 0.4) epsilon = 14;
+				else if (alpha < 0.6) epsilon = 12;
+				else if (alpha < 0.8) epsilon = 8;
+				else epsilon = 6;
 
 				float curve_threshold;
 				if (alpha < 0.2) curve_threshold = 1.5f;
@@ -244,14 +242,20 @@ namespace simp {
 	 */
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByDP(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
+
+		// simplify the polygon
 		std::vector<util::Polygon> simplified_polygons;
 		for (int i = 0; i < contours.size(); i++) {
 			try {
-				simplified_polygons.push_back(DPSimplification::simplify(contours[i], epsilon));
+				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
+				float polygon_area = util::calculateArea(simplified_polygon);
+				
+				simplified_polygons.push_back(simplified_polygon);
 			}
 			catch (...) {}
 		}
 		if (simplified_polygons.size() == 0) throw "Simplification failed.";
+
 		
 		// calculate cost
 		std::vector<float> costs(3, 0);
