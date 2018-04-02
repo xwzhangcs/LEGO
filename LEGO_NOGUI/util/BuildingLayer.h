@@ -14,7 +14,6 @@ namespace util {
 		std::vector<util::Polygon> footprints;
 		float bottom_height;
 		float top_height;
-		std::vector<float> costs;	// error, error_denominator, #primitives
 		std::shared_ptr<BuildingLayer> child;
 
 	public:

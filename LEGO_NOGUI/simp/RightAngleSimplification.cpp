@@ -142,10 +142,6 @@ namespace simp {
 		std::vector<util::Polygon> polygons = util::findContours(img, true);
 		if (polygons.size() == 0) throw "No contour is found.";
 
-		if (polygons.size() == 2) {
-			std::cout << "Multiple polygons!!!" << std::endl;
-		}
-
 		// offset back and scale up the simplified scale-down polygon
 		std::vector<cv::Point2f> simplified_aa_contour(polygons[0].contour.size());
 		for (int i = 0; i < polygons[0].contour.size(); i++) {

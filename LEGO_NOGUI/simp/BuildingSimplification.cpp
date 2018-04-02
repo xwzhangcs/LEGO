@@ -67,20 +67,6 @@ namespace simp {
 		return buildings;
 	}
 
-	std::vector<float> BuildingSimplification::sumCost(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings) {
-		std::vector<float> costs(3, 0);
-
-		for (int i = 0; i < buildings.size(); i++) {
-			std::vector<float> c = sumCost({ buildings[i]->child });
-			
-			for (int j = 0; j < c.size(); j++) {
-				costs[j] += buildings[i]->costs[j] + c[j];
-			}
-		}
-
-		return costs;
-	}
-
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float angle, int dx, int dy, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 		
@@ -112,7 +98,7 @@ namespace simp {
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
 				else if (alpha < 0.8) epsilon = 4;
-				else epsilon = 2;
+				else epsilon = 4;
 
 				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -137,7 +123,7 @@ namespace simp {
 				else if (alpha < 0.4) resolution = 10;
 				else if (alpha < 0.6) resolution = 8;
 				else if (alpha < 0.8) resolution = 4;
-				else resolution = 2;
+				else resolution = 4;
 
 				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -161,7 +147,7 @@ namespace simp {
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
 				else if (alpha < 0.8) epsilon = 4;
-				else epsilon = 2;
+				else epsilon = 4;
 
 				float curve_threshold;
 				if (alpha < 0.2) curve_threshold = 1.5f;
@@ -185,12 +171,12 @@ namespace simp {
 			// try curve + right angle
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 20;
-				else if (alpha < 0.2) epsilon = 16;
-				else if (alpha < 0.4) epsilon = 14;
-				else if (alpha < 0.6) epsilon = 12;
-				else if (alpha < 0.8) epsilon = 8;
-				else epsilon = 6;
+				if (alpha == 0.0) epsilon = 18;
+				else if (alpha < 0.2) epsilon = 162;
+				else if (alpha < 0.4) epsilon = 10;
+				else if (alpha < 0.6) epsilon = 8;
+				else if (alpha < 0.8) epsilon = 4;
+				else epsilon = 4;
 
 				float curve_threshold;
 				if (alpha < 0.2) curve_threshold = 1.5f;
@@ -256,16 +242,7 @@ namespace simp {
 		}
 		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
-		
-		// calculate cost
-		std::vector<float> costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			std::vector<float> c = calculateCost(simplified_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) costs[j] += c[j];
-		}
-
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-		building->costs = costs;
 
 		if (layer->child) {
 			try {
@@ -297,15 +274,7 @@ namespace simp {
 		}
 		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
-		// calculate cost
-		std::vector<float> costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			std::vector<float> c = calculateCost(simplified_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) costs[j] += c[j];
-		}
-
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-		building->costs = costs;
 
 		if (layer->child) {
 			try {
@@ -330,15 +299,7 @@ namespace simp {
 		}
 		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
-		// calculate cost
-		std::vector<float> costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			std::vector<float> c = calculateCost(simplified_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) costs[j] += c[j];
-		}
-
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-		building->costs = costs;
 
 		if (layer->child) {
 			try {
@@ -363,15 +324,7 @@ namespace simp {
 		}
 		if (simplified_polygons.size() == 0) throw "Simplification failed.";
 
-		// calculate cost
-		std::vector<float> costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			std::vector<float> c = calculateCost(simplified_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) costs[j] += c[j];
-		}
-
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-		building->costs = costs;
 
 		if (layer->child) {
 			try {
