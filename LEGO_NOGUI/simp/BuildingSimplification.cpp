@@ -233,10 +233,7 @@ namespace simp {
 		std::vector<util::Polygon> simplified_polygons;
 		for (int i = 0; i < contours.size(); i++) {
 			try {
-				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
-				float polygon_area = util::calculateArea(simplified_polygon);
-				
-				simplified_polygons.push_back(simplified_polygon);
+				simplified_polygons.push_back(DPSimplification::simplify(contours[i], epsilon));
 			}
 			catch (...) {}
 		}

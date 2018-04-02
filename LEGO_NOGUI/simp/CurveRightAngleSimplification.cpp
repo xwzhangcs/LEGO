@@ -56,14 +56,16 @@ namespace simp {
 				polygon.primitive_shapes = output.primitive_shapes;
 			}
 			else{
-				cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+				//cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true, true);
 
 				if (polygon.contour.points.size() < 3) {
 					// If the simplification makes the polygon a line, gradually increase the epsilon 
 					// until it becomes a polygon with at least 3 vertices.
 					float epsilon2 = epsilon - 0.3;
 					while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
-						cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+						//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true, true);
 						epsilon2 -= 0.3;
 					}
 					if (polygon.contour.points.size() < 3) {
@@ -131,14 +133,16 @@ namespace simp {
 				polygon.contour = output.contour;
 			}
 			else{
-				cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+				//cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
+				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true, true);
 
 				if (polygon.contour.points.size() < 3) {
 						// If the simplification makes the polygon a line, gradually increase the epsilon 
 						// until it becomes a polygon with at least 3 vertices.
 						float epsilon2 = epsilon - 0.3;
 						while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
-							cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+							//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
+							util::approxPolyDP(contour, polygon.contour.points, epsilon2, true, true);
 							epsilon2 -= 0.3;
 						}
 						if (polygon.contour.points.size() < 3) {
@@ -165,11 +169,13 @@ namespace simp {
 						}
 					}
 					else{
-						cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
+						//cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
+						util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true, true);
 					}
 				}
 				else{
-					cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
+					//cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
+					util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true, true);
 				}
 				if (simplified_hole.size() >= 3)
 					polygon.holes.push_back(simplified_hole);
@@ -595,7 +601,8 @@ namespace simp {
 					output_regular_tmp[i] = output_regular[i];
 				}
 				output_regular.clear();
-				cv::approxPolyDP(cv::Mat(output_regular_tmp), output_regular, epsilon, true);
+				//cv::approxPolyDP(cv::Mat(output_regular_tmp), output_regular, epsilon, true);
+				util::approxPolyDP(cv::Mat(output_regular_tmp), output_regular, epsilon, true, true);
 				std::vector<cv::Point2f> results_tmp;
 				std::vector<cv::Point2f> new_output_contour;
 				results_tmp = contour_rectify(output_regular, angle_threshold);
