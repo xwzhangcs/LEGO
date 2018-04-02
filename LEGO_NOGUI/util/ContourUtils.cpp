@@ -911,13 +911,15 @@ namespace util {
 		std::vector<std::vector<cv::Point>> contour_points(1 + polygon.holes.size());
 
 		contour_points[0].resize(polygon.contour.size());
-		for (int i = 0; i < polygon.contour.size(); i++) {
-			contour_points[0][i] = cv::Point((polygon.contour[i].x + offset.x) * 2, (polygon.contour[i].y + offset.y) * 2);
+		Ring ring = polygon.contour.getActualPoints();
+		for (int i = 0; i < ring.size(); i++) {
+			contour_points[0][i] = cv::Point((ring[i].x + offset.x) * 2, (ring[i].y + offset.y) * 2);
 		}
 		for (int i = 0; i < polygon.holes.size(); i++) {
 			contour_points[i + 1].resize(polygon.holes[i].size());
-			for (int j = 0; j < polygon.holes[i].size(); j++) {
-				contour_points[i + 1][j] = cv::Point((polygon.holes[i][j].x + offset.x) * 2, (polygon.holes[i][j].y + offset.y) * 2);
+			Ring hole = polygon.holes[i].getActualPoints();
+			for (int j = 0; j < hole.size(); j++) {
+				contour_points[i + 1][j] = cv::Point((hole[j].x + offset.x) * 2, (hole[j].y + offset.y) * 2);
 			}
 		}
 		cv::fillPoly(result, contour_points, cv::Scalar(255), cv::LINE_4);

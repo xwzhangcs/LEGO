@@ -127,6 +127,9 @@ namespace simp {
 			aa_contour_int[i] = cv::Point(std::round(aa_contour[i].x), std::round(aa_contour[i].y));
 		}
 
+		// simplify the contour a little
+		util::approxPolyDP(aa_contour, aa_contour, resolution, true, false);
+
 		// scale down the polygon based on the resolution
 		std::vector<cv::Point> small_aa_polygon(aa_contour.size());
 		for (int i = 0; i < aa_contour.size(); i++) {
@@ -135,6 +138,7 @@ namespace simp {
 		
 		// calculate the bounding box
 		cv::Rect bbox = util::boundingBox(small_aa_polygon);
+		if (bbox.width <= 1 && bbox.height <= 1) throw "Too small polygon.";
 
 		cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
 		util::createImageFromContour(bbox.width, bbox.height, small_aa_polygon, cv::Point(-bbox.x, -bbox.y), img, false);

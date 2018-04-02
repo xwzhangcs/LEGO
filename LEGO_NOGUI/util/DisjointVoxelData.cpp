@@ -122,8 +122,8 @@ namespace util {
 		}
 		if (cur) cur->child.reset();
 
-		// Recursively remove too small layer if it has no child layer.
-		//removeSmallLayers(bottom_building_layer);
+		// Merge too thin layer to the one beneath
+		removeThinLayers(bottom_building_layer);
 		
 		return bottom_building_layer;
 	}
@@ -199,12 +199,26 @@ namespace util {
 		return ans;
 	}
 
-	void DisjointVoxelData::removeSmallLayers(std::shared_ptr<BuildingLayer> layer) {
+	/**
+	 * Remove too thin layer by merging it to the one beneath.
+	 *
+	 * @param layer		the bottom layer of the building
+	 */
+	void DisjointVoxelData::removeThinLayers(std::shared_ptr<BuildingLayer> layer) {
+		std::shared_ptr<BuildingLayer> prev;
+
 		while (layer) {
-			for (int i = layer->footprints.size() - 1; i >= 0; i--) {
-				if (util::calculateArea(layer->footprints[i]) < 5) layer->footprints.erase(layer->footprints.begin() + i);
+			if (prev && layer->top_height - layer->bottom_height <= 2) {
+				for (int i = 0; i < layer->raw_footprints.size(); i++) {
+					prev->raw_footprints.push_back(layer->raw_footprints[i]);
+				}
+				prev->child = layer->child;
+				layer = layer->child;
 			}
-			layer = layer->child;
+			else {
+				prev = layer;
+				layer = layer->child;
+			}
 		} 
 	}
 

@@ -21,10 +21,16 @@
     <ClCompile Include="..\LEGO_NOGUI\util\ContourUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\simp\RightAngleSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\LEGO_NOGUI\util\ContourUtils.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\simp\RightAngleSimplification.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

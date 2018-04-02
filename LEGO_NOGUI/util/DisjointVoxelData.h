@@ -18,7 +18,7 @@ namespace util {
 	private:
 		static int dfs3D(const std::vector<cv::Mat_<uchar>>&voxel_data, std::vector<cv::Mat_<unsigned short>>&clustering, int r, int c, int h, int cluster_id, int voxel_value_threshold);
 		static cv::Mat_<uchar> getSliceOfCluster(const cv::Mat_<unsigned short>& cluster_data, int cluster_id, int& min_x, int& min_y, int& max_x, int& max_y);
-		static void removeSmallLayers(std::shared_ptr<BuildingLayer> layer);
+		static void removeThinLayers(std::shared_ptr<BuildingLayer> layer);
 	};
 
 }
