@@ -107,12 +107,12 @@ namespace simp {
 			// try Douglas-Peucker
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 20;
-				else if (alpha < 0.2) epsilon = 16;
-				else if (alpha < 0.4) epsilon = 12;
-				else if (alpha < 0.6) epsilon = 10;
-				else if (alpha < 0.8) epsilon = 6;
-				else epsilon = 4;
+				if (alpha == 0.0) epsilon = 18;
+				else if (alpha < 0.2) epsilon = 12;
+				else if (alpha < 0.4) epsilon = 10;
+				else if (alpha < 0.6) epsilon = 8;
+				else if (alpha < 0.8) epsilon = 4;
+				else epsilon = 2;
 
 				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -132,12 +132,12 @@ namespace simp {
 			// try right angle
 			try {
 				int resolution;
-				if (alpha == 0.0) resolution = 30;
-				else if (alpha < 0.2) resolution = 30;
-				else if (alpha < 0.4) resolution = 26;
-				else if (alpha < 0.6) resolution = 20;
-				else if (alpha < 0.8) resolution = 14;
-				else resolution = 10;
+				if (alpha == 0.0) resolution = 18;
+				else if (alpha < 0.2) resolution = 12;
+				else if (alpha < 0.4) resolution = 10;
+				else if (alpha < 0.6) resolution = 8;
+				else if (alpha < 0.8) resolution = 4;
+				else resolution = 2;
 
 				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -156,12 +156,12 @@ namespace simp {
 			// try curve
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 20;
-				else if (alpha < 0.2) epsilon = 16;
-				else if (alpha < 0.4) epsilon = 14;
-				else if (alpha < 0.6) epsilon = 12;
-				else if (alpha < 0.8) epsilon = 8;
-				else epsilon = 6;
+				if (alpha == 0.0) epsilon = 18;
+				else if (alpha < 0.2) epsilon = 12;
+				else if (alpha < 0.4) epsilon = 10;
+				else if (alpha < 0.6) epsilon = 8;
+				else if (alpha < 0.8) epsilon = 4;
+				else epsilon = 2;
 
 				float curve_threshold;
 				if (alpha < 0.2) curve_threshold = 1.5f;
@@ -400,7 +400,7 @@ namespace simp {
 		// calculate IOU
 		float slice_area = util::calculateArea(polygon);
 		float iou = util::calculateIOU(simplified_polygon, polygon);
-		ans[0] = (1 - iou) * slice_area * height;
+		ans[0] = (1 - iou) * slice_area * height * 0.5;
 		ans[1] = slice_area * height;
 		
 		ans[2] = simplified_polygon.primitive_shapes.size();
