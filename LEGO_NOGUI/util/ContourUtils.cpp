@@ -936,28 +936,15 @@ namespace util {
 	 * This function uses the OpenCV DP function, but if the resultant polygon is self-intersecting,
 	 * it resolves the self-intersecting using an image-based approach.
 	 */
-	void approxPolyDP(const std::vector<cv::Point2f>& input_polygon, std::vector<cv::Point2f>& output_polygon, double epsilon, bool closed, bool allowLessThanThreePoints) {
+	void approxPolyDP(const std::vector<cv::Point2f>& input_polygon, std::vector<cv::Point2f>& output_polygon, double epsilon, bool closed) {
 		cv::approxPolyDP(input_polygon, output_polygon, epsilon, true);
-		if (output_polygon.size() < 3 && !allowLessThanThreePoints) {
-			// If the simplification makes the polygon a line, gradually increase the epsilon 
-			// until it becomes a polygon with at least 3 vertices.
-			float epsilon2 = epsilon - 0.3;
-			while (epsilon2 >= 0 && output_polygon.size() < 3) {
-				cv::approxPolyDP(input_polygon, output_polygon, epsilon2, true);
-				epsilon2 -= 0.3;
-			}
-			if (output_polygon.size() < 3) output_polygon = input_polygon;
-		}
 		
 		// If the polygon is self-intersecting, resolve it.
 		while (!util::isSimple(output_polygon)) {
 			util::Ring ring = resolveSelfIntersection(output_polygon);
 			cv::approxPolyDP(ring.points, output_polygon, 1, closed);
 
-			if (output_polygon.size() < 3 && !allowLessThanThreePoints) {
-				output_polygon = input_polygon;
-				break;
-			}
+			if (output_polygon.size() < 3) break;
 		}
 	}
 

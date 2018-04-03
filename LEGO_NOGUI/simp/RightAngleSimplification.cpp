@@ -128,7 +128,7 @@ namespace simp {
 		}
 
 		// simplify the contour a little
-		util::approxPolyDP(aa_contour, aa_contour, resolution, true, false);
+		util::approxPolyDP(aa_contour, aa_contour, resolution, true);
 
 		// scale down the polygon based on the resolution
 		std::vector<cv::Point> small_aa_polygon(aa_contour.size());

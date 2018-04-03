@@ -50,7 +50,7 @@ namespace simp {
 			}
 			else{
 				//cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
-				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true, true);
+				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
 
 				if (polygon.contour.points.size() < 3) {
 					// If the simplification makes the polygon a line, gradually increase the epsilon 
@@ -58,7 +58,7 @@ namespace simp {
 					float epsilon2 = epsilon - 0.3;
 					while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
 						//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true, true);
+						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
 						epsilon2 -= 0.3;
 					}
 					if (polygon.contour.points.size() < 3) {
@@ -105,7 +105,7 @@ namespace simp {
 			}
 			else{
 				//cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
-				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true, true);
+				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
 
 				if (polygon.contour.points.size() < 3) {
 					// If the simplification makes the polygon a line, gradually increase the epsilon 
@@ -113,7 +113,7 @@ namespace simp {
 					float epsilon2 = epsilon - 0.3;
 					while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
 						//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true, true);
+						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
 						epsilon2 -= 0.3;
 					}
 					if (polygon.contour.points.size() < 3) {
@@ -143,7 +143,7 @@ namespace simp {
 				}
 				else{
 					//cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
-					util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true, true);
+					util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
 				}
 				if (simplified_hole.size() >= 3)
 					polygon.holes.push_back(simplified_hole);

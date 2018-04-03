@@ -48,7 +48,7 @@ namespace simp {
 				contour.resize(input.holes[holeId].size());
 				for (int k = 0; k < input.holes[holeId].size(); k++)
 					contour[k] = input.holes[holeId][k];
-				util::approxPolyDP(cv::Mat(contour), one_hole, epsilon, true, true);
+				util::approxPolyDP(cv::Mat(contour), one_hole, epsilon, true);
 
 				if (one_hole.size() >= 3)
 					bValidHoles = true;
@@ -73,7 +73,7 @@ namespace simp {
 			}
 			else{
 				//cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
-				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true, true);
+				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
 
 				if (polygon.contour.points.size() < 3) {
 					// If the simplification makes the polygon a line, gradually increase the epsilon 
@@ -81,7 +81,7 @@ namespace simp {
 					float epsilon2 = epsilon - 0.3;
 					while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
 						//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true, true);
+						util::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
 						epsilon2 -= 0.3;
 					}
 					if (polygon.contour.points.size() < 3) {
@@ -106,7 +106,7 @@ namespace simp {
 				polygon.contour.points = del_redundant_points(results_tmp);
 				if (!util::isSimple(polygon.contour)){
 					polygon.contour.points.clear();
-					util::approxPolyDP(cv::Mat(results_tmp), polygon.contour.points, epsilon, true, true);
+					util::approxPolyDP(cv::Mat(results_tmp), polygon.contour.points, epsilon, true);
 				}
 				// create inverse transformation matrix
 				polygon.contour.points = transform(polygon.contour.points, M.inv());
@@ -150,7 +150,7 @@ namespace simp {
 			}
 			else{
 				//cv::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
-				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true, true);
+				util::approxPolyDP(cv::Mat(contour), polygon.contour.points, epsilon, true);
 
 				if (polygon.contour.points.size() < 3) {
 						// If the simplification makes the polygon a line, gradually increase the epsilon 
@@ -158,7 +158,7 @@ namespace simp {
 						float epsilon2 = epsilon - 0.3;
 						while (epsilon2 >= 0 && polygon.contour.points.size() < 3) {
 							//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-							util::approxPolyDP(contour, polygon.contour.points, epsilon2, true, true);
+							util::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
 							epsilon2 -= 0.3;
 						}
 						if (polygon.contour.points.size() < 3) {
@@ -181,7 +181,7 @@ namespace simp {
 				polygon.contour.points = del_redundant_points(results_tmp);
 				if (!util::isSimple(polygon.contour)){
 					polygon.contour.points.clear();
-					util::approxPolyDP(cv::Mat(results_tmp), polygon.contour.points, epsilon, true, true);
+					util::approxPolyDP(cv::Mat(results_tmp), polygon.contour.points, epsilon, true);
 				}
 				// create inverse transformation matrix
 				polygon.contour.points = transform(polygon.contour.points, M.inv());
@@ -208,7 +208,7 @@ namespace simp {
 				}
 				else{
 					//cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
-					util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true, true);
+					util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
 
 				}
 				if (simplified_hole.size() >= 3)
@@ -701,7 +701,7 @@ namespace simp {
 				}
 				output_regular.clear();
 				//cv::approxPolyDP(cv::Mat(output_regular_tmp), output_regular, epsilon, true);
-				util::approxPolyDP(cv::Mat(output_regular_tmp), output_regular, epsilon, true, true);
+				util::approxPolyDP(cv::Mat(output_regular_tmp), output_regular, epsilon, true);
 				std::vector<cv::Point2f> results_tmp;
 				std::vector<cv::Point2f> new_output_contour;
 				results_tmp = contour_rectify(output_regular, angle_threshold);

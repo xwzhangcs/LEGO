@@ -420,7 +420,7 @@ namespace simp {
 		// calculate IOU
 		float slice_area = util::calculateArea(polygon);
 		float iou = util::calculateIOU(simplified_polygon, polygon);
-		ans[0] = (1 - iou) * slice_area * height * 0.5;
+		ans[0] = (1 - iou) * slice_area * height * 0.25;
 		ans[1] = slice_area * height;
 		
 		ans[2] = simplified_polygon.primitive_shapes.size();

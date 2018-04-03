@@ -12,7 +12,7 @@ void testApproxPolyDP(const char* filename) {
 	std::vector<util::Polygon> polygons = util::findContours(img, false);
 
 	util::Polygon simplified_polygon;
-	util::approxPolyDP(polygons[0].contour.points, simplified_polygon.contour.points, 2, true, true);
+	util::approxPolyDP(polygons[0].contour.points, simplified_polygon.contour.points, 2, true);
 
 	for (int i = 0; i < simplified_polygon.contour.size(); i++) {
 		std::cout << "(" << simplified_polygon.contour[i].x << "," << simplified_polygon.contour[i].y << ")" << std::endl;
