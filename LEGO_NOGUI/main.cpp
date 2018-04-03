@@ -45,7 +45,8 @@ int main(int argc, const char* argv[]) {
 	else if (alpha < 0.4) threshold = 0.5;
 	else if (alpha < 0.5) threshold = 0.6;
 	else if (alpha < 0.7) threshold = 0.6;
-	else threshold = 0.7;
+	else if (alpha < 0.9) threshold = 0.7;
+	else threshold = 0.99;
 
 	time_t start = clock();
 	std::vector<std::shared_ptr<util::BuildingLayer>> raw_buildings = util::DisjointVoxelData::disjoint(voxel_data);

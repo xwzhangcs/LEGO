@@ -98,7 +98,8 @@ namespace simp {
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
 				else if (alpha < 0.8) epsilon = 4;
-				else epsilon = 4;
+				else if (alpha < 0.9) epsilon = 4;
+				else epsilon = 2;
 
 				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -123,7 +124,8 @@ namespace simp {
 				else if (alpha < 0.4) resolution = 10;
 				else if (alpha < 0.6) resolution = 8;
 				else if (alpha < 0.8) resolution = 4;
-				else resolution = 4;
+				else if (alpha < 0.9) resolution = 4;
+				else resolution = 2;
 
 				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
@@ -147,7 +149,8 @@ namespace simp {
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
 				else if (alpha < 0.8) epsilon = 4;
-				else epsilon = 4;
+				else if (alpha < 0.9) epsilon = 4;
+				else epsilon = 2;
 
 				float curve_threshold;
 				if (alpha < 0.2) curve_threshold = 1.5f;
@@ -172,11 +175,12 @@ namespace simp {
 			try {
 				float epsilon;
 				if (alpha == 0.0) epsilon = 18;
-				else if (alpha < 0.2) epsilon = 162;
+				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
 				else if (alpha < 0.8) epsilon = 4;
-				else epsilon = 4;
+				else if (alpha < 0.9) epsilon = 4;
+				else epsilon = 2;
 
 				float curve_threshold;
 				if (alpha < 0.2) curve_threshold = 1.5f;

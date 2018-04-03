@@ -64,7 +64,7 @@ namespace simp {
 		int best_dx;
 		int best_dy;
 
-		for (float angle = 0; angle < 90; angle += 10) {
+		for (float angle = 0; angle < 90; angle += 5) {
 			//std::cout << "angle=" << angle << std::endl;
 
 			for (int dx = 0; dx < resolution; dx++) {

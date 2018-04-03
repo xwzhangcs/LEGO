@@ -1,6 +1,7 @@
 #include <iostream>
 #include "util/ContourUtils.h"
 #include "simp/RightAngleSimplification.h"
+#include "simp/CurveRightAngleSimplification.h"
 
 void testApproxPolyDP(const char* filename) {
 	std::cout << "------------------------------------------------" << std::endl;
@@ -57,7 +58,8 @@ void testSimplification(const char* filename) {
 			float angle = -1;
 			int dx = -1;
 			int dy = -1;
-			util::Polygon simplified_polygon = simp::RightAngleSimplification::simplify(contours[i], 12, angle, dx, dy);
+			//util::Polygon simplified_polygon = simp::RightAngleSimplification::simplify(contours[i], 12, angle, dx, dy);
+			util::Polygon simplified_polygon = simp::CurveRightAngleSimplification::simplify(contours[i], 12, 1, 20.0f / 180.0f * CV_PI);
 
 			cv::Mat_<uchar> result;
 			util::createImageFromPolygon(img.cols, img.rows, simplified_polygon, cv::Point(0, 0), result);
@@ -84,6 +86,7 @@ int main() {
 	testSimplification("simplify_test1.png");
 	testSimplification("simplify_test2.png");
 	testSimplification("simplify_test3.png");
+	testSimplification("simplify_test4.png");
 
 	return 0;
 }

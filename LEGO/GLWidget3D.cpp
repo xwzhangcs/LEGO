@@ -334,12 +334,12 @@ void GLWidget3D::showInputVoxel() {
 void GLWidget3D::simplifyByAll(double alpha) {
 	// determine the layering threshold based on the weight ratio
 	float threshold;
-	if (alpha < 0.2) threshold = 0.3;
 	else if (alpha < 0.3) threshold = 0.4;
 	else if (alpha < 0.4) threshold = 0.5;
 	else if (alpha < 0.5) threshold = 0.6;
 	else if (alpha < 0.7) threshold = 0.6;
-	else threshold = 0.7;
+	else if (alpha < 0.9) threshold = 0.7;
+	else threshold = 0.99;
 
 	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, true, alpha, threshold, 0, 0, 0, 0);
 
