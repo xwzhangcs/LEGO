@@ -281,10 +281,27 @@ namespace simp {
 						contour_points_type[(i) % input.size()] = 1;
 					}
 					else{
-						for (int k = 0; k < clean_contour_tmp.size(); k++){
-							clean_contour[(i + k) % input.size()] = clean_contour_tmp[k];
-							contour_points_type[(i + k) % input.size()] = 2;
-							contour_points_circle[(i + k) % input.size()] = last_result;
+						// add one more check for small angle 
+						float check_angle = 0.0f;
+						{
+							cv::Point2f center(last_result.x, last_result.y);
+							cv::Point2f start = (clean_contour_tmp[0] - center);
+							cv::Point2f mid = (clean_contour_tmp[clean_contour_tmp.size() / 2] - center);
+							cv::Point2f end = (clean_contour_tmp[clean_contour_tmp.size() - 1] - center);
+							cv::Point2f x_axis(1.0, 0);
+							check_angle = compute_interval(start, mid, end);
+						}
+						if (abs(check_angle) >= 30){
+							for (int k = 0; k < clean_contour_tmp.size(); k++){
+								clean_contour[(i + k) % input.size()] = clean_contour_tmp[k];
+								contour_points_type[(i + k) % input.size()] = 2;
+								contour_points_circle[(i + k) % input.size()] = last_result;
+							}
+						}
+						else{
+							next_p = 1;
+							clean_contour[(i) % input.size()] = input[(i) % input.size()];
+						    contour_points_type[(i) % input.size()] = 1;
 						}
 					}
 					i += next_p;
@@ -313,41 +330,68 @@ namespace simp {
 		// simplify points whose type is 1
 		std::vector<cv::Point2f> simplified_tmp;
 		std::vector<cv::Point2f> simplified_poly;
+		std::vector<cv::Point2f> simplified_curve_tmp;
 		std::vector<cv::Point2f> final_contour;
 		std::vector<int> type_final_contour;
 		std::vector<cv::Point3f> final_contour_curve;
-		int count = 0;
-		int count1 = 0;
-		for (int i = 0; i < contour_points_type.size();){
-			if (contour_points_type[i] == 2)// on the curve
-			{
-				final_contour.push_back(clean_contour[i]);
-				final_contour_curve.push_back(contour_points_circle[i]);
-				type_final_contour.push_back(2);
-				i++;
-				count++;
-				bContainCurve = true;
+		int start_init = 0;
+		for (int i = 0; i < contour_points_type.size(); i++){
+			if (contour_points_type[i] == 1){
+				start_init = i;
+				break;
 			}
-			else{
-				simplified_tmp.clear();
-				simplified_poly.clear();
-				int index = i;
-				do{
-					count1++;
-					simplified_tmp.push_back(clean_contour[index]);
-					index++;
-					if (index >= contour_points_type.size())
-						break;
-				} while (contour_points_type[index] == 1);
-
+		}
+		for (int i = start_init; i < start_init + contour_points_type.size();){
+			simplified_curve_tmp.clear();
+			bool bCurve = false;
+			while (contour_points_type[i % contour_points_type.size()] == 2 && i < start_init + contour_points_type.size()){
+				bCurve = true;
+				simplified_curve_tmp.push_back(clean_contour[i % contour_points_type.size()]);
+				i++;
+			}
+			// simplify the curve using less points
+			if (bCurve){
+				bContainCurve = true;
+				cv::Point2f center = find_center(simplified_curve_tmp[0], simplified_curve_tmp[simplified_curve_tmp.size() / 2], simplified_curve_tmp[simplified_curve_tmp.size() - 1]);
+				cv::Point2f start = simplified_curve_tmp[0] - center;
+				cv::Point2f mid = simplified_curve_tmp[simplified_curve_tmp.size() / 2] - center;
+				cv::Point2f end = simplified_curve_tmp[simplified_curve_tmp.size() - 1] - center;
+				cv::Point2f x_axis(1.0, 0);
+				float angle_start = compute_angle(x_axis, start);
+				float angle_start_end = compute_interval(start, mid, end);
+				int degrees = 8;
+				int interval_points = abs(angle_start_end / degrees);
+				float interval_degrees = angle_start_end / interval_points;
+				float radius = cv::norm(simplified_curve_tmp[0] - center);
+				for (int k = 0; k < interval_points; k++){
+					float x = radius * cos(CV_PI * (angle_start + interval_degrees * k) / 180) + center.x;
+					float y = radius * sin(CV_PI * (angle_start + interval_degrees * k) / 180) + center.y;
+					final_contour.push_back(cv::Point2f(x, y));
+					final_contour_curve.push_back(cv::Point3f(center.x, center.y, radius));
+					type_final_contour.push_back(2);
+				}
+				final_contour.push_back(simplified_curve_tmp[simplified_curve_tmp.size() - 1]);
+				final_contour_curve.push_back(cv::Point3f(center.x, center.y, radius));
+				type_final_contour.push_back(2);
+			}
+		
+			simplified_tmp.clear();
+			simplified_poly.clear();
+			bool bNon_Curve = false;
+			while (contour_points_type[i % contour_points_type.size()] == 1 && i < start_init + contour_points_type.size()){
+				bNon_Curve = true;
+				simplified_tmp.push_back(clean_contour[i % contour_points_type.size()]);
+				i++;
+			}
+			if (bNon_Curve){
 				cv::approxPolyDP(cv::Mat(simplified_tmp), simplified_poly, epsilon, false);
 				for (int k = 0; k < simplified_poly.size(); k++){
 					final_contour.push_back(simplified_poly[k]);
 					final_contour_curve.push_back(cv::Point3f(0, 0, 0));
 					type_final_contour.push_back(1);
 				}
-				i = index;
 			}
+				
 		}
 		if (bContainCurve){
 			// generate output polygon and decomposePolygon here
@@ -448,11 +492,14 @@ namespace simp {
 
 			// determine regular points
 			std::vector<cv::Point2f> output_regular;
+			std::vector<cv::Point2f> concave_curve_tmp;
+			std::vector<cv::Point2f> concave_curve_simp_tmp;
 			for (int i = start_index; i < start_index + final_contour.size();){
-				if (type_final_contour[i % final_contour.size()] == 1 || type_final_contour[i % final_contour.size()] == 3){
+				if (type_final_contour[i % final_contour.size()] == 1){
 					output_regular.push_back(final_contour[i % final_contour.size()]);
 					i++;
 				}
+				//
 				bool curveHead = false;
 				while (type_final_contour[i % final_contour.size()] == 2 && i < start_index + final_contour.size()){
 					if (!curveHead){
@@ -461,12 +508,27 @@ namespace simp {
 						//std::cout << "start " << final_contour[i % final_contour.size()]<<std::endl;
 					}
 					i++;
-					if (type_final_contour[i % final_contour.size()] == 1 || type_final_contour[i % final_contour.size()] == 3){
+					if (type_final_contour[i % final_contour.size()] == 1){
 						output_regular.push_back(final_contour[(i - 1) % final_contour.size()]);
 						//std::cout << "end " << final_contour[(i - 1) % final_contour.size()] << std::endl;
 					}
 
 				}
+				//
+				concave_curve_tmp.clear();
+				concave_curve_simp_tmp.clear();
+				bool concaveCurve = false;
+				while (type_final_contour[i % final_contour.size()] == 3 && i < start_index + final_contour.size()){
+					concaveCurve = true;
+					concave_curve_tmp.push_back(final_contour[i % final_contour.size()]);
+					i++;
+				}
+				if (concaveCurve){
+					cv::approxPolyDP(cv::Mat(concave_curve_tmp), concave_curve_simp_tmp, epsilon, false);
+					for (int m = 0; m < concave_curve_simp_tmp.size(); m++)
+						output_regular.push_back(concave_curve_simp_tmp[m]);
+				}
+
 
 			}
 
