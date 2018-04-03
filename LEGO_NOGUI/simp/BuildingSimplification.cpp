@@ -93,7 +93,8 @@ namespace simp {
 			// try Douglas-Peucker
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 18;
+				if (alpha <= 0.05) epsilon = 24;
+				else if (alpha < 0.1) epsilon = 18;
 				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
@@ -119,7 +120,8 @@ namespace simp {
 			// try right angle
 			try {
 				int resolution;
-				if (alpha == 0.0) resolution = 18;
+				if (alpha <= 0.05) resolution = 24;
+				else if (alpha < 0.1) resolution = 18;
 				else if (alpha < 0.2) resolution = 12;
 				else if (alpha < 0.4) resolution = 10;
 				else if (alpha < 0.6) resolution = 8;
@@ -144,7 +146,8 @@ namespace simp {
 			// try curve
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 18;
+				if (alpha <= 0.05) epsilon = 24;
+				else if (alpha < 0.1) epsilon = 18;
 				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
@@ -174,7 +177,8 @@ namespace simp {
 			// try curve + right angle
 			try {
 				float epsilon;
-				if (alpha == 0.0) epsilon = 18;
+				if (alpha <= 0.05) epsilon = 24;
+				else if (alpha < 0.1) epsilon = 18;
 				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
 				else if (alpha < 0.6) epsilon = 8;
