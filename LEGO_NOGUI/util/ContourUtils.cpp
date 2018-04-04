@@ -38,6 +38,10 @@ namespace util {
 		return ans;
 	}
 
+	int PrimitiveRectangle::type() const {
+		return TYPE_RECTANGLE;
+	}
+
 	PrimitiveTriangle::PrimitiveTriangle(const cv::Mat_<float>& mat) {
 		this->mat = mat;
 	}
@@ -61,6 +65,10 @@ namespace util {
 			ans[i] = cv::Point2f(q(0, 0), q(1, 0));
 		}
 		return ans;
+	}
+
+	int PrimitiveTriangle::type() const {
+		return TYPE_TRIANGLE;
 	}
 
 	PrimitiveCurve::PrimitiveCurve(const cv::Mat_<float>& mat, float theta_start, float theta_end, const cv::Point2f &center, float radius) {
@@ -104,6 +112,10 @@ namespace util {
 		}
 
 		return ans;
+	}
+
+	int PrimitiveCurve::type() const {
+		return TYPE_CURVE;
 	}
 
 	Ring::Ring() {

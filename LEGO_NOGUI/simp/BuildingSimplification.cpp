@@ -92,7 +92,7 @@ namespace simp {
 			// try Douglas-Peucker
 			try {
 				float epsilon;
-				if (alpha <= 0.05) epsilon = 24;
+				if (alpha <= 0.06) epsilon = 24;
 				else if (alpha < 0.1) epsilon = 18;
 				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
@@ -119,7 +119,7 @@ namespace simp {
 			// try right angle
 			try {
 				int resolution;
-				if (alpha <= 0.05) resolution = 24;
+				if (alpha <= 0.06) resolution = 24;
 				else if (alpha < 0.1) resolution = 18;
 				else if (alpha < 0.2) resolution = 12;
 				else if (alpha < 0.4) resolution = 10;
@@ -145,7 +145,7 @@ namespace simp {
 			// try curve
 			try {
 				float epsilon;
-				if (alpha <= 0.05) epsilon = 24;
+				if (alpha <= 0.06) epsilon = 24;
 				else if (alpha < 0.1) epsilon = 18;
 				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
@@ -176,7 +176,7 @@ namespace simp {
 			// try curve + right angle
 			try {
 				float epsilon;
-				if (alpha <= 0.05) epsilon = 24;
+				if (alpha <= 0.06) epsilon = 24;
 				else if (alpha < 0.1) epsilon = 18;
 				else if (alpha < 0.2) epsilon = 12;
 				else if (alpha < 0.4) epsilon = 10;
@@ -420,10 +420,17 @@ namespace simp {
 		// calculate IOU
 		float slice_area = util::calculateArea(polygon);
 		float iou = util::calculateIOU(simplified_polygon, polygon);
-		ans[0] = (1 - iou) * slice_area * height * 0.25;
+		ans[0] = (1 - iou) * slice_area * height * 0.1;
 		ans[1] = slice_area * height;
 		
-		ans[2] = simplified_polygon.primitive_shapes.size();
+		// calculate weighted #primitive shapes (rectangle = 0.5, curve = 0.75, triangle = 1.0)
+		ans[2] = 0;
+		for (auto shape : simplified_polygon.primitive_shapes) {
+			if (shape->type() == util::PrimitiveShape::TYPE_RECTANGLE) ans[2] += 0.5;
+			else if (shape->type() == util::PrimitiveShape::TYPE_CURVE) ans[2] += 0.75;
+			else if (shape->type() == util::PrimitiveShape::TYPE_TRIANGLE) ans[2] += 2;
+			else throw "Invalid primive type";
+		}
 
 		return ans;
 	}

@@ -42,14 +42,19 @@ namespace util {
 
 	class PrimitiveShape {
 	public:
+		static enum { TYPE_RECTANGLE, TYPE_TRIANGLE, TYPE_CURVE };
+
+	public:
 		cv::Mat_<float> mat;
 
 	protected:
 		PrimitiveShape() {}
+		virtual ~PrimitiveShape() {}
 
 	public:
 		virtual boost::shared_ptr<PrimitiveShape> clone() const = 0;
 		virtual std::vector<cv::Point2f> getActualPoints() const = 0;
+		virtual int type() const = 0;
 	};
 
 	class PrimitiveRectangle : public PrimitiveShape {
@@ -59,8 +64,10 @@ namespace util {
 
 	public:
 		PrimitiveRectangle(const cv::Mat_<float>& mat, const cv::Point2f& min_pt, const cv::Point2f& max_pt);
+		~PrimitiveRectangle() {}
 		boost::shared_ptr<PrimitiveShape> clone() const;
 		std::vector<cv::Point2f> getActualPoints() const;
+		int type() const;
 	};
 
 	class PrimitiveTriangle : public PrimitiveShape {
@@ -70,8 +77,10 @@ namespace util {
 	public:
 		PrimitiveTriangle(const cv::Mat_<float>& mat);
 		PrimitiveTriangle(const cv::Mat_<float>& mat, const std::vector<cv::Point2f>& points);
+		~PrimitiveTriangle() {}
 		boost::shared_ptr<PrimitiveShape> clone() const;
 		std::vector<cv::Point2f> getActualPoints() const;
+		int type() const;
 	};
 
 	class PrimitiveCurve : public PrimitiveShape {
@@ -83,8 +92,10 @@ namespace util {
 
 	public:
 		PrimitiveCurve(const cv::Mat_<float>& mat, float theta_start, float theta_end, const cv::Point2f &center, float radius);
+		~PrimitiveCurve() {}
 		boost::shared_ptr<PrimitiveShape> clone() const;
 		std::vector<cv::Point2f> getActualPoints() const;
+		int type() const;
 	};
 
 	class Ring {
