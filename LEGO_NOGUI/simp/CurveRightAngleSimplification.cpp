@@ -131,7 +131,6 @@ namespace simp {
 			}
 		}
 		else{
-			std::cout << "bValidHoles " << bValidHoles << std::endl;
 			// outer contour
 			std::vector<cv::Point2f> contour;
 			contour.resize(input.contour.size());

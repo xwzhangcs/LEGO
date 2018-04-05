@@ -42,7 +42,7 @@ namespace util {
 
 	class PrimitiveShape {
 	public:
-		static enum { TYPE_RECTANGLE, TYPE_TRIANGLE, TYPE_CURVE };
+		enum { TYPE_RECTANGLE, TYPE_TRIANGLE, TYPE_CURVE };
 
 	public:
 		cv::Mat_<float> mat;
