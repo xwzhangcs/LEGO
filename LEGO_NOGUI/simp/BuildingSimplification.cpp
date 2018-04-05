@@ -81,6 +81,7 @@ namespace simp {
 		}
 		
 		std::vector<util::Polygon> best_simplified_polygons;
+		bool right_angle_for_all_contours = true;
 		for (int i = 0; i < contours.size(); i++) {
 			util::Polygon best_simplified_polygon;
 
@@ -88,6 +89,32 @@ namespace simp {
 			int best_algorithm = ALG_UNKNOWN;
 			float best_error = 0.0f;
 			int best_num_primitive_shapes = 0;
+
+			// try right angle
+			try {
+				int resolution;
+				if (alpha <= 0.06) resolution = 24;
+				else if (alpha < 0.1) resolution = 18;
+				else if (alpha < 0.2) resolution = 12;
+				else if (alpha < 0.4) resolution = 10;
+				else if (alpha < 0.6) resolution = 8;
+				else if (alpha < 0.8) resolution = 4;
+				else if (alpha < 0.9) resolution = 4;
+				else resolution = 2;
+
+				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
+				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+				if (cost < best_cost) {
+					best_algorithm = ALG_RIGHTANGLE;
+					best_cost = cost;
+					best_simplified_polygon = simplified_polygon;
+
+					best_error = costs[0] / costs[1];
+					best_num_primitive_shapes = costs[2];
+				}
+			}
+			catch (...) {}
 
 			// try Douglas-Peucker
 			try {
@@ -107,32 +134,7 @@ namespace simp {
 
 				if (cost < best_cost) {
 					best_algorithm = ALG_DP;
-					best_cost = cost;
-					best_simplified_polygon = simplified_polygon;
-
-					best_error = costs[0] / costs[1];
-					best_num_primitive_shapes = costs[2];
-				}
-			}
-			catch (...) {}
-
-			// try right angle
-			try {
-				int resolution;
-				if (alpha <= 0.06) resolution = 24;
-				else if (alpha < 0.1) resolution = 18;
-				else if (alpha < 0.2) resolution = 12;
-				else if (alpha < 0.4) resolution = 10;
-				else if (alpha < 0.6) resolution = 8;
-				else if (alpha < 0.8) resolution = 4;
-				else if (alpha < 0.9) resolution = 4;
-				else resolution = 2;
-
-				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
-				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-				if (cost < best_cost) {
-					best_algorithm = ALG_RIGHTANGLE;
+					right_angle_for_all_contours = false;
 					best_cost = cost;
 					best_simplified_polygon = simplified_polygon;
 
@@ -164,6 +166,7 @@ namespace simp {
 
 				if (cost < best_cost) {
 					best_algorithm = ALG_CURVE;
+					right_angle_for_all_contours = false;
 					best_cost = cost;
 					best_simplified_polygon = simplified_polygon;
 
@@ -197,6 +200,7 @@ namespace simp {
 
 				if (cost < best_cost) {
 					best_algorithm = ALG_CURVE;
+					right_angle_for_all_contours = false;
 					best_cost = cost;
 					best_simplified_polygon = simplified_polygon;
 
@@ -216,7 +220,22 @@ namespace simp {
 
 		if (layer->child) {
 			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, layer->child, alpha, -1, -1, -1, records);
+				float contour_area = 0;
+				for (int i = 0; i < contours.size(); i++) {
+					contour_area += util::calculateArea(contours[i]);
+				}
+
+				float next_contour_area = 0;
+				for (int i = 0; i < layer->child->raw_footprints[0].size(); i++) {
+					next_contour_area += util::calculateArea(layer->child->raw_footprints[0][i]);
+				}
+
+				if (!right_angle_for_all_contours || next_contour_area > contour_area) {
+					angle = -1;
+					dx = -1;
+					dy = -1;
+				}
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, layer->child, alpha, angle, dx, dy, records);
 				building->child = child;
 			}
 			catch (...) {

@@ -212,6 +212,7 @@ namespace util {
 				for (int i = 0; i < layer->raw_footprints.size(); i++) {
 					prev->raw_footprints.push_back(layer->raw_footprints[i]);
 				}
+				prev->top_height = layer->top_height;
 				prev->child = layer->child;
 				layer = layer->child;
 			}
