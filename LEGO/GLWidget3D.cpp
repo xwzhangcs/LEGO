@@ -572,10 +572,10 @@ void GLWidget3D::curveTest() {
 
 void GLWidget3D::update3DGeometry() {
 	if (show_mode == SHOW_INPUT) {
-		update3DGeometry(raw_buildings, 0.1);
+		update3DGeometry(raw_buildings, 0.2);
 	}
 	else {
-		update3DGeometryWithoutRoof(buildings, 0.1);
+		update3DGeometryWithoutRoof(buildings, 0.2);
 	}
 }
 

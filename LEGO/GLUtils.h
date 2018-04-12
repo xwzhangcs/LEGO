@@ -69,7 +69,7 @@ namespace glutils {
 	typedef boost::shared_ptr<Polygon_2>						PolygonPtr;
 
 	// geometry computation
-	float crossProduct(const glm::vec2& a, const glm::vec2& b);
+	float crossProduct(const glm::dvec2& a, const glm::dvec2& b);
 	bool isWithinPolygon(const glm::vec2& p, const std::vector<glm::vec2>& points);
 	bool isWithinPolygon(const glm::dvec2& p, const std::vector<glm::dvec2>& points);
 	float area(const std::vector<glm::vec2>& points);

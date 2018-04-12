@@ -51,7 +51,7 @@ namespace util {
 					int min_x, min_y, max_x, max_y;
 					cv::Mat_<uchar> slice = getSliceOfCluster(clustering[h], cluster_id, min_x, min_y, max_x, max_y);
 					cv::Mat_<uchar> roi_slice(slice, cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1));
-					std::vector<Polygon> polygons = findContours(roi_slice, false);
+					std::vector<Polygon> polygons = findContours(roi_slice, true);
 					for (int i = 0; i < polygons.size(); i++) {
 						polygons[i].translate(min_x, min_y);
 					}
@@ -123,7 +123,7 @@ namespace util {
 		if (cur) cur->child.reset();
 
 		// Merge too thin layer to the one beneath
-		removeThinLayers(bottom_building_layer, 8);
+		removeThinLayers(bottom_building_layer, 5);
 		
 		return bottom_building_layer;
 	}

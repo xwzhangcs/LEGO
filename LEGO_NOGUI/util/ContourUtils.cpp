@@ -708,13 +708,31 @@ namespace util {
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner) {
 		std::vector<Polygon> ans;
 
-		// resize x2
-		cv::Mat_<uchar> img2;
-		cv::resize(img, img2, cv::Size(img.cols * 2, img.rows * 2), 0, 0, cv::INTER_NEAREST);
+		cv::Mat_<uchar> img2 = img.clone();
+		while (true) {
+			bool updated = false;
+			for (int r = 0; r < img.rows - 1; r++) {
+				for (int c = 0; c < img.cols - 1; c++) {
+					if (img2(r, c) == 255 && img2(r + 1, c + 1) == 255 && img2(r + 1, c) == 0 && img2(r, c + 1) == 0) {
+						updated = true;
+						img2(r + 1, c) = 255;
+					}
+					else if (img2(r, c) == 0 && img2(r + 1, c + 1) == 0 && img2(r + 1, c) == 255 && img2(r, c + 1) == 255) {
+						updated = true;
+						img2(r, c) = 255;
+					}
+				}
+			}
+			if (!updated) break;
+		}
+
+		// resize x4
+		cv::Mat_<uchar> img3;
+		cv::resize(img2, img3, cv::Size(img.cols * 4, img.rows * 4), 0, 0, cv::INTER_NEAREST);
 
 		// add padding
-		cv::Mat_<uchar> padded = cv::Mat_<uchar>::zeros(img2.rows + 1, img2.cols + 1);
-		img2.copyTo(padded(cv::Rect(0, 0, img2.cols, img2.rows)));
+		cv::Mat_<uchar> padded = cv::Mat_<uchar>::zeros(img3.rows + 1, img3.cols + 1);
+		img3.copyTo(padded(cv::Rect(0, 0, img3.cols, img3.rows)));
 
 		// dilate image
 		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
@@ -734,35 +752,36 @@ namespace util {
 				Ring contour = addCornerToOpenCVContour(contours[i], padded);
 				polygon.contour.resize(contour.size());
 				for (int j = 0; j < contour.size(); j++) {
-					polygon.contour[j] = cv::Point2f(contour[j].x * 0.5, contour[j].y * 0.5);
+					polygon.contour[j] = cv::Point2f(std::round(contour[j].x * 0.25), std::round(contour[j].y * 0.25));
 				}
 			}
 			else {
 				polygon.contour.resize(contours[i].size());
 				for (int j = 0; j < contours[i].size(); j++) {
-					polygon.contour[j] = cv::Point2f(contours[i][j].x * 0.5, contours[i][j].y * 0.5);
+					polygon.contour[j] = cv::Point2f(std::round(contours[i][j].x * 0.25), std::round(contours[i][j].y * 0.25));
 				}
 			}
+			polygon.contour = removeRedundantPoint(polygon.contour);
 			
 			if (polygon.contour.size() >= 3) {
 				// obtain all the holes inside this contour
 				int hole_id = hierarchy[i][2];
 				while (hole_id != -1) {
+					Ring hole;
 					if (add_right_corner) {
-						Ring hole = addCornerToOpenCVContour(contours[hole_id], img2);
+						hole = addCornerToOpenCVContour(contours[hole_id], padded);
 						for (int j = 0; j < hole.size(); j++) {
-							hole[j] = cv::Point2f(hole[j].x * 0.5, hole[j].y * 0.5);
+							hole[j] = cv::Point2f(std::round(hole[j].x * 0.25), std::round(hole[j].y * 0.25));
 						}
-						polygon.holes.push_back(hole);
 					}
 					else {
-						Ring hole;
 						hole.resize(contours[hole_id].size());
 						for (int j = 0; j < contours[hole_id].size(); j++) {
-							hole[j] = cv::Point2f(contours[hole_id][j].x * 0.5, contours[hole_id][j].y * 0.5);
+							hole[j] = cv::Point2f(std::round(contours[hole_id][j].x * 0.25), std::round(contours[hole_id][j].y * 0.25));
 						}
-						polygon.holes.push_back(hole);
 					}
+					hole = removeRedundantPoint(hole);
+					polygon.holes.push_back(hole);
 					hole_id = hierarchy[hole_id][0];
 				}
 

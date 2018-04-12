@@ -104,7 +104,7 @@ namespace glutils {
 		return true;
 	}
 
-	float croosProduct(const glm::vec2& a, const glm::vec2& b) {
+	float crossProduct(const glm::dvec2& a, const glm::dvec2& b) {
 		return a.x * b.y - a.y - b.x;
 	}
 
