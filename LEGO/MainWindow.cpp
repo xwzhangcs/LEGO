@@ -8,7 +8,9 @@
 #include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
 #include "CurveRightAngleOptionDialog.h"
+#include "OBJOptionDialog.h"
 #include "PLYOptionDialog.h"
+#include "TopFaceOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -34,6 +36,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	groupRendering->addAction(ui.actionRenderingHatching);
 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
+	connect(ui.actionSaveOBJ, SIGNAL(triggered()), this, SLOT(onSaveOBJ()));
+	connect(ui.actionSaveTopFaces, SIGNAL(triggered()), this, SLOT(onSaveTopFaces()));
 	connect(ui.actionSavePLY, SIGNAL(triggered()), this, SLOT(onSavePLY()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
@@ -54,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
-	ui.mainToolBar->addAction(ui.actionSavePLY);
+	ui.mainToolBar->addAction(ui.actionSaveOBJ);
 
 	// setup the GL widget
 	glWidget = new GLWidget3D(this);
@@ -71,6 +75,34 @@ void MainWindow::onOpen() {
 	setWindowTitle("LEGO - " + filename);
 	glWidget->loadVoxelData(filename);
 	glWidget->update();
+}
+
+void MainWindow::onSaveOBJ() {
+	if (glWidget->show_mode == GLWidget3D::SHOW_INPUT) {
+		QMessageBox msg;
+		msg.setText("Simplify the buildings.");
+		msg.exec();
+		return;
+	}
+
+	OBJOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->saveOBJ(dlg.getFileName(), dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ(), dlg.getScale());
+	}
+}
+
+void MainWindow::onSaveTopFaces() {
+	if (glWidget->show_mode == GLWidget3D::SHOW_INPUT) {
+		QMessageBox msg;
+		msg.setText("Simplify the buildings.");
+		msg.exec();
+		return;
+	}
+
+	TopFaceOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->saveTopFace(dlg.getFileName(), dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ(), dlg.getScale());
+	}
 }
 
 void MainWindow::onSavePLY() {

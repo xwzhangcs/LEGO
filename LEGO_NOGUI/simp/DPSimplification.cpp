@@ -15,11 +15,15 @@ namespace simp {
 		util::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon, true);
 		if (ans.contour.points.size() < 3) throw "Invalid simplified polygon";
 
+		double area = cv::contourArea(ans.contour.points);
+
 		// simplify the hole as well
-		for (int i = 0; i < polygon.holes.size(); i++) {
+		for (auto& hole : polygon.holes) {
+			if (cv::contourArea(hole.points) < area * 0.1) continue;
+
 			try {
 				util::Ring simplified_hole;
-				util::approxPolyDP(polygon.holes[i].points, simplified_hole.points, epsilon, true);
+				util::approxPolyDP(hole.points, simplified_hole.points, epsilon, true);
 				if (simplified_hole.size() >= 3) {
 					ans.holes.push_back(simplified_hole);
 				}

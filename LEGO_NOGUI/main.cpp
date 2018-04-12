@@ -3,6 +3,8 @@
 #include <QString>
 #include "util/DisjointVoxelData.h"
 #include "simp/BuildingSimplification.h"
+#include "util/OBJWriter.h"
+#include "util/TopFaceWriter.h"
 #include "util/PlyWriter.h"
 
 int main(int argc, const char* argv[]) {
@@ -11,8 +13,12 @@ int main(int argc, const char* argv[]) {
 		return -1;
 	}
 
+	std::string topface_file;
 	bool record_stats = false;
-	if (argc == 10 && std::string(argv[9]) == "--log") {
+	if (argc >= 10) {
+		topface_file = std::string(argv[9]);
+	}
+	if (argc == 11 && std::string(argv[10]) == "--log") {
 		record_stats = true;
 	}
 
@@ -76,7 +82,10 @@ int main(int argc, const char* argv[]) {
 	double offset_z = std::stod(argv[6]);
 	double scale = std::stod(argv[7]);
 
-	util::ply::PlyWriter::write(argv[8], voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
+	util::obj::OBJWriter::write(std::string(argv[8]), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
+	if (topface_file.size() > 0) {
+		util::topface::TopFaceWriter::write(topface_file, voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
+	}
 
 	std::cout << buildings.size() << " buildings are generated." << std::endl;
 

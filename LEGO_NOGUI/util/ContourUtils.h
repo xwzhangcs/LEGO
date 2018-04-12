@@ -157,6 +157,7 @@ namespace util {
 	void clockwise(std::vector<cv::Point2f>& polygon);
 	void counterClockwise(std::vector<cv::Point2f>& polygon);
 	bool isSimple(const Ring& points);
+	void transform(std::vector<cv::Point2f>& polygon, const cv::Mat_<float>& m);
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
 	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
 	Ring resolveSelfIntersection(const Ring& ring);
@@ -181,8 +182,12 @@ namespace util {
 	void approxPolyDP(const std::vector<cv::Point2f>& input_polygon, std::vector<cv::Point2f>& output_polygon, double epsilon, bool closed);
 
 	void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold);
+	float length(const cv::Point2f& pt);
+	float length(const cv::Point3f& pt);
+	float length(const cv::Point2f& p1, const cv::Point2f& p2);
 	float dotProduct(const cv::Point2f& v1, const cv::Point2f& v2);
 	float crossProduct(const cv::Point2f& v1, const cv::Point2f& v2);
+	cv::Point3f crossProduct(const cv::Point3f& v1, const cv::Point3f& v2);
 	float closestPoint(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segmentOnly, cv::Point2f& pt);
 
 	// tessellation

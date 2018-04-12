@@ -13,7 +13,9 @@
 #include "util/ContourUtils.h"
 #include "simp/BuildingSimplification.h"
 #include "util/DisjointVoxelData.h"
+#include "util/OBJWriter.h"
 #include "util/PlyWriter.h"
+#include "util/TopFaceWriter.h"
 
 GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers)) {
 	this->mainWin = parent;
@@ -315,6 +317,14 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 		
 	show_mode = SHOW_INPUT;
 	update3DGeometry();
+}
+
+void GLWidget3D::saveOBJ(const QString& filename, double offset_x, double offset_y, double offset_z, double scale) {
+	util::obj::OBJWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
+}
+
+void GLWidget3D::saveTopFace(const QString& filename, double offset_x, double offset_y, double offset_z, double scale) {
+	util::topface::TopFaceWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 }
 
 void GLWidget3D::savePLY(const QString& filename, double offset_x, double offset_y, double offset_z, double scale) {
@@ -751,6 +761,9 @@ void GLWidget3D::update3DGeometryWithoutRoof(const std::vector<std::shared_ptr<u
 
 void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices, float scale) {
 	for (auto& bf : building->footprints) {
+		glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height * scale));
+		double height = (building->top_height - building->bottom_height) * scale;
+
 		for (auto& primitive_shape : bf.primitive_shapes) {
 			std::vector<cv::Point2f> points = primitive_shape->getActualPoints();
 			std::vector<glm::dvec2> pol(points.size());
@@ -759,14 +772,69 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 			}
 
 			glutils::correct(pol);
-			glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height * scale));
-			double h = (building->top_height - building->bottom_height) * scale;
+			
 
 			// top face
 			glutils::drawPolygon(pol, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->top_height * scale)), vertices[""]);
 
 			// bottom face
 			glutils::drawPolygon(pol, color, mat, vertices[""], true);
+		}
+
+		util::Ring ring = bf.contour.getActualPoints();
+		ring.counterClockwise();
+		std::vector<glm::dvec2> pol(ring.size());
+		for (int i = 0; i < ring.size(); i++) {
+			pol[i] = glm::dvec2(ring[i].x * scale, ring[i].y * scale);
+		}
+
+		// side faces
+		float floor_tile_width = 8.0f * scale;
+		float floor_tile_height = 10.0f * scale;
+
+		// At first, find the first point that has angle close to 90 degrees.
+		int start_index = 0;
+		for (int i = 0; i < pol.size(); i++) {
+			int prev = (i + pol.size() - 1) % pol.size();
+			int next = (i + 1) % pol.size();
+
+			if (dotProductBetweenThreePoints(pol[prev], pol[i], pol[next]) < 0.8) {
+				start_index = i;
+				break;
+			}
+		}
+
+		std::vector<glm::dvec2> coords;
+		for (int i = 0; i <= pol.size(); i++) {
+			int prev = (start_index + i - 1 + pol.size()) % pol.size();
+			int cur = (start_index + i) % pol.size();
+			int next = (start_index + i + 1) % pol.size();
+
+			if (dotProductBetweenThreePoints(pol[prev], pol[cur], pol[next]) < 0.8) {
+				// create a face
+				if (coords.size() > 0) {
+					coords.push_back(pol[cur]);
+					createFace(coords, height, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+				}
+				coords.clear();
+			}
+
+			coords.push_back(pol[cur]);
+		}
+
+		// create a face
+		if (coords.size() >= 2) {
+			createFace(coords, height, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+		}
+
+		// side faces of holes
+		for (auto& bh : bf.holes) {
+			util::Ring ring = bh.getActualPoints();
+			ring.clockwise();
+			std::vector<glm::dvec2> pol(ring.size());
+			for (int i = 0; i < ring.size(); i++) {
+				pol[i] = glm::dvec2(ring[i].x * scale, ring[i].y * scale);
+			}
 
 			// side faces
 			float floor_tile_width = 8.0f * scale;
@@ -794,7 +862,7 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 					// create a face
 					if (coords.size() > 0) {
 						coords.push_back(pol[cur]);
-						createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+						createFace(coords, height, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
 					}
 					coords.clear();
 				}
@@ -804,7 +872,7 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 
 			// create a face
 			if (coords.size() >= 2) {
-				createFace(coords, h, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
+				createFace(coords, height, floor_tile_width, floor_tile_height, mat, color, facade_texture, vertices);
 			}
 		}
 	}

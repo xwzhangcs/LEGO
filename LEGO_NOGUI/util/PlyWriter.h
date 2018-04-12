@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <string>
 #include <opencv2/opencv.hpp>
 #include "BuildingLayer.h"
 
@@ -37,7 +38,7 @@ namespace util {
 			PlyWriter() {}
 
 		public:
-			static void write(const char* filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<std::shared_ptr<BuildingLayer>>& buildings);
+			static void write(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<std::shared_ptr<BuildingLayer>>& buildings);
 
 		private:
 			static int writeBuilding(std::shared_ptr<BuildingLayer> building, std::map<Point3d, int>& vertices_map, std::vector<Point3d>& vertices, std::vector<std::vector<int>>& faces);

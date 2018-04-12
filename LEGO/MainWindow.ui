@@ -28,6 +28,8 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionSaveOBJ"/>
+    <addaction name="actionSaveTopFaces"/>
     <addaction name="actionSavePLY"/>
     <addaction name="separator"/>
     <addaction name="actionSaveImage"/>
@@ -131,15 +133,8 @@
    </property>
   </action>
   <action name="actionSavePLY">
-   <property name="icon">
-    <iconset>
-     <normaloff>Resources/save.png</normaloff>Resources/save.png</iconset>
-   </property>
    <property name="text">
     <string>Save PLY</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionSimplifyByDP">
@@ -246,6 +241,23 @@
    </property>
    <property name="text">
     <string>Curve + Right Angle</string>
+   </property>
+  </action>
+  <action name="actionSaveOBJ">
+   <property name="icon">
+    <iconset>
+     <normaloff>Resources/save.png</normaloff>Resources/save.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save OBJ</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionSaveTopFaces">
+   <property name="text">
+    <string>Save Top Faces</string>
    </property>
   </action>
  </widget>

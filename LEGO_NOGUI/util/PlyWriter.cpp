@@ -6,7 +6,7 @@ namespace util {
 	
 	namespace ply {
 
-		void PlyWriter::write(const char* filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<std::shared_ptr<BuildingLayer>>& buildings) {
+		void PlyWriter::write(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<std::shared_ptr<BuildingLayer>>& buildings) {
 			std::map<Point3d, int> vertices_map;
 			std::vector<Point3d> vertices;
 			std::vector<std::vector<int>> faces;

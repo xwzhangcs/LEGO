@@ -332,6 +332,14 @@ namespace util {
 		return polygon.is_simple();
 	}
 
+	void transform(std::vector<cv::Point2f>& polygon, const cv::Mat_<float>& m) {
+		for (int i = 0; i < polygon.size(); i++) {
+			cv::Mat_<float> p = m * (cv::Mat_<float>(3, 1) << polygon[i].x, polygon[i].y, 1);
+			polygon[i].x = p(0, 0);
+			polygon[i].y = p(1, 0);
+		}
+	}
+
 	/**
 	 * Remove the redundant points that have the same coordinates, and remove the point that are collinear to the adjacent points.
 	 */
@@ -997,12 +1005,32 @@ namespace util {
 		}
 	}
 
-	float crossProduct(const cv::Point2f& v1, const cv::Point2f& v2) {
-		return v1.x * v2.y - v1.y * v2.x;
+	float length(const cv::Point2f& pt) {
+		return std::sqrt(pt.x * pt.x + pt.y * pt.y);
+	}
+
+	float length(const cv::Point3f& pt) {
+		return std::sqrt(pt.x * pt.x + pt.y * pt.y + pt.z * pt.z);
+	}
+
+	float length(const cv::Point2f& p1, const cv::Point2f& p2) {
+		return std::sqrt((p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y));
 	}
 
 	float dotProduct(const cv::Point2f& v1, const cv::Point2f& v2) {
 		return v1.x * v2.x + v1.y * v2.y;
+	}
+
+	float crossProduct(const cv::Point2f& v1, const cv::Point2f& v2) {
+		return v1.x * v2.y - v1.y * v2.x;
+	}
+
+	cv::Point3f crossProduct(const cv::Point3f& v1, const cv::Point3f& v2) {
+		cv::Point3f ans;
+		ans.x = v1.y * v2.z - v1.z * v2.y;
+		ans.y = v1.z * v2.x - v1.x * v2.z;
+		ans.z = v1.x * v2.y - v1.y * v2.x;
+		return ans;
 	}
 
 	/*

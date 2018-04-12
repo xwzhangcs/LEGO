@@ -24,11 +24,15 @@ namespace simp {
 		}
 		if (ans.contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
 
+		double area = cv::contourArea(ans.contour.points);
+
 		// simplify the hole as well
-		for (int i = 0; i < polygon.holes.size(); i++) {
+		for (auto& hole : polygon.holes) {
+			if (cv::contourArea(hole.points) < area * 0.1) continue;
+
 			try {
 				util::Ring simplified_hole;
-				simplifyContour(polygon.holes[i], simplified_hole, resolution, angle, dx, dy, true);
+				simplifyContour(hole, simplified_hole, resolution, angle, dx, dy, true);
 				if (simplified_hole.size() >= 3) {
 					ans.holes.push_back(simplified_hole);
 				}

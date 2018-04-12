@@ -45,6 +45,12 @@
     <ClCompile Include="simp\CurveRightAngleSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="util\OBJWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="util\TopFaceWriter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h">
@@ -72,6 +78,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="simp\CurveRightAngleSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\OBJWriter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\TopFaceWriter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

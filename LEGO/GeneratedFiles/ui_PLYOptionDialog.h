@@ -59,7 +59,7 @@ public:
         doubleSpinBoxScale->setGeometry(QRect(90, 100, 71, 22));
         pushButtonOK = new QPushButton(PLYOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(230, 160, 81, 31));
+        pushButtonOK->setGeometry(QRect(240, 160, 81, 31));
         label_2 = new QLabel(PLYOptionDialog);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(20, 40, 91, 21));

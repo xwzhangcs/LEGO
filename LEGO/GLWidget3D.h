@@ -53,6 +53,8 @@ public:
 	void drawScene();
 	void render();
 	void loadVoxelData(const QString& filename);
+	void saveOBJ(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
+	void saveTopFace(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
 	void savePLY(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
 	void saveImage(const QString& filename);
 	void showInputVoxel();

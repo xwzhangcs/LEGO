@@ -19,6 +19,8 @@ public:
 
 public slots:
 	void onOpen();
+	void onSaveOBJ();
+	void onSaveTopFaces();
 	void onSavePLY();
 	void onSaveImage();
 	void onInputVoxel();

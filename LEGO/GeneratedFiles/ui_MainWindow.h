@@ -47,6 +47,8 @@ public:
     QAction *actionRightAngleTest;
     QAction *actionCurveTest;
     QAction *actionSimplifyByCurveRightAngle;
+    QAction *actionSaveOBJ;
+    QAction *actionSaveTopFaces;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -82,9 +84,6 @@ public:
         actionOpen->setIcon(icon);
         actionSavePLY = new QAction(MainWindowClass);
         actionSavePLY->setObjectName(QStringLiteral("actionSavePLY"));
-        QIcon icon1;
-        icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
-        actionSavePLY->setIcon(icon1);
         actionSimplifyByDP = new QAction(MainWindowClass);
         actionSimplifyByDP->setObjectName(QStringLiteral("actionSimplifyByDP"));
         actionSimplifyByDP->setCheckable(true);
@@ -124,6 +123,13 @@ public:
         actionSimplifyByCurveRightAngle = new QAction(MainWindowClass);
         actionSimplifyByCurveRightAngle->setObjectName(QStringLiteral("actionSimplifyByCurveRightAngle"));
         actionSimplifyByCurveRightAngle->setCheckable(true);
+        actionSaveOBJ = new QAction(MainWindowClass);
+        actionSaveOBJ->setObjectName(QStringLiteral("actionSaveOBJ"));
+        QIcon icon1;
+        icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
+        actionSaveOBJ->setIcon(icon1);
+        actionSaveTopFaces = new QAction(MainWindowClass);
+        actionSaveTopFaces->setObjectName(QStringLiteral("actionSaveTopFaces"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -148,6 +154,8 @@ public:
         menuBar->addAction(menuSimplify->menuAction());
         menuBar->addAction(menuRendering->menuAction());
         menuFile->addAction(actionOpen);
+        menuFile->addAction(actionSaveOBJ);
+        menuFile->addAction(actionSaveTopFaces);
         menuFile->addAction(actionSavePLY);
         menuFile->addSeparator();
         menuFile->addAction(actionSaveImage);
@@ -188,7 +196,6 @@ public:
         actionOpen->setText(QApplication::translate("MainWindowClass", "Open", 0));
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
         actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", 0));
-        actionSavePLY->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
         actionSimplifyByDP->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker", 0));
         actionSimplifyByRightAngle->setText(QApplication::translate("MainWindowClass", "Right Angle", 0));
         actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", 0));
@@ -204,6 +211,9 @@ public:
         actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", 0));
         actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", 0));
         actionSimplifyByCurveRightAngle->setText(QApplication::translate("MainWindowClass", "Curve + Right Angle", 0));
+        actionSaveOBJ->setText(QApplication::translate("MainWindowClass", "Save OBJ", 0));
+        actionSaveOBJ->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
+        actionSaveTopFaces->setText(QApplication::translate("MainWindowClass", "Save Top Faces", 0));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));

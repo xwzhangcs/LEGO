@@ -123,7 +123,7 @@ namespace util {
 		if (cur) cur->child.reset();
 
 		// Merge too thin layer to the one beneath
-		removeThinLayers(bottom_building_layer);
+		removeThinLayers(bottom_building_layer, 8);
 		
 		return bottom_building_layer;
 	}
@@ -204,11 +204,11 @@ namespace util {
 	 *
 	 * @param layer		the bottom layer of the building
 	 */
-	void DisjointVoxelData::removeThinLayers(std::shared_ptr<BuildingLayer> layer) {
+	void DisjointVoxelData::removeThinLayers(std::shared_ptr<BuildingLayer> layer, int min_num_slices_per_layer) {
 		std::shared_ptr<BuildingLayer> prev;
 
 		while (layer) {
-			if (prev && layer->top_height - layer->bottom_height <= 2) {
+			if (prev && layer->top_height - layer->bottom_height < min_num_slices_per_layer) {
 				for (int i = 0; i < layer->raw_footprints.size(); i++) {
 					prev->raw_footprints.push_back(layer->raw_footprints[i]);
 				}
