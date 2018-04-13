@@ -63,7 +63,7 @@ namespace util {
 		total_img.convertTo(mean_img, CV_8U);
 
 		cv::Mat_<uchar> mean_img_thresholded;
-		cv::threshold(mean_img, mean_img_thresholded, 128, 255, cv::THRESH_BINARY);
+		cv::threshold(mean_img, mean_img_thresholded, 80, 255, cv::THRESH_BINARY);
 
 		// extract contours
 		std::vector<util::Polygon> contours = util::findContours(mean_img_thresholded, false);
