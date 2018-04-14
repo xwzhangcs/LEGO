@@ -62,6 +62,8 @@
     <addaction name="actionDPTest"/>
     <addaction name="actionRightAngleTest"/>
     <addaction name="actionCurveTest"/>
+    <addaction name="separator"/>
+    <addaction name="actionOffsetScale"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -258,6 +260,11 @@
   <action name="actionSaveTopFaces">
    <property name="text">
     <string>Save Top Faces</string>
+   </property>
+  </action>
+  <action name="actionOffsetScale">
+   <property name="text">
+    <string>Offset &amp; Scale</string>
    </property>
   </action>
  </widget>

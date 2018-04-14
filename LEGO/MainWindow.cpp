@@ -3,14 +3,12 @@
 #include <QFileDialog>
 #include <QDateTime>
 #include <QMessageBox>
-#include "OptionDialog.h"
+#include "AllOptionDialog.h"
 #include "DPOptionDialog.h"
 #include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
 #include "CurveRightAngleOptionDialog.h"
-#include "OBJOptionDialog.h"
-#include "PLYOptionDialog.h"
-#include "TopFaceOptionDialog.h"
+#include "OffsetScaleDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -50,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionDPTest, SIGNAL(triggered()), this, SLOT(onDPTest()));
 	connect(ui.actionRightAngleTest, SIGNAL(triggered()), this, SLOT(onRightAngleTest()));
 	connect(ui.actionCurveTest, SIGNAL(triggered()), this, SLOT(onCurveTest()));
+	connect(ui.actionOffsetScale, SIGNAL(triggered()), this, SLOT(onOffsetScale()));
 	connect(ui.actionColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionTexture, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
@@ -85,9 +84,9 @@ void MainWindow::onSaveOBJ() {
 		return;
 	}
 
-	OBJOptionDialog dlg;
-	if (dlg.exec()) {
-		glWidget->saveOBJ(dlg.getFileName(), dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ(), dlg.getScale());
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save OBJ file..."), "", tr("OBJ files (*.obj)"));
+	if (!filename.isEmpty()) {
+		glWidget->saveOBJ(filename);
 	}
 }
 
@@ -99,9 +98,9 @@ void MainWindow::onSaveTopFaces() {
 		return;
 	}
 
-	TopFaceOptionDialog dlg;
-	if (dlg.exec()) {
-		glWidget->saveTopFace(dlg.getFileName(), dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ(), dlg.getScale());
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save text file..."), "", tr("text files (*.txt)"));
+	if (!filename.isEmpty()) {
+		glWidget->saveTopFace(filename);
 	}
 }
 
@@ -113,9 +112,9 @@ void MainWindow::onSavePLY() {
 		return;
 	}
 
-	PLYOptionDialog dlg;
-	if (dlg.exec()) {
-		glWidget->savePLY(dlg.getFileName(), dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ(), dlg.getScale());
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save PLY file..."), "", tr("PLY files (*.ply)"));
+	if (!filename.isEmpty()) {
+		glWidget->savePLY(filename);
 	}
 }
 
@@ -135,7 +134,7 @@ void MainWindow::onInputVoxel() {
 }
 
 void MainWindow::onSimplifyByAll() {
-	OptionDialog dlg;
+	AllOptionDialog dlg;
 	if (dlg.exec()) {
 		glWidget->simplifyByAll(dlg.getAlpha());
 		glWidget->update();
@@ -184,6 +183,18 @@ void MainWindow::onRightAngleTest() {
 
 void MainWindow::onCurveTest() {
 	glWidget->curveTest();
+}
+
+void MainWindow::onOffsetScale() {
+	OffsetScaleDialog dlg;
+	dlg.setOffset(glWidget->offset.x, glWidget->offset.y, glWidget->offset.z);
+	dlg.setScale(glWidget->scale);
+	if (dlg.exec()) {
+		glWidget->offset = glm::dvec3(dlg.getOffsetX(), dlg.getOffsetY(), dlg.getOffsetZ());
+		glWidget->scale = dlg.getScale();
+		glWidget->update3DGeometry();
+		glWidget->update();
+	}
 }
 
 void MainWindow::onColoringModeChanged() {

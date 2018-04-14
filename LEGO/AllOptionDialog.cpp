@@ -1,6 +1,6 @@
-#include "OptionDialog.h"
+#include "AllOptionDialog.h"
 
-OptionDialog::OptionDialog(QWidget *parent) : QDialog(parent) {
+AllOptionDialog::AllOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
 	ui.doubleSpinBoxAlpha->setValue(0.5);
@@ -12,17 +12,17 @@ OptionDialog::OptionDialog(QWidget *parent) : QDialog(parent) {
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
 }
 
-OptionDialog::~OptionDialog() {
+AllOptionDialog::~AllOptionDialog() {
 }
 
-double OptionDialog::getAlpha() {
+double AllOptionDialog::getAlpha() {
 	return ui.doubleSpinBoxAlpha->value();
 }
 
-void OptionDialog::onOK() {
+void AllOptionDialog::onOK() {
 	accept();
 }
 
-void OptionDialog::onCancel() {
+void AllOptionDialog::onCancel() {
 	reject();
 }

@@ -32,17 +32,17 @@ namespace util {
 			}
 		}
 
-		int num_cluster_id = cluster_id - 1;
+		int num_clusters = cluster_id - 1;
 
 		std::vector<std::shared_ptr<BuildingLayer>> buildings;
 		std::vector<std::shared_ptr<BuildingLayer>> layers;
-		std::vector<int> cluster_id_to_building_id(num_cluster_id, -1);
+		std::vector<int> cluster_id_to_building_id(num_clusters, -1);
 
 		printf("Processing slice");
 		for (int h = 0; h < voxel_data.size(); h++) {
 			printf("\rProcessing slice %d  ", h + 1);
 
-			for (int cluster_id = 1; cluster_id <= num_cluster_id; cluster_id++) {
+			for (int cluster_id = 1; cluster_id <= num_clusters; cluster_id++) {
 				// Skip the building if its voxel count is too small.
 				if (voxel_counts[cluster_id - 1] < max_voxel_count * 0.1) continue;
 
@@ -98,6 +98,42 @@ namespace util {
 		}
 		printf("\n");
 
+		// remove too small lower slices that caused by the noisy bottom
+		for (int i = 0; i < buildings.size(); i++) {
+			// reach the top slice while calculating the largest area of the slices
+			std::vector<std::shared_ptr<BuildingLayer>> layers;
+			std::shared_ptr<BuildingLayer> layer = buildings[i];
+			int max_area_layer_index;;
+			double max_area = 0;
+			while (layer) {
+				double area = 0;
+				for (auto& footprint : layer->footprints) {
+					area += calculateArea(footprint);
+				}
+				if (area > max_area) {
+					max_area = area;
+					max_area_layer_index = layers.size();
+				}
+
+				layers.push_back(layer);
+				layer = layer->child;
+			}
+
+			// scan the layer below max_area_layer
+			for (int j = max_area_layer_index - 1; j >= 0; j--) {
+				double area = 0;
+				for (auto& footprint : layers[j]->footprints) {
+					area += calculateArea(footprint);
+				}
+
+				// If the layer's area is less than half of the max area, remove all the layers below this.
+				if (area < max_area * 0.5) {
+					buildings[i] = layers[j + 1];
+					break;
+				}
+			}
+		}
+
 		return buildings;
 	}
 
@@ -106,6 +142,8 @@ namespace util {
 		bottom_building_layer->raw_footprints = building->raw_footprints;
 
 		std::shared_ptr<BuildingLayer> cur = bottom_building_layer;
+
+		cur = bottom_building_layer;
 		std::shared_ptr<BuildingLayer> child = building->child;
 		while (child) {
 			if (calculateIOU(cur->raw_footprints[0], child->raw_footprints[0]) >= threshold) {
@@ -124,7 +162,7 @@ namespace util {
 
 		// Merge too thin layer to the one beneath
 		removeThinLayers(bottom_building_layer, 5);
-		
+
 		return bottom_building_layer;
 	}
 

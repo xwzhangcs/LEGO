@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TopFaceOptionDialog</class>
- <widget class="QDialog" name="TopFaceOptionDialog">
+ <class>OffsetScaleDialog</class>
+ <widget class="QDialog" name="OffsetScaleDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>422</width>
-    <height>201</height>
+    <width>410</width>
+    <height>169</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>TopFaceOptionDialog</string>
+   <string>OffsetScaleDialog</string>
   </property>
   <widget class="QPushButton" name="pushButtonD3">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>290</x>
      <y>50</y>
-     <width>71</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
@@ -26,50 +26,27 @@
     <string>D3</string>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEditFileName">
+  <widget class="QPushButton" name="pushButtonD1">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>130</y>
-     <width>291</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="lineEditOffsetZ">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>70</y>
-     <width>131</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButtonFileName">
-   <property name="geometry">
-    <rect>
-     <x>380</x>
-     <y>130</y>
-     <width>31</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>...</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButtonD2">
-   <property name="geometry">
-    <rect>
-     <x>330</x>
+     <x>290</x>
      <y>10</y>
-     <width>71</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
-    <string>D2</string>
+    <string>D1</string>
+   </property>
+  </widget>
+  <widget class="QDoubleSpinBox" name="doubleSpinBoxScale">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>100</y>
+     <width>71</width>
+     <height>22</height>
+    </rect>
    </property>
   </widget>
   <widget class="QLabel" name="label_2">
@@ -88,8 +65,8 @@
   <widget class="QPushButton" name="pushButtonOK">
    <property name="geometry">
     <rect>
-     <x>230</x>
-     <y>160</y>
+     <x>220</x>
+     <y>130</y>
      <width>81</width>
      <height>31</height>
     </rect>
@@ -98,40 +75,30 @@
     <string>OK</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButtonD1">
+  <widget class="QPushButton" name="pushButtonD2">
    <property name="geometry">
     <rect>
-     <x>240</x>
+     <x>350</x>
      <y>10</y>
-     <width>71</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
-    <string>D1</string>
+    <string>D2</string>
    </property>
   </widget>
-  <widget class="QLabel" name="label_5">
+  <widget class="QLabel" name="label">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>130</y>
-     <width>61</width>
+     <y>10</y>
+     <width>47</width>
      <height>21</height>
     </rect>
    </property>
    <property name="text">
-    <string>File name:</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBoxScale">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>100</y>
-     <width>71</width>
-     <height>22</height>
-    </rect>
+    <string>Offset X:</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="lineEditOffsetX">
@@ -139,7 +106,7 @@
     <rect>
      <x>80</x>
      <y>10</y>
-     <width>131</width>
+     <width>191</width>
      <height>20</height>
     </rect>
    </property>
@@ -162,7 +129,17 @@
     <rect>
      <x>80</x>
      <y>40</y>
-     <width>131</width>
+     <width>191</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditOffsetZ">
+   <property name="geometry">
+    <rect>
+     <x>80</x>
+     <y>70</y>
+     <width>191</width>
      <height>20</height>
     </rect>
    </property>
@@ -170,9 +147,9 @@
   <widget class="QPushButton" name="pushButtonD4">
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>350</x>
      <y>50</y>
-     <width>71</width>
+     <width>51</width>
      <height>31</height>
     </rect>
    </property>
@@ -183,27 +160,14 @@
   <widget class="QPushButton" name="pushButtonCancel">
    <property name="geometry">
     <rect>
-     <x>330</x>
-     <y>160</y>
+     <x>320</x>
+     <y>130</y>
      <width>81</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Cancel</string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>47</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Offset X:</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_3">

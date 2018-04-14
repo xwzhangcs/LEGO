@@ -35,6 +35,8 @@ public:
 	std::vector<cv::Mat_<uchar>> voxel_data;
 	std::vector<std::shared_ptr<util::BuildingLayer>> raw_buildings;
 	std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
+	glm::dvec3 offset;
+	double scale;
 
 	// rendering engine
 	RenderManager renderManager;
@@ -53,9 +55,9 @@ public:
 	void drawScene();
 	void render();
 	void loadVoxelData(const QString& filename);
-	void saveOBJ(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
-	void saveTopFace(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
-	void savePLY(const QString& filename, double offset_x, double offset_y, double offset_z, double scale);
+	void saveOBJ(const QString& filename);
+	void saveTopFace(const QString& filename);
+	void savePLY(const QString& filename);
 	void saveImage(const QString& filename);
 	void showInputVoxel();
 	void simplifyByAll(double alpha);
@@ -67,10 +69,10 @@ public:
 	void rightAngleTest();
 	void curveTest();
 	void update3DGeometry();
-	void update3DGeometry(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings, float scale);
-	void update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices, float scale);
-	void update3DGeometryWithoutRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings, float scale);
-	void update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices, float scale);
+	void update3DGeometry(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
+	void update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices);
+	void update3DGeometryWithoutRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
+	void update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	//void update3DGeometryWithRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
 	//void update3DGeometryWithRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	void createFace(const std::vector<glm::dvec2>& coords, double h, float floor_tile_width, float floor_tile_height, const glm::mat4& mat, glm::vec4& color, const QString& facade_texture, QMap<QString, std::vector<Vertex>>& vertices);

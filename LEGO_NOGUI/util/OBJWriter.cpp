@@ -113,7 +113,11 @@ namespace util {
 			if (index >= 0) {
 				mat_filename = filename.substr(0, index) + ".mtl";
 			}
+			index = mat_filename.rfind('/');
 			std::ofstream mat_file(mat_filename);
+			if (index >= 0) {
+				mat_filename = mat_filename.substr(index + 1);
+			}
 
 			file << "mtllib " << mat_filename << std::endl;
 			file << std::endl;

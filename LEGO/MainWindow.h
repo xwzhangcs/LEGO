@@ -32,6 +32,7 @@ public slots:
 	void onDPTest();
 	void onRightAngleTest();
 	void onCurveTest();
+	void onOffsetScale();
 	void onColoringModeChanged();
 	void onRenderingModeChanged();
 };
