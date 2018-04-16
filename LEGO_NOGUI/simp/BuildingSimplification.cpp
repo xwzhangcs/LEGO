@@ -103,6 +103,7 @@ namespace simp {
 				else resolution = 2;
 
 				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy);
+				if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 				if (cost < best_cost) {
@@ -129,6 +130,7 @@ namespace simp {
 				else epsilon = 2;
 
 				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon);
+				if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
@@ -161,6 +163,7 @@ namespace simp {
 				else curve_threshold = 1.0f;
 
 				util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold);
+				if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
@@ -196,6 +199,7 @@ namespace simp {
 				if (alpha < 0.2) angle_threshold = 20.0f / 180.0f * CV_PI;
 
 				util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold);
+				if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
