@@ -346,7 +346,7 @@ void GLWidget3D::showInputVoxel() {
 
 void GLWidget3D::simplifyByAll(double alpha) {
 	// determine the layering threshold based on the weight ratio
-	float threshold;
+	float threshold = 0.01;
 	if (alpha < 0.1) threshold = 0.1;
 	else if (alpha < 0.2) threshold = 0.3;
 	else if (alpha < 0.3) threshold = 0.4;
@@ -356,35 +356,35 @@ void GLWidget3D::simplifyByAll(double alpha) {
 	else if (alpha < 0.9) threshold = 0.7;
 	else threshold = 0.99;
 
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, true, alpha, threshold, 0, 0, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, false, 2.5 / scale, alpha, threshold, 0, 0, 0, 0);
 
 	show_mode = SHOW_ALL;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {	
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_DP, false, 0.5, layering_threshold, epsilon, 0, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_DP, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, 0, 0);
 
 	show_mode = SHOW_DP;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_RIGHTANGLE, false, 0.5, layering_threshold, 0, resolution, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, 0, resolution, 0, 0);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE, false, 0.5, layering_threshold, epsilon, 0, curve_threshold, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, 0);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, false, 0.5, layering_threshold, epsilon, 0, curve_threshold, angle_threshold);
+	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, angle_threshold);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();

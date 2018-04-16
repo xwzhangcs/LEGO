@@ -8,7 +8,7 @@
 
 namespace simp {
 
-	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, bool record_stats, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold, float angle_threshold) {
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(const std::vector<std::shared_ptr<util::BuildingLayer>>& raw_buildings, int algorithm, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold, float angle_threshold) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		std::vector<std::tuple<float, long long, int>> records;
@@ -26,22 +26,22 @@ namespace simp {
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
-					building = simplifyBuildingByAll(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, angle, dx, dy, records);
+					building = simplifyBuildingByAll(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold, min_num_slices_per_layer), alpha, angle, dx, dy, records);
 				}
 				else if (algorithm == ALG_DP) {
-					building = simplifyBuildingByDP(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, epsilon, records);
+					building = simplifyBuildingByDP(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold, min_num_slices_per_layer), alpha, epsilon, records);
 				}
 				else if (algorithm == ALG_RIGHTANGLE) {
 					float angle = -1;
 					int dx = -1;
 					int dy = -1;
-					building = simplifyBuildingByRightAngle(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, resolution, angle, dx, dy, records);
+					building = simplifyBuildingByRightAngle(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold, min_num_slices_per_layer), alpha, resolution, angle, dx, dy, records);
 				}
 				else if (algorithm == ALG_CURVE) {
-					building = simplifyBuildingByCurve(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, epsilon, curve_threshold, records);
+					building = simplifyBuildingByCurve(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold, min_num_slices_per_layer), alpha, epsilon, curve_threshold, records);
 				}
 				else if (algorithm == ALG_CURVE_RIGHTANGLE) {
-					building = simplifyBuildingByCurveRightAngle(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold), alpha, epsilon, curve_threshold, angle_threshold, records);
+					building = simplifyBuildingByCurveRightAngle(i, util::DisjointVoxelData::layering(raw_buildings[i], layering_threshold, min_num_slices_per_layer), alpha, epsilon, curve_threshold, angle_threshold, records);
 				}
 
 				buildings.push_back(building);
@@ -193,6 +193,7 @@ namespace simp {
 				else curve_threshold = 1.0f;
 
 				float angle_threshold = 10.0f / 180.0f * CV_PI;
+				if (alpha < 0.2) angle_threshold = 20.0f / 180.0f * CV_PI;
 
 				util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold);
 				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);

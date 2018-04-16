@@ -56,6 +56,7 @@ namespace util {
 
 			for (int i = 0; i < buildings.size(); i++) {
 				// randomly select a texture file
+				srand(time(NULL));
 				int facade_texture_id = rand() % 13;
 
 				// select a color based on the texture

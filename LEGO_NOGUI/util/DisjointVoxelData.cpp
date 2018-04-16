@@ -137,7 +137,7 @@ namespace util {
 		return buildings;
 	}
 
-	std::shared_ptr<BuildingLayer> DisjointVoxelData::layering(const std::shared_ptr<BuildingLayer>& building, float threshold) {
+	std::shared_ptr<BuildingLayer> DisjointVoxelData::layering(const std::shared_ptr<BuildingLayer>& building, float threshold, int min_num_slices_per_layer) {
 		std::shared_ptr<BuildingLayer> bottom_building_layer = std::shared_ptr<BuildingLayer>(new BuildingLayer(building->building_id, building->footprints, building->bottom_height, building->top_height));
 		bottom_building_layer->raw_footprints = building->raw_footprints;
 
@@ -161,7 +161,7 @@ namespace util {
 		if (cur) cur->child.reset();
 
 		// Merge too thin layer to the one beneath
-		removeThinLayers(bottom_building_layer, 5);
+		removeThinLayers(bottom_building_layer, 8);
 
 		return bottom_building_layer;
 	}

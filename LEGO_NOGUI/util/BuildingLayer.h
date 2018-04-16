@@ -15,13 +15,15 @@ namespace util {
 		float bottom_height;
 		float top_height;
 		std::shared_ptr<BuildingLayer> child;
+		bool representative_contours_calculated;
 
 	public:
-		BuildingLayer() {}
+		BuildingLayer() : representative_contours_calculated(false) {}
 		BuildingLayer(int building_id, float bottom_height, float top_height);
 		BuildingLayer(int building_id, const std::vector<util::Polygon>& footprints, float bottom_height, float top_height);
 
-		std::vector<util::Polygon> selectRepresentativeContours() const;
+		std::vector<util::Polygon> selectRepresentativeContours();
+		void removeContoursInUpperLayers(std::vector<util::Polygon>& contours);
 	};
 
 }
