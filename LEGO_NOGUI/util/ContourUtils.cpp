@@ -260,6 +260,10 @@ namespace util {
 		return polygon.is_simple();
 	}
 
+	Polygon::Polygon() {
+		mat = cv::Mat_<float>::zeros(3, 3);
+	}
+
 	Polygon Polygon::clone() const {
 		Polygon ans;
 		ans.mat = mat;
@@ -460,6 +464,22 @@ namespace util {
 		boost::geometry::correct(contour);
 
 		return boost::geometry::within(boost::geometry::model::d2::point_xy<float>(pt.x, pt.y), contour);
+	}
+
+	bool withinPolygon(const Ring& inside_ring, const Ring& outside_ring) {
+		boost::geometry::model::ring<boost::geometry::model::d2::point_xy<float>> inside_contour;
+		for (int i = 0; i < inside_ring.size(); ++i) {
+			inside_contour.push_back(boost::geometry::model::d2::point_xy<float>(inside_ring[i].x, inside_ring[i].y));
+		}
+		boost::geometry::correct(inside_contour);
+		
+		boost::geometry::model::ring<boost::geometry::model::d2::point_xy<float>> outside_contour;
+		for (int i = 0; i < outside_ring.size(); ++i) {
+			outside_contour.push_back(boost::geometry::model::d2::point_xy<float>(outside_ring[i].x, outside_ring[i].y));
+		}
+		boost::geometry::correct(outside_contour);
+
+		return boost::geometry::within(inside_contour, outside_contour);
 	}
 
 	/**

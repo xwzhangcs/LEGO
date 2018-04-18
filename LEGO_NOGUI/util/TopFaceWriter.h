@@ -12,10 +12,11 @@ namespace util {
 		class Face {
 		public:
 			util::Polygon polygon;
-			double height;
+			double bottom_height;
+			double top_height;
 
 		public:
-			Face(const util::Polygon& polygon, double height) : polygon(polygon), height(height) {}
+			Face(const util::Polygon& polygon, double bottom_height, double top_height) : polygon(polygon), bottom_height(bottom_height), top_height(top_height) {}
 		};
 
 		class TopFaceWriter {

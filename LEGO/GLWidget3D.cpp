@@ -323,7 +323,12 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 }
 
 void GLWidget3D::saveOBJ(const QString& filename) {
-	util::obj::OBJWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, buildings);
+	if (show_mode == SHOW_INPUT) {
+		util::obj::OBJWriter::writeVoxels(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, raw_buildings);
+	}
+	else {
+		util::obj::OBJWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, buildings);
+	}
 }
 
 void GLWidget3D::saveTopFace(const QString& filename) {

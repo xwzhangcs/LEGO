@@ -21,8 +21,10 @@ namespace util {
 
 			for (int fi = 0; fi < faces.size(); fi++) {
 				out << "# layer " << fi + 1 << std::endl;
+				out << "# height of the bottom face" << std::endl;
+				out << std::setprecision(20) << faces[fi].bottom_height * scale + offset_z << std::endl;
 				out << "# height of the top face" << std::endl;
-				out << std::setprecision(20) << faces[fi].height * scale + offset_z << std::endl;
+				out << std::setprecision(20) << faces[fi].top_height * scale + offset_z << std::endl;
 				
 				util::Ring ring = faces[fi].polygon.contour.getActualPoints();
 				std::vector<cv::Point2f> points(ring.size());
@@ -33,7 +35,7 @@ namespace util {
 				out << "# num of points of contour" << std::endl;
 				out << points.size() << std::endl;
 				for (auto& pt : points) {
-					out << std::setprecision(20) << (pt.x + width * 0.5) * scale + offset_x << "," << (pt.y - height * 0.5) * scale + offset_y << std::endl;
+					out << std::setprecision(20) << (pt.x + width * 0.5 - 0.5) * scale + offset_x << "," << (pt.y - height * 0.5 + 0.5) * scale + offset_y << std::endl;
 				}
 
 				out << "# num of holes" << std::endl;
@@ -48,7 +50,7 @@ namespace util {
 					out << "# num of points of hole " << hi + 1 << std::endl;
 					out << points.size() << std::endl;
 					for (auto& pt : points) {
-						out << std::setprecision(20) << (pt.x + width * 0.5) * scale + offset_x << "," << (pt.y - height * 0.5) * scale + offset_y << std::endl;
+						out << std::setprecision(20) << (pt.x + width * 0.5 - 0.5) * scale + offset_x << "," << (pt.y - height * 0.5 + 0.5) * scale + offset_y << std::endl;
 					}
 				}
 			}
@@ -58,7 +60,7 @@ namespace util {
 
 		void TopFaceWriter::collectTopFaces(std::shared_ptr<BuildingLayer> building, std::vector<Face>& faces) {
 			for (auto& polygon : building->footprints) {
-				faces.push_back(Face(polygon, building->top_height));
+				faces.push_back(Face(polygon, building->bottom_height, building->top_height));
 			}
 
 			if (building->child) {

@@ -33,7 +33,7 @@ namespace simp {
 			try {
 				util::Ring simplified_hole;
 				simplifyContour(hole, simplified_hole, resolution, angle, dx, dy, true);
-				if (simplified_hole.size() >= 3) {
+				if (simplified_hole.size() >= 3 && util::withinPolygon(simplified_hole, ans.contour)) {
 					ans.holes.push_back(simplified_hole);
 				}
 			}

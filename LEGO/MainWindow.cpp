@@ -77,13 +77,6 @@ void MainWindow::onOpen() {
 }
 
 void MainWindow::onSaveOBJ() {
-	if (glWidget->show_mode == GLWidget3D::SHOW_INPUT) {
-		QMessageBox msg;
-		msg.setText("Simplify the buildings.");
-		msg.exec();
-		return;
-	}
-
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save OBJ file..."), "", tr("OBJ files (*.obj)"));
 	if (!filename.isEmpty()) {
 		glWidget->saveOBJ(filename);

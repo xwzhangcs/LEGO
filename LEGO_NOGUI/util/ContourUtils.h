@@ -144,7 +144,7 @@ namespace util {
 		std::vector<boost::shared_ptr<PrimitiveShape>> primitive_shapes;
 
 	public:
-		Polygon() {}
+		Polygon();
 
 		Polygon clone() const;
 		void translate(float x, float y);
@@ -166,6 +166,7 @@ namespace util {
 	cv::Rect boundingBox(const std::vector<cv::Point2f>& polygon);
 	bool withinPolygon(const cv::Point2f& pt, const Polygon& polygon);
 	bool withinPolygon(const cv::Point2f& pt, const Ring& ring);
+	bool withinPolygon(const Ring& inside_ring, const Ring& outside_ring);
 	double calculateIOU(const cv::Mat_<uchar>& img, const cv::Mat_<uchar>& img2);
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);

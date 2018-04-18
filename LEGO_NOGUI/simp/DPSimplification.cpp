@@ -24,7 +24,7 @@ namespace simp {
 			try {
 				util::Ring simplified_hole;
 				util::approxPolyDP(hole.points, simplified_hole.points, epsilon, true);
-				if (simplified_hole.size() >= 3) {
+				if (simplified_hole.size() >= 3 && util::withinPolygon(simplified_hole, ans.contour)) {
 					ans.holes.push_back(simplified_hole);
 				}
 			}
