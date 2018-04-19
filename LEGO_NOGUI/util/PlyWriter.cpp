@@ -33,7 +33,7 @@ namespace util {
 			for (int i = 0; i < vertices.size(); i++) {
 				double x = (vertices[i].x + width * 0.5 - 0.5) * scale + offset_x;
 				double y = (vertices[i].y - height * 0.5 + 0.5) * scale + offset_y;
-				double z = vertices[i].z * scale + offset_z;
+				double z = (vertices[i].z - 0.5) * scale + offset_z;
 				out.write((char*)&x, sizeof(double));
 				out.write((char*)&y, sizeof(double));
 				out.write((char*)&z, sizeof(double));

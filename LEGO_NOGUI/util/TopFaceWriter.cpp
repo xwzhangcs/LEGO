@@ -22,9 +22,9 @@ namespace util {
 			for (int fi = 0; fi < faces.size(); fi++) {
 				out << "# layer " << fi + 1 << std::endl;
 				out << "# height of the bottom face" << std::endl;
-				out << std::setprecision(20) << faces[fi].bottom_height * scale + offset_z << std::endl;
+				out << std::setprecision(20) << (faces[fi].bottom_height - 0.5) * scale + offset_z << std::endl;
 				out << "# height of the top face" << std::endl;
-				out << std::setprecision(20) << faces[fi].top_height * scale + offset_z << std::endl;
+				out << std::setprecision(20) << (faces[fi].top_height - 0.5) * scale + offset_z << std::endl;
 				
 				util::Ring ring = faces[fi].polygon.contour.getActualPoints();
 				std::vector<cv::Point2f> points(ring.size());

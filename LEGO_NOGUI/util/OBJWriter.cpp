@@ -145,7 +145,7 @@ namespace util {
 			for (auto it = mapped_faces.begin(); it != mapped_faces.end(); it++) {
 				for (auto& face : it->second) {
 					for (auto& vertex : face.vertices) {
-						file << std::setprecision(20) << "v " << (vertex.position.x + width * 0.5 - 0.5) * scale + offset_x << " " << (vertex.position.y - height * 0.5 + 0.5) * scale + offset_y << " " << vertex.position.z * scale + offset_z << std::endl;
+						file << std::setprecision(20) << "v " << (vertex.position.x + width * 0.5 - 0.5) * scale + offset_x << " " << (vertex.position.y - height * 0.5 + 0.5) * scale + offset_y << " " << (vertex.position.z - 0.5) * scale + offset_z << std::endl;
 					}
 				}
 			}
