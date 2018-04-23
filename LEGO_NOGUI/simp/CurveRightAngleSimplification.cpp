@@ -16,7 +16,7 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-	util::Polygon CurveRightAngleSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold) {
+	util::Polygon CurveRightAngleSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold, float min_hole_ratio) {
 		util::Polygon ans;
 		angle_threshold = angle_threshold * 180.0 / CV_PI;
 		// create a slice image from the input polygon

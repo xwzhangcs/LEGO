@@ -12,7 +12,7 @@ namespace simp {
 		RightAngleSimplification() {}
 
 	public:
-		static util::Polygon simplify(const util::Polygon& polygon, int resolution, float& angle, int& dx, int& dy);
+		static util::Polygon simplify(const util::Polygon& polygon, int resolution, float& angle, int& dx, int& dy, float min_hole_ratio);
 		static void decomposePolygon(util::Polygon& polygon);
 
 	private:

@@ -161,6 +161,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_OffsetScaleDialog.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\VoxelBuilding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.ui">
@@ -284,6 +287,9 @@
     </ClInclude>
     <ClInclude Include="GeneratedFiles\ui_OffsetScaleDialog.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\VoxelBuilding.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -59,7 +59,7 @@ void testSimplification(const char* filename) {
 			int dx = -1;
 			int dy = -1;
 			//util::Polygon simplified_polygon = simp::RightAngleSimplification::simplify(contours[i], 12, angle, dx, dy);
-			util::Polygon simplified_polygon = simp::CurveRightAngleSimplification::simplify(contours[i], 12, 1, 20.0f / 180.0f * CV_PI);
+			util::Polygon simplified_polygon = simp::CurveRightAngleSimplification::simplify(contours[i], 12, 1, 20.0f / 180.0f * CV_PI, 0.02);
 
 			cv::Mat_<uchar> result;
 			util::createImageFromPolygon(img.cols, img.rows, simplified_polygon, cv::Point(0, 0), result);

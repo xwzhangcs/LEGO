@@ -174,8 +174,8 @@ namespace util {
 			}
 
 			int num_polygons = polygons.size();
-			if (building->child) {
-				num_polygons += writeBuilding(building->child, vertices_map, vertices, faces);
+			for (auto child : building->children) {
+				num_polygons += writeBuilding(child, vertices_map, vertices, faces);
 			}
 
 			return num_polygons;

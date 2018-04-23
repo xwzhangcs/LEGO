@@ -206,12 +206,16 @@ namespace util {
 			file.close();
 		}
 
-		void OBJWriter::writeVoxels(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<std::shared_ptr<BuildingLayer>>& buildings) {
+		void OBJWriter::writeVoxels(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<VoxelBuilding>& voxel_buildings) {
 			std::vector<Vertex> vertices;
 			std::vector<Face> faces;
 
-			for (int i = 0; i < buildings.size(); i++) {
-				writeVoxelBuilding(buildings[i], scale, cv::Point3f(1, 1, 1), faces);
+			for (auto& voxel_building : voxel_buildings) {
+				for (int z = 0; z < voxel_building.node_stack.size(); z++) {
+					for (auto voxel_node : voxel_building.node_stack[z]) {
+						writeVoxelNode(voxel_node, scale, cv::Point3f(1, 1, 1), faces);
+					}
+				}
 			}
 
 			std::ofstream file(filename);
@@ -266,15 +270,9 @@ namespace util {
 			for (auto& footprint : building->footprints) {
 				std::vector<std::vector<cv::Point2f>> polygons;
 
-				if (footprint.holes.size() == 0) {
-					//polygons = tessellate(footprint.contour);
-					polygons.push_back(footprint.contour.getActualPoints().points);
-				}
-				else {					
-					polygons = tessellate(footprint.contour, footprint.holes);
-					for (int i = 0; i < polygons.size(); i++) {
-						util::transform(polygons[i], footprint.mat);
-					}
+				polygons = tessellate(footprint.contour, footprint.holes);
+				for (int i = 0; i < polygons.size(); i++) {
+					util::transform(polygons[i], footprint.mat);
 				}
 
 				for (auto polygon : polygons) {
@@ -385,8 +383,8 @@ namespace util {
 				}
 			}	
 
-			if (building->child) {
-				writeBuilding(building->child, scale, color, facade_texture, faces);
+			for (auto child : building->children) {
+				writeBuilding(child, scale, color, facade_texture, faces);
 			}
 		}
 
@@ -456,97 +454,86 @@ namespace util {
 			return ans;
 		}
 
-		void OBJWriter::writeVoxelBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, std::vector<Face>& faces) {
-			double height = building->top_height - building->bottom_height;
+		void OBJWriter::writeVoxelNode(std::shared_ptr<VoxelNode> voxel_node, double scale, const cv::Point3f& color, std::vector<Face>& faces) {
+			double height = 1;
+			double z = voxel_node->height;
 
-			for (int zi = 0; zi < building->raw_footprints.size(); zi++) {
-				int z = building->bottom_height + zi;
-
-				for (auto& footprint : building->raw_footprints[zi]) {
-					std::vector<std::vector<cv::Point2f>> polygons;
-
-					if (footprint.holes.size() == 0) {
-						//polygons = tessellate(footprint.contour);
-						polygons.push_back(footprint.contour.points);
-					}
-					else {
-						polygons = tessellate(footprint.contour, footprint.holes);
-					}
-					
-					for (auto polygon : polygons) {
-						util::clockwise(polygon);
-
-						std::vector<int> bottom_face(polygon.size());
-						std::vector<int> top_face(polygon.size());
-
-						std::vector<Vertex> bottom_vertices(polygon.size());
-						std::vector<Vertex> top_vertices(polygon.size());
-						for (int i = 0; i < polygon.size(); i++) {
-							cv::Point3f pt_bottom(polygon[i].x, polygon[i].y, building->bottom_height);
-							cv::Point3f pt_top(polygon[i].x, polygon[i].y, building->top_height);
-
-							top_vertices[i] = Vertex(pt_top, cv::Point3f(0, 0, 1));
-							bottom_vertices[i] = Vertex(pt_bottom, cv::Point3f(0, 0, -1));
-						}
-
-						std::reverse(top_vertices.begin(), top_vertices.end());
-						faces.push_back(Face(top_vertices, color));
-						faces.push_back(Face(bottom_vertices, color));
-					}
-
-					// side faces
-					util::Ring polygon = footprint.contour.getActualPoints();
-					polygon.counterClockwise();
-
-					for (int i = 0; i < polygon.size(); i++) {
-						int next = (i + 1) % polygon.size();
-
-						cv::Point3f p1(polygon[i].x, polygon[i].y, z);
-						cv::Point3f p2(polygon[next].x, polygon[next].y, z);
-						cv::Point3f p3(polygon[next].x, polygon[next].y, z + 1);
-						cv::Point3f p4(polygon[i].x, polygon[i].y, z + 1);
-
-						cv::Point3f n = crossProduct(p2 - p1, p3 - p2);
-						n /= util::length(n);
-
-						std::vector<Vertex> vertices(4);
-						vertices[0] = Vertex(p1, n);
-						vertices[1] = Vertex(p2, n);
-						vertices[2] = Vertex(p3, n);
-						vertices[3] = Vertex(p4, n);
-						faces.push_back(Face(vertices, color));
-					}
-					
-					// side faces of holes
-					for (auto& bh : footprint.holes) {
-						util::Ring hole = bh.getActualPoints();
-						hole.clockwise();
-
-						for (int i = 0; i < hole.size(); i++) {
-							int next = (i + 1) % hole.size();
-
-							cv::Point3f p1(hole[i].x, hole[i].y, z);
-							cv::Point3f p2(hole[next].x, hole[next].y, z);
-							cv::Point3f p3(hole[next].x, hole[next].y, z + 1);
-							cv::Point3f p4(hole[i].x, hole[i].y, z + 1);
-
-							cv::Point3f n = crossProduct(p2 - p1, p3 - p2);
-							n /= util::length(n);
-
-							std::vector<Vertex> vertices(4);
-							vertices[0] = Vertex(p1, n);
-							vertices[1] = Vertex(p2, n);
-							vertices[2] = Vertex(p3, n);
-							vertices[3] = Vertex(p4, n);
-							faces.push_back(Face(vertices, color));
-						}
-
-					}
-				}
+			Ring contour = voxel_node->contour.contour.getActualPoints();
+			std::vector<Ring> holes(voxel_node->contour.holes.size());
+			for (int i = 0; i < voxel_node->contour.holes.size(); i++) {
+				holes[i] = voxel_node->contour.holes[i].getActualPoints();
 			}
-			
-			if (building->child) {
-				writeVoxelBuilding(building->child, scale, color, faces);
+
+			std::vector<std::vector<cv::Point2f>> polygons;
+			polygons = tessellate(contour, holes);
+				
+			for (auto polygon : polygons) {
+				util::clockwise(polygon);
+
+				std::vector<int> bottom_face(polygon.size());
+				std::vector<int> top_face(polygon.size());
+
+				std::vector<Vertex> bottom_vertices(polygon.size());
+				std::vector<Vertex> top_vertices(polygon.size());
+				for (int i = 0; i < polygon.size(); i++) {
+					cv::Point3f pt_bottom(polygon[i].x, polygon[i].y, z);
+					cv::Point3f pt_top(polygon[i].x, polygon[i].y, z + 1);
+
+					top_vertices[i] = Vertex(pt_top, cv::Point3f(0, 0, 1));
+					bottom_vertices[i] = Vertex(pt_bottom, cv::Point3f(0, 0, -1));
+				}
+
+				std::reverse(top_vertices.begin(), top_vertices.end());
+				faces.push_back(Face(top_vertices, color));
+				faces.push_back(Face(bottom_vertices, color));
+			}
+
+			// side faces
+			util::Ring polygon = voxel_node->contour.contour.getActualPoints();
+			polygon.counterClockwise();
+
+			for (int i = 0; i < polygon.size(); i++) {
+				int next = (i + 1) % polygon.size();
+
+				cv::Point3f p1(polygon[i].x, polygon[i].y, z);
+				cv::Point3f p2(polygon[next].x, polygon[next].y, z);
+				cv::Point3f p3(polygon[next].x, polygon[next].y, z + 1);
+				cv::Point3f p4(polygon[i].x, polygon[i].y, z + 1);
+
+				cv::Point3f n = crossProduct(p2 - p1, p3 - p2);
+				n /= util::length(n);
+
+				std::vector<Vertex> vertices(4);
+				vertices[0] = Vertex(p1, n);
+				vertices[1] = Vertex(p2, n);
+				vertices[2] = Vertex(p3, n);
+				vertices[3] = Vertex(p4, n);
+				faces.push_back(Face(vertices, color));
+			}
+					
+			// side faces of holes
+			for (auto& bh : voxel_node->contour.holes) {
+				util::Ring hole = bh.getActualPoints();
+				hole.clockwise();
+
+				for (int i = 0; i < hole.size(); i++) {
+					int next = (i + 1) % hole.size();
+
+					cv::Point3f p1(hole[i].x, hole[i].y, z);
+					cv::Point3f p2(hole[next].x, hole[next].y, z);
+					cv::Point3f p3(hole[next].x, hole[next].y, z + 1);
+					cv::Point3f p4(hole[i].x, hole[i].y, z + 1);
+
+					cv::Point3f n = crossProduct(p2 - p1, p3 - p2);
+					n /= util::length(n);
+
+					std::vector<Vertex> vertices(4);
+					vertices[0] = Vertex(p1, n);
+					vertices[1] = Vertex(p2, n);
+					vertices[2] = Vertex(p3, n);
+					vertices[3] = Vertex(p4, n);
+					faces.push_back(Face(vertices, color));
+				}
 			}
 		}
 

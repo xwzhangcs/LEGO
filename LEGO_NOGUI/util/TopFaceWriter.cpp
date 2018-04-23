@@ -63,8 +63,8 @@ namespace util {
 				faces.push_back(Face(polygon, building->bottom_height, building->top_height));
 			}
 
-			if (building->child) {
-				collectTopFaces(building->child, faces);
+			for (auto child : building->children) {
+				collectTopFaces(child, faces);
 			}
 		}
 

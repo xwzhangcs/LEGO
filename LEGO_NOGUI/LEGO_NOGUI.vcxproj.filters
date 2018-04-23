@@ -51,6 +51,9 @@
     <ClCompile Include="util\TopFaceWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="util\VoxelBuilding.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h">
@@ -85,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="util\TopFaceWriter.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="util\VoxelBuilding.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

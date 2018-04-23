@@ -149,6 +149,7 @@
     <ClCompile Include="..\LEGO_NOGUI\util\OBJWriter.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\PlyWriter.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\TopFaceWriter.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\util\VoxelBuilding.cpp" />
     <ClCompile Include="AllOptionDialog.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CurveOptionDialog.cpp" />
@@ -288,6 +289,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -D_CRT_SECURE_NO_WARNINGS -DUNICODE -DWIN32 -DWIN64 -DQT_DLL -DQT_NO_DEBUG -DNDEBUG -DQT_CORE_LIB -DQT_GUI_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB "-I.\GeneratedFiles" "-I." "-I.\..\LEGO_NOGUI" "-I$(QTDIR)\include" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtWidgets" "-I.\..\glew" "-I.\..\glm" "-I.\..\opencv3.4\include" "-I$(BOOST_INCLUDEDIR)\." "-I$(CGAL_DIR)\include" "-I$(CGAL_DIR)\auxiliary\gmp\include" "-I$(DLIB)\."</Command>
     </CustomBuild>
+    <ClInclude Include="..\LEGO_NOGUI\util\VoxelBuilding.h" />
     <ClInclude Include="Camera.h" />
     <CustomBuild Include="CurveOptionDialog.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

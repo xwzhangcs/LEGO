@@ -10,7 +10,7 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-	util::Polygon CurveSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold) {
+	util::Polygon CurveSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float min_hole_ratio) {
 		util::Polygon ans;
 
 		// create a slice image from the input polygon

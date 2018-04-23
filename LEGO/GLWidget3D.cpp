@@ -40,6 +40,7 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 
 	offset = glm::dvec3(0, 0, 0);
 	scale = 0.3;
+	min_hole_ratio = 0.02;
 
 	color_mode = COLOR;
 	show_mode = SHOW_INPUT;
@@ -311,32 +312,33 @@ void GLWidget3D::loadVoxelData(const QString& filename) {
 
 	// scan all the files in the directory to get a voxel data
 	QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
-	voxel_data.resize(files.size());
+	std::vector<cv::Mat_<uchar>> voxel_data(files.size());
 	for (int i = 0; i < files.size(); i++) {
 		voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 	}
+	vdb_size = cv::Point3i(voxel_data[0].cols, voxel_data[0].rows, voxel_data.size());
 
-	raw_buildings = util::DisjointVoxelData::disjoint(voxel_data);
-		
+	voxel_buildings = util::DisjointVoxelData::disjoint(voxel_data);
+
 	show_mode = SHOW_INPUT;
 	update3DGeometry();
 }
 
 void GLWidget3D::saveOBJ(const QString& filename) {
 	if (show_mode == SHOW_INPUT) {
-		util::obj::OBJWriter::writeVoxels(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, raw_buildings);
+		util::obj::OBJWriter::writeVoxels(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, voxel_buildings);
 	}
 	else {
-		util::obj::OBJWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, buildings);
+		util::obj::OBJWriter::write(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, buildings);
 	}
 }
 
 void GLWidget3D::saveTopFace(const QString& filename) {
-	util::topface::TopFaceWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, buildings);
+	util::topface::TopFaceWriter::write(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, buildings);
 }
 
 void GLWidget3D::savePLY(const QString& filename) {
-	util::ply::PlyWriter::write(filename.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset.x, offset.y, offset.z, scale, buildings);
+	util::ply::PlyWriter::write(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, buildings);
 }
 
 void GLWidget3D::saveImage(const QString& filename) {
@@ -346,7 +348,7 @@ void GLWidget3D::saveImage(const QString& filename) {
 
 void GLWidget3D::showInputVoxel() {
 	show_mode = SHOW_INPUT;
-	update3DGeometry(raw_buildings);
+	update3DGeometry(voxel_buildings);
 }
 
 void GLWidget3D::simplifyByAll(double alpha) {
@@ -361,35 +363,35 @@ void GLWidget3D::simplifyByAll(double alpha) {
 	else if (alpha < 0.9) threshold = 0.7;
 	else threshold = 0.99;
 
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_ALL, false, 2.5 / scale, alpha, threshold, 0, 0, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_ALL, false, 2.5 / scale, alpha, threshold, 0, 0, 0, 0, min_hole_ratio);
 
 	show_mode = SHOW_ALL;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {	
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_DP, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_DP, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, 0, 0, min_hole_ratio);
 
 	show_mode = SHOW_DP;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, 0, resolution, 0, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, 0, resolution, 0, 0, min_hole_ratio);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, 0);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_CURVE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, 0, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
 }
 
 void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(raw_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, angle_threshold);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, angle_threshold, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
@@ -580,7 +582,7 @@ void GLWidget3D::curveTest() {
 
 void GLWidget3D::update3DGeometry() {
 	if (show_mode == SHOW_INPUT) {
-		update3DGeometry(raw_buildings);
+		update3DGeometry(voxel_buildings);
 	}
 	else {
 		update3DGeometryWithoutRoof(buildings);
@@ -592,14 +594,18 @@ void GLWidget3D::update3DGeometry() {
 *
 * @param buildings		buildings
 */
-void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings) {
+void GLWidget3D::update3DGeometry(const std::vector<util::VoxelBuilding>& voxel_buildings) {
 	renderManager.removeObjects();
 
 	glm::vec4 color(0.7, 1, 0.7, 1);
 
 	std::vector<Vertex> vertices;
-	for (int i = 0; i < buildings.size(); i++) {
-		update3DGeometry(buildings[i], color, vertices);
+	for (int i = 0; i < voxel_buildings.size(); i++) {
+		for (int z = 0; z < voxel_buildings[i].node_stack.size(); z++) {
+			for (auto voxel_node : voxel_buildings[i].node_stack[z]) {
+				update3DGeometry(voxel_node, color, vertices);
+			}
+		}
 	}
 	renderManager.addObject("building", "", vertices, true);
 
@@ -611,46 +617,68 @@ void GLWidget3D::update3DGeometry(const std::vector<std::shared_ptr<util::Buildi
 	renderManager.updateShadowMap(this, light_dir, light_mvpMatrix);
 }
 
-void GLWidget3D::update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices) {
-	for (auto& bf : building->footprints) {
-		std::vector<glm::dvec2> footprint(bf.contour.size());
-		for (int i = 0; i < bf.contour.size(); i++) {
-			cv::Point2f pt = bf.contour.getActualPoint(i);
-			footprint[i] = glm::dvec2(pt.x * scale, pt.y * scale);
+void GLWidget3D::update3DGeometry(const std::shared_ptr<util::VoxelNode>& voxel_node, glm::vec4& color, std::vector<Vertex>& vertices) {
+	std::vector<glm::dvec2> footprint(voxel_node->contour.contour.size());
+	for (int i = 0; i < voxel_node->contour.contour.size(); i++) {
+		cv::Point2f pt = voxel_node->contour.contour.getActualPoint(i);
+		footprint[i] = glm::dvec2(pt.x * scale, pt.y * scale);
+	}
+	std::vector<std::vector<glm::dvec2>> holes(voxel_node->contour.holes.size());
+	for (int i = 0; i < voxel_node->contour.holes.size(); i++) {
+		if (voxel_node->contour.holes[i].size() < 3) continue;
+		holes[i].resize(voxel_node->contour.holes[i].size());
+		for (int j = 0; j < voxel_node->contour.holes[i].size(); j++) {
+			cv::Point2f pt = voxel_node->contour.holes[i].getActualPoint(j);
+			holes[i][j] = glm::dvec2(pt.x * scale, pt.y * scale);
 		}
-		std::vector<std::vector<glm::dvec2>> holes(bf.holes.size());
-		for (int i = 0; i < bf.holes.size(); i++) {
-			if (bf.holes[i].size() < 3) continue;
-			holes[i].resize(bf.holes[i].size());
-			for (int j = 0; j < bf.holes[i].size(); j++) {
-				cv::Point2f pt = bf.holes[i].getActualPoint(j);
-				holes[i][j] = glm::dvec2(pt.x * scale, pt.y * scale);
-			}
-		}
+	}
 
-		// correct the orientation of polygon
-		glutils::correct(footprint);
-		for (int i = 0; i < holes.size(); i++) {
-			glutils::correct(holes[i]);
-		}
+	// correct the orientation of polygon
+	glutils::correct(footprint);
+	for (int i = 0; i < holes.size(); i++) {
+		glutils::correct(holes[i]);
+	}
 
-		glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height * scale));
-		double h = (building->top_height - building->bottom_height) * scale;
+	glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0, 0, voxel_node->height * scale));
+	double h = scale;
 
-		// top face
-		glutils::drawConcavePolygon(footprint, holes, color, glm::translate(mat, glm::vec3(0, 0, h)), vertices);
+	// top face
+	glutils::drawConcavePolygon(footprint, holes, color, glm::translate(mat, glm::vec3(0, 0, h)), vertices);
 
-		// bottom face
-		glutils::drawConcavePolygon(footprint, holes, color, mat, vertices, true);
+	// bottom face
+	glutils::drawConcavePolygon(footprint, holes, color, mat, vertices, true);
 
-		// side faces
-		for (int i = 0; i < footprint.size(); i++) {
-			int next = (i + 1) % footprint.size();
+	// side faces
+	for (int i = 0; i < footprint.size(); i++) {
+		int next = (i + 1) % footprint.size();
 
-			glm::vec3 p1(mat * glm::vec4(footprint[i], 0, 1));
-			glm::vec3 p2(mat * glm::vec4(footprint[next], 0, 1));
-			glm::vec3 p3(mat * glm::vec4(footprint[next], h, 1));
-			glm::vec3 p4(mat * glm::vec4(footprint[i], h, 1));
+		glm::vec3 p1(mat * glm::vec4(footprint[i], 0, 1));
+		glm::vec3 p2(mat * glm::vec4(footprint[next], 0, 1));
+		glm::vec3 p3(mat * glm::vec4(footprint[next], h, 1));
+		glm::vec3 p4(mat * glm::vec4(footprint[i], h, 1));
+
+		glm::vec3 n = glm::cross(p2 - p1, p3 - p2);
+		n /= glm::length(n);
+
+		vertices.push_back(Vertex(p1, n, color));
+		vertices.push_back(Vertex(p2, n, color));
+		vertices.push_back(Vertex(p3, n, color));
+
+		vertices.push_back(Vertex(p1, n, color));
+		vertices.push_back(Vertex(p3, n, color));
+		vertices.push_back(Vertex(p4, n, color));
+	}
+
+	// side faces for the holes
+	for (auto& hole : holes) {
+		std::reverse(hole.begin(), hole.end());
+		for (int j = 0; j < hole.size(); j++) {
+			int next = (j + 1) % hole.size();
+
+			glm::vec3 p1(mat * glm::vec4(hole[j], 0, 1));
+			glm::vec3 p2(mat * glm::vec4(hole[next], 0, 1));
+			glm::vec3 p3(mat * glm::vec4(hole[next], h, 1));
+			glm::vec3 p4(mat * glm::vec4(hole[j], h, 1));
 
 			glm::vec3 n = glm::cross(p2 - p1, p3 - p2);
 			n /= glm::length(n);
@@ -663,34 +691,6 @@ void GLWidget3D::update3DGeometry(std::shared_ptr<util::BuildingLayer> building,
 			vertices.push_back(Vertex(p3, n, color));
 			vertices.push_back(Vertex(p4, n, color));
 		}
-
-		// side faces for the holes
-		for (auto& hole : holes) {
-			std::reverse(hole.begin(), hole.end());
-			for (int j = 0; j < hole.size(); j++) {
-				int next = (j + 1) % hole.size();
-
-				glm::vec3 p1(mat * glm::vec4(hole[j], 0, 1));
-				glm::vec3 p2(mat * glm::vec4(hole[next], 0, 1));
-				glm::vec3 p3(mat * glm::vec4(hole[next], h, 1));
-				glm::vec3 p4(mat * glm::vec4(hole[j], h, 1));
-
-				glm::vec3 n = glm::cross(p2 - p1, p3 - p2);
-				n /= glm::length(n);
-
-				vertices.push_back(Vertex(p1, n, color));
-				vertices.push_back(Vertex(p2, n, color));
-				vertices.push_back(Vertex(p3, n, color));
-
-				vertices.push_back(Vertex(p1, n, color));
-				vertices.push_back(Vertex(p3, n, color));
-				vertices.push_back(Vertex(p4, n, color));
-			}
-		}
-	}
-
-	if (building->child) {
-		update3DGeometry(building->child, color, vertices);
 	}
 }
 
@@ -884,8 +884,8 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 		}
 	}
 
-	if (building->child) {
-		update3DGeometryWithoutRoof(building->child, color, facade_texture, roof_texture, vertices);
+	for (auto child : building->children) {
+		update3DGeometryWithoutRoof(child, color, facade_texture, roof_texture, vertices);
 	}
 }
 

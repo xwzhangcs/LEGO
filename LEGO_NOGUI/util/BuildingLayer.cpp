@@ -3,14 +3,12 @@
 namespace util {
 
 	BuildingLayer::BuildingLayer(int building_id, float bottom_height, float top_height) {
-		representative_contours_calculated = false;
 		this->building_id = building_id;
 		this->bottom_height = bottom_height;
 		this->top_height = top_height;
 	}
 
 	BuildingLayer::BuildingLayer(int building_id, const std::vector<util::Polygon>& footprints, float bottom_height, float top_height) {
-		representative_contours_calculated = false;
 		this->building_id = building_id;
 		this->footprints = footprints;
 		this->bottom_height = bottom_height;
@@ -18,8 +16,6 @@ namespace util {
 	}
 
 	std::vector<util::Polygon> BuildingLayer::selectRepresentativeContours() {
-		if (representative_contours_calculated) return footprints;
-
 		// calculate the bounding box
 		int min_x = INT_MAX;
 		int min_y = INT_MAX;
@@ -75,86 +71,9 @@ namespace util {
 			contours[i].translate(min_x, min_y);
 		}
 
-		// Remove too small contours
-		float max_polygon_area = 0;
-		std::vector<float> polygon_areas;
-		for (int i = 0; i < contours.size(); i++) {
-			float polygon_area = util::calculateArea(contours[i]);
-			polygon_areas.push_back(polygon_area);
-			max_polygon_area = std::max(max_polygon_area, polygon_area);
-		}
-		for (int i = contours.size() - 1; i >= 0; i--) {
-			if (polygon_areas[i] < max_polygon_area * 0.1) {
-				polygon_areas.erase(polygon_areas.begin() + i);
-				contours.erase(contours.begin() + i);
-			}
-		}
-		if (child) {
-			child->removeContoursInUpperLayers(contours);
-			if (child->footprints.size() == 0) child.reset();
-		}
-
 		this->footprints = contours;
 
 		return contours;
-
-		/*
-		// find the most representative slice
-		double best_iou = 0;
-		int best_slice = -1;
-		for (int i = 0; i < raw_footprints.size(); i++) {
-			cv::Mat_<uchar> img = cv::Mat_<uchar>::zeros(max_y - min_y + 1, max_x - min_x + 1);
-			for (auto& polygon : raw_footprints[i]) {
-				std::vector<std::vector<cv::Point>> contour_points(1 + polygon.holes.size());
-				Ring contour = polygon.contour.getActualPoints();
-				contour_points[0].resize(contour.size());
-				for (int i = 0; i < contour.size(); i++) {
-					contour_points[0][i] = cv::Point(contour[i].x - min_x, contour[i].y - min_y);
-				}
-				for (int i = 0; i < polygon.holes.size(); i++) {
-					Ring hole = polygon.holes[i].getActualPoints();
-					contour_points[i + 1].resize(hole.size());
-					for (int j = 0; j < hole.size(); j++) {
-						contour_points[i + 1][j] = cv::Point(hole[j].x - min_x, hole[j].y - min_y);
-					}
-				}
-				cv::fillPoly(img, contour_points, cv::Scalar(255), cv::LINE_4);
-			}
-
-			double iou = util::calculateIOU(img, mean_img);
-			if (iou > best_iou) {
-				best_iou = iou;
-				best_slice = i;
-			}
-		}
-
-		return raw_footprints[best_slice];
-		*/
-	}
-
-	void BuildingLayer::removeContoursInUpperLayers(std::vector<util::Polygon>& contours) {
-		std::vector<util::Polygon> polygons = selectRepresentativeContours();
-		for (int i = polygons.size() - 1; i >= 0; i--) {
-			bool supported = false;
-			for (int j = 0; j < contours.size(); j++) {
-				if (calculateIOU(polygons[i], contours[j]) > 0) {
-					supported = true;
-					break;
-				}
-			}
-
-			// if the polygon is not supported by the lower layer, remove it.
-			if (!supported) {
-				polygons.erase(polygons.begin() + i);
-			}
-		}
-
-		this->footprints = polygons;
-		
-		if (child) {
-			child->removeContoursInUpperLayers(polygons);
-			if (child->footprints.size() == 0) child.reset();
-		}
 	}
 
 }

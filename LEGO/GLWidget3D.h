@@ -32,11 +32,12 @@ public:
 	glm::vec3 spot_light_pos;
 
 	// input voxel data
-	std::vector<cv::Mat_<uchar>> voxel_data;
-	std::vector<std::shared_ptr<util::BuildingLayer>> raw_buildings;
+	cv::Point3i vdb_size;
+	std::vector<util::VoxelBuilding> voxel_buildings;
 	std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 	glm::dvec3 offset;
 	double scale;
+	double min_hole_ratio;
 
 	// rendering engine
 	RenderManager renderManager;
@@ -69,8 +70,8 @@ public:
 	void rightAngleTest();
 	void curveTest();
 	void update3DGeometry();
-	void update3DGeometry(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
-	void update3DGeometry(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, std::vector<Vertex>& vertices);
+	void update3DGeometry(const std::vector<util::VoxelBuilding>& voxel_buildings);
+	void update3DGeometry(const std::shared_ptr<util::VoxelNode>& voxel_node, glm::vec4& color, std::vector<Vertex>& vertices);
 	void update3DGeometryWithoutRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);
 	void update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer> building, glm::vec4& color, const QString& facade_texture, const QString& roof_texture, QMap<QString, std::vector<Vertex>>& vertices);
 	//void update3DGeometryWithRoof(const std::vector<std::shared_ptr<util::BuildingLayer>>& buildings);

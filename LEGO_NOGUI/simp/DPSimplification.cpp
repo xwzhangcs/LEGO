@@ -10,7 +10,7 @@ namespace simp {
 	 * @param epsilon	simplification parameter
 	 * @return			simplified footprint
 	 */
-	util::Polygon DPSimplification::simplify(const util::Polygon& polygon, float epsilon) {
+	util::Polygon DPSimplification::simplify(const util::Polygon& polygon, float epsilon, float min_hole_ratio) {
 		util::Polygon ans;
 		util::approxPolyDP(polygon.contour.points, ans.contour.points, epsilon, true);
 		if (ans.contour.points.size() < 3) throw "Invalid simplified polygon";
@@ -19,7 +19,7 @@ namespace simp {
 
 		// simplify the hole as well
 		for (auto& hole : polygon.holes) {
-			if (cv::contourArea(hole.points) < area * 0.1) continue;
+			if (cv::contourArea(hole.points) < area * min_hole_ratio) continue;
 
 			try {
 				util::Ring simplified_hole;

@@ -10,7 +10,7 @@ namespace simp {
 	* @param epsilon	simplification parameter
 	* @return			simplified footprint
 	*/
-	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float& angle, int& dx, int& dy) {
+	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float& angle, int& dx, int& dy, float min_hole_ratio) {
 		util::Polygon ans;
 
 		if (angle == -1) {
@@ -28,7 +28,7 @@ namespace simp {
 
 		// simplify the hole as well
 		for (auto& hole : polygon.holes) {
-			if (cv::contourArea(hole.points) < area * 0.1) continue;
+			if (cv::contourArea(hole.points) < area * min_hole_ratio) continue;
 
 			try {
 				util::Ring simplified_hole;
