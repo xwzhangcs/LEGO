@@ -420,6 +420,13 @@ namespace util {
 					// remove too thin layer if it does not have any children.
 					layer->children.erase(layer->children.begin() + i);
 				}
+				else if (layer->children[i]->children.size() == 1) {
+					// merge the child with its child
+					std::shared_ptr<BuildingLayer> grandchild_layer = layer->children[i]->children[0];
+					layer->children[i]->top_height = layer->children[i]->children[0]->top_height;
+					layer->children[i]->raw_footprints.insert(layer->children[i]->raw_footprints.end(), grandchild_layer->raw_footprints.begin(), grandchild_layer->raw_footprints.end());
+					layer->children[i]->children = grandchild_layer->children;
+				}
 			}
 		}
 
@@ -427,13 +434,8 @@ namespace util {
 		if (layer->children.size() == 1 && layer->children[0]->top_height - layer->children[0]->bottom_height < min_num_slices_per_layer) {
 			std::shared_ptr<BuildingLayer> child_layer = layer->children[0];
 			layer->top_height = child_layer->top_height;
-			for (int i = 0; i < child_layer->raw_footprints.size(); i++) {
-				layer->raw_footprints.push_back(child_layer->raw_footprints[i]);
-			}
-			layer->children.clear();
-			for (int i = 0; i < child_layer->children.size(); i++) {
-				layer->children.push_back(child_layer->children[i]);
-			}
+			layer->raw_footprints.insert(layer->raw_footprints.end(), child_layer->raw_footprints.begin(), child_layer->raw_footprints.end());
+			layer->children = child_layer->children;
 		}
 	}
 
