@@ -145,7 +145,7 @@ namespace simp {
 					//cv::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
 					util::approxPolyDP(cv::Mat(contour), simplified_hole.points, epsilon, true);
 				}
-				if (simplified_hole.size() >= 3)
+				if (simplified_hole.size() >= 3 && util::withinPolygon(simplified_hole, polygon.contour))
 					polygon.holes.push_back(simplified_hole);
 			}
 
