@@ -34,21 +34,23 @@ namespace util {
 		}
 
 		// calculate the average contour image
-		cv::Mat_<double> total_img = cv::Mat_<double>::zeros(max_y - min_y + 1, max_x - min_x + 1);
+		int width = max_x - min_x + 1;
+		int height = max_y - min_y + 1;
+		cv::Mat_<double> total_img = cv::Mat_<double>::zeros(height * 2, width * 2);
 		for (auto& polygons : raw_footprints) {
-			cv::Mat_<uchar> img = cv::Mat_<uchar>::zeros(max_y - min_y + 1, max_x - min_x + 1);
+			cv::Mat_<uchar> img = cv::Mat_<uchar>::zeros(height * 2, width * 2);
 			for (auto& polygon : polygons) {
 				std::vector<std::vector<cv::Point>> contour_points(1 + polygon.holes.size());
 				Ring contour = polygon.contour.getActualPoints();
 				contour_points[0].resize(contour.size());
 				for (int i = 0; i < contour.size(); i++) {
-					contour_points[0][i] = cv::Point(contour[i].x - min_x, contour[i].y - min_y);
+					contour_points[0][i] = cv::Point((contour[i].x - min_x) * 2, (contour[i].y - min_y) * 2);
 				}
 				for (int i = 0; i < polygon.holes.size(); i++) {
 					Ring hole = polygon.holes[i].getActualPoints();
 					contour_points[i + 1].resize(hole.size());
 					for (int j = 0; j < hole.size(); j++) {
-						contour_points[i + 1][j] = cv::Point(hole[j].x - min_x, hole[j].y - min_y);
+						contour_points[i + 1][j] = cv::Point((hole[j].x - min_x) * 2, (hole[j].y - min_y) * 2);
 					}
 				}
 				cv::fillPoly(img, contour_points, cv::Scalar(255), cv::LINE_4);
@@ -64,6 +66,13 @@ namespace util {
 
 		cv::Mat_<uchar> mean_img_thresholded;
 		cv::threshold(mean_img, mean_img_thresholded, 80, 255, cv::THRESH_BINARY);
+
+		// erode image
+		cv::Mat_<uchar> eroded_img;
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 0, 0, 0, 0, 0, 1, 0, 1, 1);
+		cv::erode(mean_img_thresholded, eroded_img, kernel);
+
+		cv::resize(eroded_img, mean_img_thresholded, cv::Size(width, height), 0, 0, cv::INTER_NEAREST);
 
 		// extract contours
 		std::vector<util::Polygon> contours = util::findContours(mean_img_thresholded, false);
