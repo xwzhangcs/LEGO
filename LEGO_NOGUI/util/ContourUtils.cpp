@@ -327,7 +327,16 @@ namespace util {
 		}
 	}
 
-	bool isSimple(const Ring& points){
+	bool isSimple(const Ring& points) {
+		CDT cdt;
+		CGAL::Partition_traits_2<Kernel>::Polygon_2 polygon;
+		for (int i = 0; i < points.size(); i++) {
+			polygon.push_back(CDT::Point(points[i].x, points[i].y));
+		}
+		return polygon.is_simple();
+	}
+
+	bool isSimple(const std::vector<cv::Point>& points) {
 		CDT cdt;
 		CGAL::Partition_traits_2<Kernel>::Polygon_2 polygon;
 		for (int i = 0; i < points.size(); i++) {
