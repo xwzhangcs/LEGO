@@ -725,12 +725,12 @@ namespace simp {
 		if (abs(angle_v1) < 10)
 			return false;
 		// angle v2 comparison
-		if (angle_v2 < 5)
+		/*if (angle_v2 < 5)
 			return false;
 		if (angle_v3 < 5)
 			return false;
 		if (angle_v4 < 5)
-			return false;
+			return false;*/
 		// center comparison
 		{
 
