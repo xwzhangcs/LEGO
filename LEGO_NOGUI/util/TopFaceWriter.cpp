@@ -35,7 +35,9 @@ namespace util {
 				out << "# num of points of contour" << std::endl;
 				out << points.size() << std::endl;
 				for (auto& pt : points) {
-					out << std::setprecision(20) << (pt.x + width * 0.5 - 0.5) * scale + offset_x << "," << (pt.y - height * 0.5 + 0.5) * scale + offset_y << std::endl;
+					float x = (pt.x + width * 0.5 - 0.5) * scale + offset_x;
+					float y = (pt.y - height * 0.5 + 0.5) * scale + offset_y;
+					out << std::setprecision(20) << x << "," << y << std::endl;
 				}
 
 				out << "# num of holes" << std::endl;
@@ -50,7 +52,9 @@ namespace util {
 					out << "# num of points of hole " << hi + 1 << std::endl;
 					out << points.size() << std::endl;
 					for (auto& pt : points) {
-						out << std::setprecision(20) << (pt.x + width * 0.5 - 0.5) * scale + offset_x << "," << (pt.y - height * 0.5 + 0.5) * scale + offset_y << std::endl;
+						float x = (pt.x + width * 0.5 - 0.5) * scale + offset_x;
+						float y = (pt.y - height * 0.5 + 0.5) * scale + offset_y;
+						out << std::setprecision(20) << x << "," << y << std::endl;
 					}
 				}
 			}

@@ -145,7 +145,10 @@ namespace util {
 			for (auto it = mapped_faces.begin(); it != mapped_faces.end(); it++) {
 				for (auto& face : it->second) {
 					for (auto& vertex : face.vertices) {
-						file << std::setprecision(20) << "v " << (vertex.position.x + width * 0.5 - 0.5) * scale + offset_x << " " << (vertex.position.y - height * 0.5 + 0.5) * scale + offset_y << " " << (vertex.position.z - 0.5) * scale + offset_z << std::endl;
+						float x = (vertex.position.x + width * 0.5 - 0.5) * scale + offset_x;
+						float y = (vertex.position.y - height * 0.5 + 0.5) * scale + offset_y;
+						float z = (vertex.position.z - 0.5) * scale + offset_z;
+						file << std::setprecision(20) << "v " << x << " " << y << " " << z << std::endl;
 					}
 				}
 			}

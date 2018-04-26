@@ -22,21 +22,21 @@ namespace util {
 			out << "ply" << std::endl;
 			out << "format binary_little_endian 1.0" << std::endl;
 			out << "element vertex " << vertices.size() << std::endl;
-			out << "property double x" << std::endl;
-			out << "property double y" << std::endl;
-			out << "property double z" << std::endl;
+			out << "property float x" << std::endl;
+			out << "property float y" << std::endl;
+			out << "property float z" << std::endl;
 			out << "element face " << faces.size() << std::endl;
 			out << "property list uchar int vertex_indices" << std::endl;
 			out << "end_header" << std::endl;
 			
 			// write vertices
 			for (int i = 0; i < vertices.size(); i++) {
-				double x = (vertices[i].x + width * 0.5 - 0.5) * scale + offset_x;
-				double y = (vertices[i].y - height * 0.5 + 0.5) * scale + offset_y;
-				double z = (vertices[i].z - 0.5) * scale + offset_z;
-				out.write((char*)&x, sizeof(double));
-				out.write((char*)&y, sizeof(double));
-				out.write((char*)&z, sizeof(double));
+				float x = (vertices[i].x + width * 0.5 - 0.5) * scale + offset_x;
+				float y = (vertices[i].y - height * 0.5 + 0.5) * scale + offset_y;
+				float z = (vertices[i].z - 0.5) * scale + offset_z;
+				out.write((char*)&x, sizeof(float));
+				out.write((char*)&y, sizeof(float));
+				out.write((char*)&z, sizeof(float));
 			}
 
 			// write faces

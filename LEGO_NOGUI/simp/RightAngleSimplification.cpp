@@ -134,7 +134,7 @@ namespace simp {
 		// simplify the contour a little
 		std::vector<cv::Point2f> aa_contour_smoothed;
 		util::approxPolyDP(aa_contour, aa_contour_smoothed, resolution, true);
-		if (aa_contour_smoothed.size() > 3) {
+		if (aa_contour_smoothed.size() > 3 && util::calculateIOU(aa_contour, aa_contour_smoothed) > 0.8) {
 			aa_contour = aa_contour_smoothed;
 		}
 
