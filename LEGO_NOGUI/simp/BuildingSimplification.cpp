@@ -15,10 +15,7 @@ namespace simp {
 
 		time_t start = clock();
 		setbuf(stdout, NULL);
-		printf("Processing building");
 		for (int i = 0; i < voxel_buildings.size(); i++) {
-			printf("\rProcessing building %d  ", i + 1);
-
 			std::vector<std::shared_ptr<util::BuildingLayer>> components = util::DisjointVoxelData::layering(voxel_buildings[i], layering_threshold, min_num_slices_per_layer);
 			for (auto component : components) {
 				try {
@@ -51,7 +48,6 @@ namespace simp {
 				catch (...) {}
 			}
 		}
-		printf("\n");
 		time_t end = clock();
 		std::cout << "Time elapsed " << (double)(end - start) / CLOCKS_PER_SEC << " sec." << std::endl;
 
@@ -111,35 +107,6 @@ namespace simp {
 				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 				if (cost < best_cost) {
 					best_algorithm = ALG_RIGHTANGLE;
-					best_cost = cost;
-					best_simplified_polygon = simplified_polygon;
-
-					best_error = costs[0] / costs[1];
-					best_num_primitive_shapes = costs[2];
-				}
-			}
-			catch (...) {}
-
-			// try Douglas-Peucker
-			try {
-				float epsilon;
-				if (alpha <= 0.06) epsilon = 24;
-				else if (alpha < 0.1) epsilon = 18;
-				else if (alpha < 0.2) epsilon = 12;
-				else if (alpha < 0.4) epsilon = 10;
-				else if (alpha < 0.6) epsilon = 8;
-				else if (alpha < 0.8) epsilon = 4;
-				else if (alpha < 0.9) epsilon = 4;
-				else epsilon = 2;
-
-				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
-				if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
-				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-
-				if (cost < best_cost) {
-					best_algorithm = ALG_DP;
-					right_angle_for_all_contours = false;
 					best_cost = cost;
 					best_simplified_polygon = simplified_polygon;
 
@@ -217,9 +184,49 @@ namespace simp {
 				}
 			}
 			catch (...) {}
+
+			if (best_algorithm == ALG_UNKNOWN) {
+				// try Douglas-Peucker
+				try {
+					float epsilon;
+					if (alpha <= 0.06) epsilon = 24;
+					else if (alpha < 0.1) epsilon = 18;
+					else if (alpha < 0.2) epsilon = 12;
+					else if (alpha < 0.4) epsilon = 10;
+					else if (alpha < 0.6) epsilon = 8;
+					else if (alpha < 0.8) epsilon = 4;
+					else if (alpha < 0.9) epsilon = 4;
+					else epsilon = 2;
+
+					util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+					if (cost < best_cost) {
+						best_algorithm = ALG_DP;
+						right_angle_for_all_contours = false;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) {}
+			}
 			
 			if (best_algorithm == ALG_UNKNOWN) continue;
 
+			if (best_algorithm == ALG_RIGHTANGLE) {
+				std::cout << "Selected algorithm: RA" << std::endl;
+			}
+			else if (best_algorithm == ALG_CURVE || best_algorithm == ALG_CURVE_RIGHTANGLE) {
+				std::cout << "Selected algorithm: CSRA" << std::endl;
+			}
+			else {
+				std::cout << "Selected algorithm: DP" << std::endl;
+			}
 			best_simplified_polygons.push_back(best_simplified_polygon);
 			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
 		}

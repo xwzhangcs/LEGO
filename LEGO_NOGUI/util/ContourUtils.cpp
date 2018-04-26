@@ -419,8 +419,23 @@ namespace util {
 		cv::Mat_<uchar> img;
 		util::createImageFromContour(rect.width, rect.height, contour, cv::Point(-rect.x, -rect.y), img);
 		std::vector<util::Polygon> polygons = util::findContours(img, false);
+
+		// If there are diagonal connections, we need to force to connect them using 4-neighbors because they are supposed to be a single contour
+		if (polygons.size() > 1) {
+			for (int r = 0; r < img.rows - 1; r++) {
+				for (int c = 0; c < img.cols - 1; c++) {
+					if (img(r, c) == 255 && img(r, c + 1) == 0 && img(r + 1, c) == 0 && img(r + 1, c + 1) == 255) {
+						img(r, c + 1) = 255;
+					}
+					else if (img(r, c) == 0 && img(r, c + 1) == 255 && img(r + 1, c) == 255 && img(r + 1, c + 1) == 0) {
+						img(r, c) == 255;
+					}
+				}
+			}
+		}
 		
 		Ring ans = polygons[0].contour;
+		ans.mat = ring.mat;
 		ans.translate(rect.x, rect.y);
 		return ans;
 	}
