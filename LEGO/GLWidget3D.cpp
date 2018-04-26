@@ -772,18 +772,24 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 	float floor_tile_height = 3.0f;
 
 	for (auto& bf : building->footprints) {
+		std::vector<std::vector<cv::Point2f>> polygons;
+
+		polygons = util::tessellate(bf.contour, bf.holes);
+		for (int i = 0; i < polygons.size(); i++) {
+			util::transform(polygons[i], bf.mat);
+		}
+
 		glm::mat4 mat = glm::translate(glm::mat4(), glm::vec3(0, 0, building->bottom_height * scale));
 		double height = (building->top_height - building->bottom_height) * scale;
 
-		for (auto& primitive_shape : bf.primitive_shapes) {
-			std::vector<cv::Point2f> points = primitive_shape->getActualPoints();
-			std::vector<glm::dvec2> pol(points.size());
-			for (int i = 0; i < points.size(); i++) {
-				pol[i] = glm::dvec2(points[i].x * scale, points[i].y * scale);
-			}
+		for (auto polygon : polygons) {
+			util::clockwise(polygon);
 
-			glutils::correct(pol);
-			
+			std::vector<glm::dvec2> pol(polygon.size());
+
+			for (int i = 0; i < polygon.size(); i++) {
+				pol[i] = glm::dvec2(polygon[i].x * scale, polygon[i].y * scale);
+			}
 
 			// top face
 			glutils::drawPolygon(pol, color, glm::translate(glm::mat4(), glm::vec3(0, 0, building->top_height * scale)), vertices[""]);
