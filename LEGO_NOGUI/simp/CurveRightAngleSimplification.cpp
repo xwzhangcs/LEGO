@@ -430,16 +430,28 @@ namespace simp {
 				int interval_points = abs(angle_start_end / degrees);
 				float interval_degrees = angle_start_end / interval_points;
 				float radius = cv::norm(simplified_curve_tmp[0] - center);
-				for (int k = 0; k < interval_points; k++){
-					float x = radius * cos(CV_PI * (angle_start + interval_degrees * k) / 180) + center.x;
-					float y = radius * sin(CV_PI * (angle_start + interval_degrees * k) / 180) + center.y;
-					final_contour.push_back(cv::Point2f(x, y));
+
+				if (abs(angle_start_end) >= 60 && radius > 30){
+					for (int k = 0; k < interval_points; k++){
+						float x = radius * cos(CV_PI * (angle_start + interval_degrees * k) / 180) + center.x;
+						float y = radius * sin(CV_PI * (angle_start + interval_degrees * k) / 180) + center.y;
+						final_contour.push_back(cv::Point2f(x, y));
+						final_contour_curve.push_back(cv::Point3f(center.x, center.y, radius));
+						type_final_contour.push_back(2);
+					}
+					final_contour.push_back(simplified_curve_tmp[simplified_curve_tmp.size() - 1]);
 					final_contour_curve.push_back(cv::Point3f(center.x, center.y, radius));
 					type_final_contour.push_back(2);
 				}
-				final_contour.push_back(simplified_curve_tmp[simplified_curve_tmp.size() - 1]);
-				final_contour_curve.push_back(cv::Point3f(center.x, center.y, radius));
-				type_final_contour.push_back(2);
+				else{
+					simplified_poly.clear();
+					cv::approxPolyDP(cv::Mat(simplified_curve_tmp), simplified_poly, epsilon, false);
+					for (int k = 0; k < simplified_poly.size(); k++){
+						final_contour.push_back(simplified_poly[k]);
+						final_contour_curve.push_back(cv::Point3f(0, 0, 0));
+						type_final_contour.push_back(1);
+					}
+				}
 			}
 
 			simplified_tmp.clear();
@@ -596,9 +608,11 @@ namespace simp {
 					i++;
 				}
 				if (concaveCurve){
-					cv::approxPolyDP(cv::Mat(concave_curve_tmp), concave_curve_simp_tmp, epsilon, false);
-					for (int m = 0; m < concave_curve_simp_tmp.size(); m++)
-						output_regular.push_back(concave_curve_simp_tmp[m]);
+					//cv::approxPolyDP(cv::Mat(concave_curve_tmp), concave_curve_simp_tmp, epsilon, false);
+					//for (int m = 0; m < concave_curve_simp_tmp.size(); m++)
+					//	output_regular.push_back(concave_curve_simp_tmp[m]);
+					for (int m = 0; m < concave_curve_tmp.size(); m++)
+						output_regular.push_back(concave_curve_tmp[m]);
 				}
 
 

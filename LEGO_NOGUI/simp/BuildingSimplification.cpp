@@ -129,8 +129,8 @@ namespace simp {
 				else epsilon = 2;
 
 				float curve_threshold;
-				if (alpha < 0.2) curve_threshold = 1.5f;
-				else curve_threshold = 1.0f;
+				if (alpha < 0.2) curve_threshold = 2.0f;
+				else curve_threshold = 2.0f;
 
 				util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold, min_hole_ratio);
 				if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
@@ -162,8 +162,8 @@ namespace simp {
 				else epsilon = 2;
 
 				float curve_threshold;
-				if (alpha < 0.2) curve_threshold = 1.5f;
-				else curve_threshold = 1.0f;
+				if (alpha < 0.2) curve_threshold = 2.0f;
+				else curve_threshold = 2.0f;
 
 				float angle_threshold = 10.0f / 180.0f * CV_PI;
 				if (alpha < 0.2) angle_threshold = 20.0f / 180.0f * CV_PI;

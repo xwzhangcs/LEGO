@@ -428,7 +428,7 @@ namespace util {
 						img(r, c + 1) = 255;
 					}
 					else if (img(r, c) == 0 && img(r, c + 1) == 255 && img(r + 1, c) == 255 && img(r + 1, c + 1) == 0) {
-						img(r, c) == 255;
+						img(r, c) = 255;
 					}
 				}
 			}
