@@ -84,8 +84,8 @@ int main(int argc, const char* argv[]) {
 
 	// determine the parameter for the curve method
 	float curve_threshold;
-	if (alpha < 0.2) curve_threshold = 1.5f;
-	else curve_threshold = 1.0f;
+	if (alpha < 0.2) curve_threshold = 2.0f;
+	else curve_threshold = 2.0f;
 	float angle_threshold = 10.0f / 180.0f * CV_PI;
 	if (alpha < 0.2) angle_threshold = 20.0f / 180.0f * CV_PI;
 
