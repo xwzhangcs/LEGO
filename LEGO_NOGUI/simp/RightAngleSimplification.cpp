@@ -125,61 +125,71 @@ namespace simp {
 			aa_contour[i] = cv::Point2f(p2(0, 0), p2(1, 0));
 		}
 
-		// create the integer coordinates of the polygon
-		std::vector<cv::Point> aa_contour_int(aa_contour.size());
-		for (int i = 0; i < aa_contour.size(); i++) {
-			aa_contour_int[i] = cv::Point(std::round(aa_contour[i].x), std::round(aa_contour[i].y));
-		}
+		// try a box to simplify the polygon
+		cv::Rect box = util::boundingBox(aa_contour);
+		std::vector<cv::Point2f> simplified_aa_contour(4);
+		simplified_aa_contour[0] = cv::Point2f(box.x, box.y);
+		simplified_aa_contour[1] = cv::Point2f(box.x + box.width - 1, box.y);
+		simplified_aa_contour[2] = cv::Point2f(box.x + box.width - 1, box.y + box.height - 1);
+		simplified_aa_contour[3] = cv::Point2f(box.x, box.y + box.height - 1);
+		if (util::calculateIOU(aa_contour, simplified_aa_contour) < 0.8) {
+			// create the integer coordinates of the polygon
+			std::vector<cv::Point> aa_contour_int(aa_contour.size());
+			for (int i = 0; i < aa_contour.size(); i++) {
+				aa_contour_int[i] = cv::Point(std::round(aa_contour[i].x), std::round(aa_contour[i].y));
+			}
 
-		// simplify the contour a little
-		std::vector<cv::Point2f> aa_contour_smoothed;
-		util::approxPolyDP(aa_contour, aa_contour_smoothed, resolution, true);
-		if (aa_contour_smoothed.size() > 3 && util::calculateIOU(aa_contour, aa_contour_smoothed) > 0.8) {
-			aa_contour = aa_contour_smoothed;
-		}
+			// simplify the contour a little
+			std::vector<cv::Point2f> aa_contour_smoothed;
+			util::approxPolyDP(aa_contour, aa_contour_smoothed, resolution, true);
+			if (aa_contour_smoothed.size() > 3 && util::calculateIOU(aa_contour, aa_contour_smoothed) > 0.8) {
+				aa_contour = aa_contour_smoothed;
+			}
 
-		// scale down the polygon based on the resolution
-		std::vector<cv::Point> small_aa_polygon(aa_contour.size());
-		for (int i = 0; i < aa_contour.size(); i++) {
-			small_aa_polygon[i] = cv::Point(std::round(aa_contour[i].x / resolution), std::round(aa_contour[i].y / resolution));
-		}
-		
-		// calculate the bounding box
-		cv::Rect bbox = util::boundingBox(small_aa_polygon);
-		if (bbox.width <= 1 && bbox.height <= 1) throw "Too small polygon.";
+			// scale down the polygon based on the resolution
+			std::vector<cv::Point> small_aa_polygon(aa_contour.size());
+			for (int i = 0; i < aa_contour.size(); i++) {
+				small_aa_polygon[i] = cv::Point(std::round(aa_contour[i].x / resolution), std::round(aa_contour[i].y / resolution));
+			}
 
-		cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
-		util::createImageFromContour(bbox.width + 2, bbox.height + 2, small_aa_polygon, cv::Point(1 - bbox.x, 1 - bbox.y), img, false);
+			// calculate the bounding box
+			cv::Rect bbox = util::boundingBox(small_aa_polygon);
+			if (bbox.width <= 1 && bbox.height <= 1) throw "Too small polygon.";
 
-		// clean the contour by removing small bumps
-		for (int r = 1; r < img.rows - 1; r++) {
-			for (int c = 1; c < img.cols - 1; c++) {
-				if (img(r, c) == 255) {
-					if ((img(r - 1, c) == 0 && img(r, c - 1) == 0 && img(r, c + 1) == 0 && img(r + 1, c) == 255)
-						|| (img(r - 1, c) == 0 && img(r, c - 1) == 0 && img(r + 1, c) == 0 && img(r, c + 1) == 255)
-						|| (img(r, c - 1) == 0 && img(r + 1, c) == 0 && img(r, c + 1) == 0 && img(r - 1, c) == 255)
-						|| (img(r - 1, c) == 0 && img(r, c + 1) == 0 && img(r + 1, c) == 0 && img(r, c - 1) == 255)) {
-						img(r, c) = 0;
+			cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
+			util::createImageFromContour(bbox.width + 2, bbox.height + 2, small_aa_polygon, cv::Point(1 - bbox.x, 1 - bbox.y), img, false);
+
+			// clean the contour by removing small bumps
+			for (int r = 1; r < img.rows - 1; r++) {
+				for (int c = 1; c < img.cols - 1; c++) {
+					if (img(r, c) == 255) {
+						if ((img(r - 1, c) == 0 && img(r, c - 1) == 0 && img(r, c + 1) == 0 && img(r + 1, c) == 255)
+							|| (img(r - 1, c) == 0 && img(r, c - 1) == 0 && img(r + 1, c) == 0 && img(r, c + 1) == 255)
+							|| (img(r, c - 1) == 0 && img(r + 1, c) == 0 && img(r, c + 1) == 0 && img(r - 1, c) == 255)
+							|| (img(r - 1, c) == 0 && img(r, c + 1) == 0 && img(r + 1, c) == 0 && img(r, c - 1) == 255)) {
+							img(r, c) = 0;
+						}
 					}
-				}
-				else {
-					if ((img(r - 1, c) == 0 && img(r, c - 1) == 255 && img(r, c + 1) == 255 && img(r + 1, c) == 255 && img(r + 1, c - 1) == 255 && img(r + 1, c + 1) == 255)
-						|| (img(r, c - 1) == 0 && img(r - 1, c) == 255 && img(r, c + 1) == 255 && img(r + 1, c) == 255 && img(r - 1, c + 1) == 255 && img(r + 1, c + 1) == 255)
-						|| (img(r + 1, c) == 0 && img(r - 1, c) == 255 && img(r, c - 1) == 255 && img(r, c + 1) == 255 && img(r - 1, c - 1) == 255 && img(r - 1, c + 1) == 255)
-						|| (img(r, c + 1) == 0 && img(r - 1, c) == 255 && img(r, c - 1) == 255 && img(r + 1, c) == 255 && img(r - 1, c - 1) == 255 && img(r + 1, c - 1) == 255)) {
-						img(r, c) = 255;
+					else {
+						if ((img(r - 1, c) == 0 && img(r, c - 1) == 255 && img(r, c + 1) == 255 && img(r + 1, c) == 255 && img(r + 1, c - 1) == 255 && img(r + 1, c + 1) == 255)
+							|| (img(r, c - 1) == 0 && img(r - 1, c) == 255 && img(r, c + 1) == 255 && img(r + 1, c) == 255 && img(r - 1, c + 1) == 255 && img(r + 1, c + 1) == 255)
+							|| (img(r + 1, c) == 0 && img(r - 1, c) == 255 && img(r, c - 1) == 255 && img(r, c + 1) == 255 && img(r - 1, c - 1) == 255 && img(r - 1, c + 1) == 255)
+							|| (img(r, c + 1) == 0 && img(r - 1, c) == 255 && img(r, c - 1) == 255 && img(r + 1, c) == 255 && img(r - 1, c - 1) == 255 && img(r + 1, c - 1) == 255)) {
+							img(r, c) = 255;
+						}
 					}
 				}
 			}
-		}
 
-		std::vector<util::Polygon> polygons = util::findContours(img, true);
-		if (polygons.size() == 0) throw "No contour is found.";
+			std::vector<util::Polygon> polygons = util::findContours(img, true);
+			if (polygons.size() == 0) throw "No contour is found.";
 
-		// offset back and scale up the simplified scale-down polygon
-		std::vector<cv::Point2f> simplified_aa_contour(polygons[0].contour.size());
-		for (int i = 0; i < polygons[0].contour.size(); i++) {
-			simplified_aa_contour[i] = cv::Point2f((polygons[0].contour[i].x + bbox.x - 1) * resolution, (polygons[0].contour[i].y + bbox.y - 1) * resolution);
+			// offset back and scale up the simplified scale-down polygon
+			//std::vector<cv::Point2f> simplified_aa_contour(polygons[0].contour.size());
+			simplified_aa_contour.resize(polygons[0].contour.size());
+			for (int i = 0; i < polygons[0].contour.size(); i++) {
+				simplified_aa_contour[i] = cv::Point2f((polygons[0].contour[i].x + bbox.x - 1) * resolution, (polygons[0].contour[i].y + bbox.y - 1) * resolution);
+			}
 		}
 		
 		if (refine) {
@@ -188,10 +198,56 @@ namespace simp {
 			cv::Rect bbox = util::boundingBox(simplified_aa_contour);
 			float scale_x = (float)bbox_input.width / bbox.width;
 			float scale_y = (float)bbox_input.height / bbox.height;
-			for (int i = 0; i < simplified_aa_contour.size(); i++) {
-				simplified_aa_contour[i].x = (simplified_aa_contour[i].x - bbox.x) * scale_x + bbox_input.x;
-				simplified_aa_contour[i].y = (simplified_aa_contour[i].y - bbox.y) * scale_y + bbox_input.y;
+
+			float best_iou = 0;
+			std::vector<cv::Point2f> refined_contour(simplified_aa_contour.size());
+			while (true) {
+				for (int i = 0; i < refined_contour.size(); i++) {
+					refined_contour[i].x = (simplified_aa_contour[i].x - bbox.x) * scale_x + bbox_input.x;
+					refined_contour[i].y = (simplified_aa_contour[i].y - bbox.y) * scale_y + bbox_input.y;
+				}
+				float iou = util::calculateIOU(aa_contour, refined_contour);
+				if (iou < best_iou) {
+					scale_x /= 0.99;
+					scale_y /= 0.99;
+					break;
+				}
+				best_iou = iou;
+				scale_x *= 0.99;
+				scale_y *= 0.99;
 			}
+			while (true) {
+				for (int i = 0; i < refined_contour.size(); i++) {
+					refined_contour[i].x = (simplified_aa_contour[i].x - bbox.x) * scale_x + bbox_input.x;
+					refined_contour[i].y = (simplified_aa_contour[i].y - bbox.y) * scale_y + bbox_input.y;
+				}
+				float iou = util::calculateIOU(aa_contour, refined_contour);
+				if (iou < best_iou)  {
+					scale_x /= 0.99;
+					break;
+				}
+				best_iou = iou;
+				scale_x *= 0.99;
+			}
+			while (true) {
+				for (int i = 0; i < refined_contour.size(); i++) {
+					refined_contour[i].x = (simplified_aa_contour[i].x - bbox.x) * scale_x + bbox_input.x;
+					refined_contour[i].y = (simplified_aa_contour[i].y - bbox.y) * scale_y + bbox_input.y;
+				}
+				float iou = util::calculateIOU(aa_contour, refined_contour);
+				if (iou < best_iou)  {
+					scale_y /= 0.99;
+					break;
+				}
+				best_iou = iou;
+				scale_y *= 0.99;
+			}
+
+			for (int i = 0; i < refined_contour.size(); i++) {
+				refined_contour[i].x = (simplified_aa_contour[i].x - bbox.x) * scale_x + bbox_input.x;
+				refined_contour[i].y = (simplified_aa_contour[i].y - bbox.y) * scale_y + bbox_input.y;
+			}
+			simplified_aa_contour = refined_contour;
 			/*
 			std::vector<cv::Point> simplified_aa_contour_int(simplified_aa_contour.size());
 			for (int i = 0; i < simplified_aa_contour.size(); i++) {
