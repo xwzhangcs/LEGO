@@ -65,7 +65,7 @@ namespace util {
 			static void writeVoxels(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<VoxelBuilding>& voxel_buildings);
 
 		private:
-			static void writeBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, const std::string& facade_texture, std::vector<Face>& faces);
+			static void writeBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, const std::string& facade_texture, const std::string& roof_texture, std::vector<Face>& faces);
 			static void createFace(const std::vector<cv::Point2f>& coords, double z, double h, float floor_tile_width, float floor_tile_height, const cv::Point3f& color, const std::string& facade_texture, std::vector<Face>& faces);
 			static double dotProductBetweenThreePoints(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c);
 			static double getLength(const std::vector<cv::Point2f>& points);

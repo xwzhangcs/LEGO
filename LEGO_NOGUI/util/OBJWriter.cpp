@@ -55,7 +55,7 @@ namespace util {
 			std::vector<Face> faces;
 
 			for (int i = 0; i < buildings.size(); i++) {
-				// randomly select a texture file
+				// randomly select a texture file for the facade
 				srand(time(NULL));
 				int facade_texture_id = rand() % 13;
 
@@ -104,7 +104,7 @@ namespace util {
 				std::stringstream facade_texture;
 				facade_texture << "textures/window_tile" << facade_texture_id << ".png";
 				
-				writeBuilding(buildings[i], scale, color, facade_texture.str(), faces);
+				writeBuilding(buildings[i], scale, color, facade_texture.str(), "textures/roof_texture.png", faces);
 			}
 
 			std::ofstream file(filename);
@@ -269,9 +269,13 @@ namespace util {
 			file.close();
 		}
 
-		void OBJWriter::writeBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, const std::string& facade_texture, std::vector<Face>& faces) {
+		void OBJWriter::writeBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, const std::string& facade_texture, const std::string& roof_texture, std::vector<Face>& faces) {
+			double roof_tile_size = 20.0 / scale;
+
 			for (auto& footprint : building->footprints) {
 				std::vector<std::vector<cv::Point2f>> polygons;
+
+				cv::Rect bbox = util::boundingBox(footprint.contour.points);
 
 				polygons = tessellate(footprint.contour, footprint.holes);
 				for (int i = 0; i < polygons.size(); i++) {
@@ -290,12 +294,16 @@ namespace util {
 						cv::Point3f pt_bottom(polygon[i].x, polygon[i].y, building->bottom_height);
 						cv::Point3f pt_top(polygon[i].x, polygon[i].y, building->top_height);
 
-						top_vertices[i] = Vertex(pt_top, cv::Point3f(0, 0, 1));
+						// calculate the texture coordinates
+						cv::Point2f tex_coord((polygon[i].x - bbox.x) / roof_tile_size, (polygon[i].y - bbox.y) / roof_tile_size);
+
+						top_vertices[i] = Vertex(pt_top, tex_coord, cv::Point3f(0, 0, 1));
 						bottom_vertices[i] = Vertex(pt_bottom, cv::Point3f(0, 0, -1));
 					}
 
 					std::reverse(top_vertices.begin(), top_vertices.end());
-					faces.push_back(Face(top_vertices, color));
+
+					faces.push_back(Face(top_vertices, roof_texture));
 					faces.push_back(Face(bottom_vertices, color));
 				}
 			}
@@ -387,7 +395,7 @@ namespace util {
 			}	
 
 			for (auto child : building->children) {
-				writeBuilding(child, scale, color, facade_texture, faces);
+				writeBuilding(child, scale, color, facade_texture, roof_texture, faces);
 			}
 		}
 
