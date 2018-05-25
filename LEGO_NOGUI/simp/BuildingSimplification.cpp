@@ -8,6 +8,46 @@
 
 namespace simp {
 
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float min_hole_ratio) {	
+		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
+
+		std::vector<std::tuple<float, long long, int>> records;
+
+		time_t start = clock();
+		setbuf(stdout, NULL);
+		for (int i = 0; i < voxel_buildings.size(); i++) {
+			std::vector<std::shared_ptr<util::BuildingLayer>> components = util::DisjointVoxelData::layering(voxel_buildings[i], layering_threshold, min_num_slices_per_layer);
+			for (auto component : components) {
+				try {
+					std::shared_ptr<util::BuildingLayer> building;
+
+					float angle = -1;
+					int dx = -1;
+					int dy = -1;
+					building = simplifyBuildingByAll(i, component, algorithms, alpha, angle, dx, dy, min_hole_ratio, records);
+
+					buildings.push_back(building);
+				}
+				catch (...) {}
+			}
+		}
+		time_t end = clock();
+		std::cout << "Time elapsed " << (double)(end - start) / CLOCKS_PER_SEC << " sec." << std::endl;
+
+		if (record_stats) {
+			std::ofstream out("records.txt");
+			for (int i = 0; i < records.size(); i++) {
+				float error = std::get<0>(records[i]);
+				long long num_primitive_shapes = std::get<1>(records[i]);
+				int selected_algorithm = std::get<2>(records[i]);
+				out << error << " " << num_primitive_shapes << " " << selected_algorithm << std::endl;
+			}
+			out.close();
+		}
+
+		return buildings;
+	}
+
 	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, int algorithm, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float epsilon, int resolution, float curve_threshold, float angle_threshold, float min_hole_ratio) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
@@ -64,6 +104,186 @@ namespace simp {
 
 		return buildings;
 	}
+
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, std::map<int, std::vector<double>>& algorithms, float alpha, float angle, int dx, int dy, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
+		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
+
+		// get baseline cost
+		std::vector<util::Polygon> baseline_polygons;
+		std::vector<float> baseline_costs(3, 0);
+		for (int i = 0; i < contours.size(); i++) {
+			baseline_polygons.push_back(DPSimplification::simplify(contours[i], 0.5, min_hole_ratio));
+			std::vector<float> costs = calculateCost(baseline_polygons[i], contours[i], layer->top_height - layer->bottom_height);
+			for (int j = 0; j < 3; j++) {
+				baseline_costs[j] += costs[j];
+			}
+		}
+
+		std::vector<util::Polygon> best_simplified_polygons;
+		bool right_angle_for_all_contours = true;
+		for (int i = 0; i < contours.size(); i++) {
+			util::Polygon best_simplified_polygon;
+
+			float best_cost = std::numeric_limits<float>::max();
+			int best_algorithm = ALG_UNKNOWN;
+			float best_error = 0.0f;
+			int best_num_primitive_shapes = 0;
+
+			// try Douglas-Peucker
+			if (algorithms.find(ALG_DP) != algorithms.end()) {
+				try {
+					double epsilon = algorithms[ALG_DP][0];
+					util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+					if (cost < best_cost) {
+						best_algorithm = ALG_DP;
+						right_angle_for_all_contours = false;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) {}
+			}
+
+			// try right angle
+			if (algorithms.find(ALG_RIGHTANGLE) != algorithms.end()) {
+				try {
+					int resolution = algorithms[ALG_RIGHTANGLE][0];
+					util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, angle, dx, dy, min_hole_ratio);
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+					if (cost < best_cost) {
+						best_algorithm = ALG_RIGHTANGLE;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) {}
+			}
+
+			// try curve
+			if (algorithms.find(ALG_CURVE) != algorithms.end()) {
+				try {
+					float epsilon = algorithms[ALG_CURVE][0];
+					float curve_threshold = algorithms[ALG_CURVE][1];
+					util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold, min_hole_ratio);
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+					if (cost < best_cost) {
+						best_algorithm = ALG_CURVE;
+						right_angle_for_all_contours = false;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) {}
+			}
+
+			// try curve + right angle
+			if (algorithms.find(ALG_CURVE_RIGHTANGLE) != algorithms.end()) {
+				try {
+					float epsilon = algorithms[ALG_CURVE_RIGHTANGLE][0];
+					float curve_threshold = algorithms[ALG_CURVE_RIGHTANGLE][1];
+					float angle_threshold = algorithms[ALG_CURVE_RIGHTANGLE][2] / 180.0f * CV_PI;
+					util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold, min_hole_ratio);
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+					if (cost < best_cost) {
+						best_algorithm = ALG_CURVE_RIGHTANGLE;
+						right_angle_for_all_contours = false;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) {}
+			}
+
+			if (best_algorithm == ALG_UNKNOWN) {
+				// try Douglas-Peucker when no method works
+				try {
+					float epsilon = 2;
+					util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
+					if (cost < best_cost) {
+						best_algorithm = ALG_DP;
+						right_angle_for_all_contours = false;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) {}
+			}
+
+			if (best_algorithm == ALG_UNKNOWN) continue;
+
+			if (best_algorithm == ALG_RIGHTANGLE) {
+				std::cout << "Selected algorithm: RA" << std::endl;
+			}
+			else if (best_algorithm == ALG_CURVE || best_algorithm == ALG_CURVE_RIGHTANGLE) {
+				std::cout << "Selected algorithm: CSRA" << std::endl;
+			}
+			else {
+				std::cout << "Selected algorithm: DP" << std::endl;
+			}
+			best_simplified_polygons.push_back(best_simplified_polygon);
+			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
+		}
+
+		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygons, layer->bottom_height, layer->top_height));
+
+		for (auto child_layer : layer->children) {
+			try {
+				float contour_area = 0;
+				for (int i = 0; i < contours.size(); i++) {
+					contour_area += util::calculateArea(contours[i]);
+				}
+
+				float next_contour_area = 0;
+				for (int i = 0; i < child_layer->raw_footprints[0].size(); i++) {
+					next_contour_area += util::calculateArea(child_layer->raw_footprints[0][i]);
+				}
+
+				if (!right_angle_for_all_contours || next_contour_area > contour_area) {
+					angle = -1;
+					dx = -1;
+					dy = -1;
+				}
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, algorithms, alpha, angle, dx, dy, min_hole_ratio, records);
+				building->children.push_back(child);
+			}
+			catch (...) {
+			}
+		}
+
+		return building;
+	}
+
 
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float angle, int dx, int dy, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
@@ -457,7 +677,8 @@ namespace simp {
 		ans[0] = (1 - iou) * slice_area * height * 0.1;
 		ans[1] = slice_area * height;
 		
-		// calculate weighted #primitive shapes (rectangle = 0.5, curve = 0.75, triangle = 1.0)
+		// calculate weighted #primitive shapes (rectangle = 0.5, curve = 0.75, triangle = 2.0)
+		/*
 		ans[2] = 0;
 		for (auto shape : simplified_polygon.primitive_shapes) {
 			if (shape->type() == util::PrimitiveShape::TYPE_RECTANGLE) ans[2] += 0.5;
@@ -465,6 +686,8 @@ namespace simp {
 			else if (shape->type() == util::PrimitiveShape::TYPE_TRIANGLE) ans[2] += 2;
 			else throw "Invalid primive type";
 		}
+		*/
+		ans[2] = simplified_polygon.primitive_shapes.size();
 
 		return ans;
 	}
