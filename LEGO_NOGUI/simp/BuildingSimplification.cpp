@@ -677,11 +677,11 @@ namespace simp {
 		ans[0] = (1 - iou) * slice_area * height;
 		ans[1] = slice_area * height;
 		
-		// calculate weighted #primitive shapes (rectangle = 2, curve = 0.75, triangle = 1.0)
+		// calculate weighted #primitive shapes (rectangle = 2, curve = 0.5, triangle = 1.0)
 		ans[2] = 0;
 		for (auto shape : simplified_polygon.primitive_shapes) {
 			if (shape->type() == util::PrimitiveShape::TYPE_RECTANGLE) ans[2] += 2;
-			else if (shape->type() == util::PrimitiveShape::TYPE_CURVE) ans[2] += 0.75;
+			else if (shape->type() == util::PrimitiveShape::TYPE_CURVE) ans[2] += 0.5;
 			else if (shape->type() == util::PrimitiveShape::TYPE_TRIANGLE) ans[2] += 1;
 			else throw "Invalid primive type";
 		}
