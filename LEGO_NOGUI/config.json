@@ -17,7 +17,7 @@
     },
     "right_angle" : {
       "use" : true,
-      "epsilon" : 16
+      "epsilon" : 20
     },
     "curve" : {
       "use" : true,
