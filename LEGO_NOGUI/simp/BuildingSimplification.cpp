@@ -674,20 +674,17 @@ namespace simp {
 		// calculate IOU
 		float slice_area = util::calculateArea(polygon);
 		float iou = util::calculateIOU(simplified_polygon, polygon);
-		ans[0] = (1 - iou) * slice_area * height * 0.1;
+		ans[0] = (1 - iou) * slice_area * height;
 		ans[1] = slice_area * height;
 		
-		// calculate weighted #primitive shapes (rectangle = 0.5, curve = 0.75, triangle = 2.0)
-		/*
+		// calculate weighted #primitive shapes (rectangle = 2, curve = 0.75, triangle = 1.0)
 		ans[2] = 0;
 		for (auto shape : simplified_polygon.primitive_shapes) {
-			if (shape->type() == util::PrimitiveShape::TYPE_RECTANGLE) ans[2] += 0.5;
+			if (shape->type() == util::PrimitiveShape::TYPE_RECTANGLE) ans[2] += 2;
 			else if (shape->type() == util::PrimitiveShape::TYPE_CURVE) ans[2] += 0.75;
-			else if (shape->type() == util::PrimitiveShape::TYPE_TRIANGLE) ans[2] += 2;
+			else if (shape->type() == util::PrimitiveShape::TYPE_TRIANGLE) ans[2] += 1;
 			else throw "Invalid primive type";
 		}
-		*/
-		ans[2] = simplified_polygon.primitive_shapes.size();
 
 		return ans;
 	}
