@@ -95,6 +95,9 @@ ipch/
 *.vspx
 *.sap
 
+# Qt
+**/GeneratedFiles/
+
 # TFS 2012 Local Workspace
 $tf/
 

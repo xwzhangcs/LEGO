@@ -14,6 +14,18 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
+#include "voxel_model.cpp"
+
+
+double readDoubleValue(const rapidjson::Value& node, const char* key) {
+	if (node.HasMember(key) && node[key].IsDouble()) {
+		return node[key].GetDouble();
+	}
+	else {
+	  throw "Could not read double from node";
+	}
+}
+
 double readDoubleValue(const rapidjson::Value& node, const char* key, double default_value) {
 	if (node.HasMember(key) && node[key].IsDouble()) {
 		return node[key].GetDouble();
@@ -70,6 +82,18 @@ int main(int argc, const char* argv[]) {
 		std::vector<cv::Mat_<uchar>> voxel_data;
 
 		// read input filename
+		bool do_voxel_model = false;
+		try {
+		  if (doc["do_voxel_model"].IsBool() and doc["do_voxel_model"].GetBool())
+		    do_voxel_model = true;
+		  if (doc["do_voxel_model"].IsString() and doc["do_voxel_model"].GetString()=="True")
+		    do_voxel_model = true;
+		  if (doc["do_voxel_model"].IsString() and doc["do_voxel_model"].GetString()=="true")
+		    do_voxel_model = true;
+		}
+		catch (...) { }
+		
+		// read input filename
 		QString input_slice_filename;
 		try {
 			input_slice_filename = QString(doc["input_slice_filename"].GetString());
@@ -113,19 +137,28 @@ int main(int argc, const char* argv[]) {
 		for (int i = 0; i < files.size(); i++) {
 			voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 		}
-
+		
+		// the following 4 parameters are necessary, we should throw an error if they are not provided, so removing defautl values.
+		
 		// read offset_x
-		double offset_x = readDoubleValue(doc, "offset_x", 0);
+		double offset_x = readDoubleValue(doc, "offset_x");
 
 		// read offset_y
-		double offset_y = readDoubleValue(doc, "offset_y", 0);
+		double offset_y = readDoubleValue(doc, "offset_y");
 
 		// read offset_z
-		double offset_z = readDoubleValue(doc, "offset_z", 0);
+		double offset_z = readDoubleValue(doc, "offset_z");
 
 		// read scale
-		double scale = readDoubleValue(doc, "scale", 0.3);
+		double scale = readDoubleValue(doc, "scale");
 
+		// do voxel model (for debug)
+		if (do_voxel_model) {
+		  std::cout<< "Doing voxel model" << std::endl;
+		  voxel_model::voxel_model(voxel_data, output_mesh.toStdString(), offset_x, offset_y, offset_z, scale);
+		  return 0;
+		}
+		
 		// read contour simplificaton weight
 		double contour_simplification_weight = readDoubleValue(doc, "contour_simplification_weight", 0.5);
 
@@ -176,7 +209,8 @@ int main(int argc, const char* argv[]) {
 	}
 	else {
 		if (argc < 9) {
-			std::cerr << "Usage: " << argv[0] << " <slice image filename> <weight [0-1]> <algorithm option: 1 - All, 2 - DP> <offset_x> <offset_y> <offset_z> <scale> <output obj filename> <output topface filename>" << std::endl;
+			std::cerr << "Usage: \n" << argv[0] << " <slice image filename> <weight [0-1]> <algorithm option: 1 - All, 2 - DP> <offset_x> <offset_y> <offset_z> <scale> <output obj filename> <output topface filename>" << std::endl;
+			std::cerr << argv[0] << " <config json filename> " << std::endl;
 			return -1;
 		}
 
@@ -217,8 +251,8 @@ int main(int argc, const char* argv[]) {
 		voxel_data.resize(files.size());
 		for (int i = 0; i < files.size(); i++) {
 			voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
-		}
-
+		}	
+		
 		// determine the layering threshold based on the weight ratio
 		float threshold = 0.01;
 		if (alpha < 0.1) threshold = 0.1;
@@ -251,7 +285,7 @@ int main(int argc, const char* argv[]) {
 		else if (alpha < 0.8) resolution = 4;
 		else if (alpha < 0.9) resolution = 4;
 		else resolution = 2;
-
+		
 		// determine the parameter for the curve method
 		float curve_threshold;
 		if (alpha < 0.2) curve_threshold = 2.0f;
@@ -266,7 +300,7 @@ int main(int argc, const char* argv[]) {
 		std::vector<util::VoxelBuilding> voxel_buildings = util::DisjointVoxelData::disjoint(voxel_data);
 		time_t end = clock();
 		std::cout << "Time elapsed: " << (double)(end - start) / CLOCKS_PER_SEC << " sec." << std::endl;
-
+		
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 		if (std::stoi(argv[3]) == 1) {
 			buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_ALL, record_stats, min_num_slices_per_layer, alpha, threshold, epsilon, resolution, curve_threshold, angle_threshold, min_hole_ratio);
