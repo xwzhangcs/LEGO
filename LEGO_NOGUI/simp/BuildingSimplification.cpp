@@ -33,7 +33,7 @@ namespace simp {
 			for (auto component : components) {
 				try {
 					std::shared_ptr<util::BuildingLayer> building;
-					building = simplifyBuildingByAll(i, component, algorithms, alpha, snapping_threshold, orientation, min_hole_ratio, records);
+					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_hole_ratio, records);
 
 					buildings.push_back(building);
 				}
@@ -84,7 +84,7 @@ namespace simp {
 	 * @param min_hole_ratio		The minimum area ratio of the hole to the contour
 	 * @param records				The statistics will be recorded.
 	 */
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 
 		// get baseline cost
@@ -230,6 +230,20 @@ namespace simp {
 			else {
 				std::cout << "Selected algorithm: DP" << std::endl;
 			}
+			
+			// snap the edges
+			std::vector<cv::Point2f> simplified_contour = best_simplified_polygon.contour.getActualPoints().points;
+			util::snapPolygon(parent_contours, simplified_contour, snapping_threshold);
+			best_simplified_polygon.contour.points = simplified_contour;
+			best_simplified_polygon.mat = cv::Mat_<float>::eye(3, 3);
+			best_simplified_polygon.contour.mat = cv::Mat_<float>::eye(3, 3);
+			for (int j = 0; j < best_simplified_polygon.holes.size(); j++) {
+				std::vector<cv::Point2f> hole = best_simplified_polygon.holes[j].getActualPoints().points;
+				util::snapPolygon(parent_contours, hole, snapping_threshold);
+				best_simplified_polygon.holes[j].points = hole;
+				best_simplified_polygon.holes[j].mat = cv::Mat_<float>::eye(3, 3);
+			}
+						
 			best_simplified_polygons.push_back(best_simplified_polygon);
 			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
 		}
@@ -248,186 +262,7 @@ namespace simp {
 					next_contour_area += util::calculateArea(child_layer->raw_footprints[0][i]);
 				}
 
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, algorithms, alpha, snapping_threshold, orientation, min_hole_ratio, records);
-				building->children.push_back(child);
-			}
-			catch (...) {
-			}
-		}
-
-		return building;
-	}
-
-	/**
-	 * Simplify the shape of a building.
-	 *
-	 * @param layer		layer
-	 * @param epsilon	simplification level
-	 * @return			simplified building shape
-	 */
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByDP(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
-		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
-		// get baseline cost
-		std::vector<util::Polygon> baseline_polygons;
-		std::vector<float> baseline_costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			baseline_polygons.push_back(DPSimplification::simplify(contours[i], 0.5, min_hole_ratio));
-			std::vector<float> costs = calculateCost(baseline_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) {
-				baseline_costs[j] += costs[j];
-			}
-		}
-
-		// simplify the polygon
-		std::vector<util::Polygon> simplified_polygons;
-		for (int i = 0; i < contours.size(); i++) {
-			try {
-				util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
-				simplified_polygons.push_back(simplified_polygon);
-				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-				records.push_back(std::make_tuple(costs[0] / costs[1], costs[2], ALG_DP));
-			}
-			catch (...) {}
-		}
-		if (simplified_polygons.size() == 0) throw "Simplification failed.";
-
-		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-
-		for (auto child_layer : layer->children) {
-			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByDP(building_id, child_layer, alpha, epsilon, orientation, min_hole_ratio, records);
-				building->children.push_back(child);
-			}
-			catch (...) {
-			}
-		}
-
-		return building;
-	}
-	
-	/**
-	 * Simplify the shape of a building.
-	 *
-	 * @param layer			layer
-	 * @param resolution	simplification level
-	 * @return				simplified building shape
-	 */
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, int resolution, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
-		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
-		// get baseline cost
-		std::vector<util::Polygon> baseline_polygons;
-		std::vector<float> baseline_costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			baseline_polygons.push_back(DPSimplification::simplify(contours[i], 0.5, min_hole_ratio));
-			std::vector<float> costs = calculateCost(baseline_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) {
-				baseline_costs[j] += costs[j];
-			}
-		}
-
-		std::vector<util::Polygon> simplified_polygons;
-		for (int i = 0; i < contours.size(); i++) {
-			try {
-				util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, orientation, min_hole_ratio);
-				simplified_polygons.push_back(simplified_polygon);
-				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-				records.push_back(std::make_tuple(costs[0] / costs[1], costs[2], ALG_RIGHTANGLE));
-			}
-			catch (...) {}
-		}
-		if (simplified_polygons.size() == 0) throw "Simplification failed.";
-
-		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-
-		for (auto child_layer : layer->children) {
-			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByRightAngle(building_id, child_layer, alpha, resolution, orientation, min_hole_ratio, records);
-				building->children.push_back(child);
-			}
-			catch (...) {
-			}
-		}
-
-		return building;
-	}
-
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByCurve(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
-		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
-		// get baseline cost
-		std::vector<util::Polygon> baseline_polygons;
-		std::vector<float> baseline_costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			baseline_polygons.push_back(DPSimplification::simplify(contours[i], 0.5, min_hole_ratio));
-			std::vector<float> costs = calculateCost(baseline_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) {
-				baseline_costs[j] += costs[j];
-			}
-		}
-
-		std::vector<util::Polygon> simplified_polygons;
-		for (int i = 0; i < contours.size(); i++) {
-			try {
-				util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold, orientation, min_hole_ratio);
-				simplified_polygons.push_back(simplified_polygon);
-				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-				records.push_back(std::make_tuple(costs[0] / costs[1], costs[2], ALG_CURVE));
-			}
-			catch (...) {}
-		}
-		if (simplified_polygons.size() == 0) throw "Simplification failed.";
-
-		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-
-		for (auto child_layer : layer->children) {
-			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByCurve(building_id, child_layer, alpha, epsilon, curve_threshold, orientation, min_hole_ratio, records);
-				building->children.push_back(child);
-			}
-			catch (...) {
-			}
-		}
-
-		return building;
-	}
-
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByCurveRightAngle(int building_id, std::shared_ptr<util::BuildingLayer> layer, float alpha, float epsilon, float curve_threshold, float angle_threshold, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
-		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
-		// get baseline cost
-		std::vector<util::Polygon> baseline_polygons;
-		std::vector<float> baseline_costs(3, 0);
-		for (int i = 0; i < contours.size(); i++) {
-			baseline_polygons.push_back(DPSimplification::simplify(contours[i], 0.5, min_hole_ratio));
-			std::vector<float> costs = calculateCost(baseline_polygons[i], contours[i], layer->top_height - layer->bottom_height);
-			for (int j = 0; j < 3; j++) {
-				baseline_costs[j] += costs[j];
-			}
-		}
-
-		std::vector<util::Polygon> simplified_polygons;
-		for (int i = 0; i < contours.size(); i++) {
-			try {
-				util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold, orientation, min_hole_ratio);
-				simplified_polygons.push_back(simplified_polygon);
-				std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-				records.push_back(std::make_tuple(costs[0] / costs[1], costs[2], ALG_CURVE));
-			}
-			catch (...) {}
-		}
-		if (simplified_polygons.size() == 0) throw "Simplification failed.";
-
-		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, simplified_polygons, layer->bottom_height, layer->top_height));
-
-		for (auto child_layer : layer->children) {
-			try {
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByCurveRightAngle(building_id, child_layer, alpha, epsilon, curve_threshold, angle_threshold, orientation, min_hole_ratio, records);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, best_simplified_polygons, algorithms, alpha, snapping_threshold, orientation, min_hole_ratio, records);
 				building->children.push_back(child);
 			}
 			catch (...) {

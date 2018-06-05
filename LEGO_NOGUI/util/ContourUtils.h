@@ -184,7 +184,9 @@ namespace util {
 
 	void approxPolyDP(const std::vector<cv::Point2f>& input_polygon, std::vector<cv::Point2f>& output_polygon, double epsilon, bool closed);
 
-	void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold);
+	//void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold);
+	void snapPolygon(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold);
+	bool snapEdge(const cv::Point2f& p1, const cv::Point2f& p2, std::vector<cv::Point2f>& polygon, int i, int i2);
 	float length(const cv::Point2f& pt);
 	float length(const cv::Point3f& pt);
 	float length(const cv::Point2f& p1, const cv::Point2f& p2);
@@ -192,6 +194,8 @@ namespace util {
 	float crossProduct(const cv::Point2f& v1, const cv::Point2f& v2);
 	cv::Point3f crossProduct(const cv::Point3f& v1, const cv::Point3f& v2);
 	float closestPoint(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segmentOnly, cv::Point2f& pt);
+	float distance(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segmentOnly);
+	bool segmentSegmentIntersection(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d, double *tab, double *tcd, bool segmentOnly, cv::Point2f& intPoint);
 
 	// tessellation
 	std::vector<std::vector<cv::Point2f>> tessellate(const Ring& points);

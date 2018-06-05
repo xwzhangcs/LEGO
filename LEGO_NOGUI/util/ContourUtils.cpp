@@ -1031,6 +1031,7 @@ namespace util {
 		}
 	}
 
+	/*
 	void snapPolygon(const std::vector<cv::Point2f>& ref_polygon, std::vector<cv::Point2f>& polygon, float snap_vertex_threshold, float snap_edge_threshold) {
 		for (int i = 0; i < polygon.size(); i++) {
 			// find the closest point
@@ -1065,6 +1066,137 @@ namespace util {
 					polygon[i] = min_pt;
 				}
 			}
+		}
+	}
+	*/
+
+	void snapPolygon(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold) {
+		std::vector<cv::Point2f> orig_polygon = polygon;
+
+		for (int i = 0; i < polygon.size(); i++) {
+			int i2 = (i + 1) % polygon.size();
+
+			// find the closest almost-colinear edge from the reference polygons
+			float min_dist = std::numeric_limits<float>::max();
+			cv::Point2f pt1, pt2;
+
+			for (int j = 0; j < ref_polygons.size(); j++) {
+				std::vector<cv::Point2f> contour = ref_polygons[j].contour.getActualPoints().points;
+
+				for (int k = 0; k < contour.size(); k++) {
+					int k2 = (k + 1) % contour.size();
+
+					float dist = distance(contour[k], contour[k2], polygon[i], true);
+					float dist2 = distance(contour[k], contour[k2], polygon[i2], true);
+					float dot_product = std::abs(dotProduct(contour[k2] - contour[k], polygon[i2] - polygon[i]) / length(contour[k2] - contour[k]) / length(polygon[i2] - polygon[i]));
+					if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+						min_dist = dist + dist2;
+						pt1 = contour[k];
+						pt2 = contour[k2];
+					}
+
+					dist = distance(polygon[i], polygon[i2], contour[k], true);
+					dist2 = distance(polygon[i], polygon[i2], contour[k2], true);
+					if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+						min_dist = dist + dist2;
+						pt1 = contour[k];
+						pt2 = contour[k2];
+					}
+				}
+
+				for (int k = 0; k < ref_polygons[j].holes.size(); k++) {
+					std::vector<cv::Point2f> hole = ref_polygons[j].holes[k].getActualPoints().points;
+					for (int l = 0; l < hole.size(); l++) {
+						int l2 = (l + 1) % hole.size();
+
+						float dist = distance(hole[l], hole[l2], polygon[i], true);
+						float dist2 = distance(hole[l], hole[l2], polygon[i2], true);
+						float dot_product = std::abs(dotProduct(hole[l2] - hole[l], polygon[i2] - polygon[i]) / length(hole[l2] - hole[l]) / length(polygon[i2] - polygon[i]));
+						if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+							min_dist = dist + dist2;
+							pt1 = hole[l];
+							pt2 = hole[l2];
+						}
+
+						dist = distance(polygon[i], polygon[i2], hole[l], true);
+						dist2 = distance(polygon[i], polygon[i2], hole[l2], true);
+						if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+							min_dist = dist + dist2;
+							pt1 = hole[l];
+							pt2 = hole[l2];
+						}
+					}
+				}
+			}
+
+			// snap the edge to the closest one
+			if (min_dist < std::numeric_limits<float>::max()) {
+				snapEdge(pt1, pt2, polygon, i, i2);
+			}
+		}
+
+		// remove the degenrated points
+		for (int i = polygon.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + polygon.size()) % polygon.size();
+			if (length(polygon[i] - polygon[prev]) < 0.001) polygon.erase(polygon.begin() + i);
+		}
+
+		/*
+		if (!isSimple(polygon)) {
+			polygon = orig_polygon;
+		}
+		*/
+	}
+
+	bool snapEdge(const cv::Point2f& p1, const cv::Point2f& p2, std::vector<cv::Point2f>& polygon, int i, int i2) {
+		int prev = (i - 1 + polygon.size()) % polygon.size();
+		int next = (i2 + 1) % polygon.size();
+
+		double tab, tcd;
+		cv::Point2f int_pt1;
+		if (!segmentSegmentIntersection(p1, p2, polygon[i], polygon[prev], &tab, &tcd, false, int_pt1)) return false;
+		cv::Point2f int_pt2;
+		if (!segmentSegmentIntersection(p1, p2, polygon[i2], polygon[next], &tab, &tcd, false, int_pt2)) return false;
+
+		// check if the snapping causes self-intersection.
+		if (!isSimple({ polygon[i], int_pt1, int_pt2, polygon[i2] })) return false;
+
+		std::vector<cv::Point2f> orig_polygon = polygon;
+
+		// snap the edge
+		polygon[i] = int_pt1;
+		polygon[i2] = int_pt2;
+
+		if (!isSimple(polygon)) {
+			polygon = orig_polygon;
+			return false;
+		}
+
+		return true;
+	}
+
+	float pointSegmentDistance(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segment_only) {
+		float r_numerator = (c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y);
+		float r_denomenator = (b.x - a.x) * (b.x - a.x) + (b.y - a.y) * (b.y - a.y);
+
+		if (r_denomenator <= 0.0f) {
+			return length(a, c);
+		}
+
+		float r = r_numerator / r_denomenator;
+
+		if (segment_only && (r < 0 || r > 1)) {
+			float dist1 = (c.x - a.x) * (c.x - a.x) + (c.y - a.y) * (c.y - a.y);
+			float dist2 = (c.x - b.x) * (c.x - b.x) + (c.y - b.y) * (c.y - b.y);
+			if (dist1 < dist2) {
+				return sqrt(dist1);
+			}
+			else {
+				return sqrt(dist2);
+			}
+		}
+		else {
+			return abs((a.y - c.y) * (b.x - a.x) - (a.x - c.x) * (b.y - a.y)) / sqrt(r_denomenator);
 		}
 	}
 
@@ -1125,6 +1257,77 @@ namespace util {
 			pt = a + (b - a) * r;
 			return std::abs(crossProduct(c - a, b - a)) / sqrt(r_denomenator);
 		}
+	}
+
+	/*
+	* Return the distance from segment ab to point c.
+	*/
+	float distance(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segmentOnly) {
+		float r_numerator = dotProduct(c - a, b - a);
+		float r_denomenator = dotProduct(b - a, b - a);
+
+		if (r_denomenator <= 0.0f) {
+			return cv::norm(a - c);
+		}
+
+		float r = r_numerator / r_denomenator;
+
+		if (segmentOnly && (r < 0 || r > 1)) {
+			float dist1 = std::hypot(c.x - a.x, c.y - a.y);
+			float dist2 = std::hypot(c.x - b.x, c.y - b.y);
+			if (dist1 < dist2) {
+				return dist1;
+			}
+			else {
+				return dist2;
+			}
+		}
+		else {
+			return std::abs(crossProduct(c - a, b - a)) / sqrt(r_denomenator);
+		}
+	}
+
+	bool segmentSegmentIntersection(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d, double *tab, double *tcd, bool segmentOnly, cv::Point2f& intPoint) {
+		cv::Point2f u = b - a;
+		cv::Point2f v = d - c;
+
+		if (length(u) < 0.0000001 || length(v) < 0.0000001) {
+			return false;
+		}
+
+		double numer = v.x * (c.y - a.y) + v.y * (a.x - c.x);
+		double denom = u.y * v.x - u.x * v.y;
+
+		if (denom == 0.0)  {
+			// they are parallel
+			return false;
+		}
+
+		double t0 = numer / denom;
+
+		cv::Point2f ipt = a + t0*u;
+		cv::Point2f tmp = ipt - c;
+		double t1;
+		if (dotProduct(tmp, v) > 0.0) {
+			t1 = length(tmp) / length(v);
+		}
+		else {
+			t1 = -1.0 * length(tmp) / length(d, c);
+		}
+
+		//Check if intersection is within segments
+		//if(segmentOnly && !( (t0 >= MTC_FLOAT_TOL) && (t0 <= 1.0-MTC_FLOAT_TOL) && (t1 >= MTC_FLOAT_TOL) && (t1 <= 1.0-MTC_FLOAT_TOL) ) ){
+		if (segmentOnly && !((t0 >= 0.0000001) && (t0 <= 1.0 - 0.0000001) && (t1 >= 0.0000001) && (t1 <= 1.0 - 0.0000001))){
+			return false;
+		}
+
+		*tab = t0;
+		*tcd = t1;
+		cv::Point2f dirVec = b - a;
+
+		intPoint = a + t0 * dirVec;
+
+		return true;
 	}
 
 	/**

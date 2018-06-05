@@ -8,7 +8,7 @@ DPOptionDialog::DPOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.doubleSpinBoxLayeringThreshold->setSingleStep(0.1);
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
 	ui.doubleSpinBoxLayeringThreshold->setMaximum(1.0);
-	ui.doubleSpinBoxSnappingThreshold->setValue(1.0);
+	ui.doubleSpinBoxSnappingThreshold->setValue(0.0);
 	ui.lineEditOrientation->setText("0");
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));

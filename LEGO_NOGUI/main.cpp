@@ -182,7 +182,7 @@ int main(int argc, const char* argv[]) {
 		double layering_threshold = readNumber(doc, "layering_threshold", 0.7);
 
 		// read snapping threshold
-		double contour_snapping_threshold = readNumber(doc, "contour_snapping_threshold", 0.7);
+		double contour_snapping_threshold = readNumber(doc, "contour_snapping_threshold", 2.5) / scale;
 				
 		// read orientation
 		double orientation = readNumber(doc, "bulk_orientation", 0.0) / 180.0 * CV_PI;
