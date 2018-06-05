@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'RightAngleOptionDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.0
+** Created by: Qt User Interface Compiler version 5.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -17,6 +17,7 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 
@@ -33,8 +34,8 @@ public:
     QLabel *label_2;
     QLabel *label_4;
     QLabel *label_3;
-    QDoubleSpinBox *doubleSpinBoxSnapVertexThreshold;
-    QDoubleSpinBox *doubleSpinBoxSnapEdgeThreshold;
+    QDoubleSpinBox *doubleSpinBoxSnappingThreshold;
+    QLineEdit *lineEditOrientation;
 
     void setupUi(QDialog *RightAngleOptionDialog)
     {
@@ -42,7 +43,7 @@ public:
             RightAngleOptionDialog->setObjectName(QStringLiteral("RightAngleOptionDialog"));
         RightAngleOptionDialog->resize(246, 172);
         RightAngleOptionDialog->setMinimumSize(QSize(246, 172));
-        RightAngleOptionDialog->setMaximumSize(QSize(246, 172));
+        RightAngleOptionDialog->setMaximumSize(QSize(346, 272));
         label = new QLabel(RightAngleOptionDialog);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(20, 10, 61, 21));
@@ -67,12 +68,13 @@ public:
         label_3 = new QLabel(RightAngleOptionDialog);
         label_3->setObjectName(QStringLiteral("label_3"));
         label_3->setGeometry(QRect(20, 70, 131, 21));
-        doubleSpinBoxSnapVertexThreshold = new QDoubleSpinBox(RightAngleOptionDialog);
-        doubleSpinBoxSnapVertexThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnapVertexThreshold"));
-        doubleSpinBoxSnapVertexThreshold->setGeometry(QRect(160, 70, 62, 22));
-        doubleSpinBoxSnapEdgeThreshold = new QDoubleSpinBox(RightAngleOptionDialog);
-        doubleSpinBoxSnapEdgeThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnapEdgeThreshold"));
-        doubleSpinBoxSnapEdgeThreshold->setGeometry(QRect(160, 100, 62, 22));
+        doubleSpinBoxSnappingThreshold = new QDoubleSpinBox(RightAngleOptionDialog);
+        doubleSpinBoxSnappingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnappingThreshold"));
+        doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 70, 62, 22));
+        lineEditOrientation = new QLineEdit(RightAngleOptionDialog);
+        lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
+        lineEditOrientation->setGeometry(QRect(92, 100, 131, 20));
+        lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         retranslateUi(RightAngleOptionDialog);
 
@@ -81,13 +83,13 @@ public:
 
     void retranslateUi(QDialog *RightAngleOptionDialog)
     {
-        RightAngleOptionDialog->setWindowTitle(QApplication::translate("RightAngleOptionDialog", "Option Dialog", 0));
-        label->setText(QApplication::translate("RightAngleOptionDialog", "Resolution:", 0));
-        pushButtonCancel->setText(QApplication::translate("RightAngleOptionDialog", "Cancel", 0));
-        pushButtonOK->setText(QApplication::translate("RightAngleOptionDialog", "OK", 0));
-        label_2->setText(QApplication::translate("RightAngleOptionDialog", "Layering threshold:", 0));
-        label_4->setText(QApplication::translate("RightAngleOptionDialog", "Snap-to-edge threshold:", 0));
-        label_3->setText(QApplication::translate("RightAngleOptionDialog", "Snap-to-vertex threshold:", 0));
+        RightAngleOptionDialog->setWindowTitle(QApplication::translate("RightAngleOptionDialog", "Option Dialog", Q_NULLPTR));
+        label->setText(QApplication::translate("RightAngleOptionDialog", "Resolution:", Q_NULLPTR));
+        pushButtonCancel->setText(QApplication::translate("RightAngleOptionDialog", "Cancel", Q_NULLPTR));
+        pushButtonOK->setText(QApplication::translate("RightAngleOptionDialog", "OK", Q_NULLPTR));
+        label_2->setText(QApplication::translate("RightAngleOptionDialog", "Layering threshold:", Q_NULLPTR));
+        label_4->setText(QApplication::translate("RightAngleOptionDialog", "Orientation:", Q_NULLPTR));
+        label_3->setText(QApplication::translate("RightAngleOptionDialog", "Snapping threshold:", Q_NULLPTR));
     } // retranslateUi
 
 };

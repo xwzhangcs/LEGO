@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'AllOptionDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.0
+** Created by: Qt User Interface Compiler version 5.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -54,10 +54,10 @@ public:
 
     void retranslateUi(QDialog *AllOptionDialog)
     {
-        AllOptionDialog->setWindowTitle(QApplication::translate("AllOptionDialog", "AllOptionDialog", 0));
-        pushButtonOK->setText(QApplication::translate("AllOptionDialog", "OK", 0));
-        label->setText(QApplication::translate("AllOptionDialog", "Alpha:", 0));
-        pushButtonCancel->setText(QApplication::translate("AllOptionDialog", "Cancel", 0));
+        AllOptionDialog->setWindowTitle(QApplication::translate("AllOptionDialog", "AllOptionDialog", Q_NULLPTR));
+        pushButtonOK->setText(QApplication::translate("AllOptionDialog", "OK", Q_NULLPTR));
+        label->setText(QApplication::translate("AllOptionDialog", "Alpha:", Q_NULLPTR));
+        pushButtonCancel->setText(QApplication::translate("AllOptionDialog", "Cancel", Q_NULLPTR));
     } // retranslateUi
 
 };

@@ -62,10 +62,10 @@ public:
 	void saveImage(const QString& filename);
 	void showInputVoxel();
 	void simplifyByAll(double alpha);
-	void simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
-	void simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold);
+	void simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation);
+	void simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation);
+	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation);
+	void simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation);
 	void dpTest();
 	void rightAngleTest();
 	void curveTest();

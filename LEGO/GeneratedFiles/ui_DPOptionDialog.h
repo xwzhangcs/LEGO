@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DPOptionDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.0
+** Created by: Qt User Interface Compiler version 5.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -17,6 +17,7 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 
@@ -32,9 +33,9 @@ public:
     QDoubleSpinBox *doubleSpinBoxLayeringThreshold;
     QSpinBox *spinBoxEpsilon;
     QLabel *label_3;
-    QDoubleSpinBox *doubleSpinBoxSnapVertexThreshold;
+    QDoubleSpinBox *doubleSpinBoxSnappingThreshold;
     QLabel *label_4;
-    QDoubleSpinBox *doubleSpinBoxSnapEdgeThreshold;
+    QLineEdit *lineEditOrientation;
 
     void setupUi(QDialog *DPOptionDialog)
     {
@@ -64,15 +65,16 @@ public:
         label_3 = new QLabel(DPOptionDialog);
         label_3->setObjectName(QStringLiteral("label_3"));
         label_3->setGeometry(QRect(20, 70, 131, 21));
-        doubleSpinBoxSnapVertexThreshold = new QDoubleSpinBox(DPOptionDialog);
-        doubleSpinBoxSnapVertexThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnapVertexThreshold"));
-        doubleSpinBoxSnapVertexThreshold->setGeometry(QRect(160, 70, 62, 22));
+        doubleSpinBoxSnappingThreshold = new QDoubleSpinBox(DPOptionDialog);
+        doubleSpinBoxSnappingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnappingThreshold"));
+        doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 70, 62, 22));
         label_4 = new QLabel(DPOptionDialog);
         label_4->setObjectName(QStringLiteral("label_4"));
         label_4->setGeometry(QRect(20, 100, 131, 21));
-        doubleSpinBoxSnapEdgeThreshold = new QDoubleSpinBox(DPOptionDialog);
-        doubleSpinBoxSnapEdgeThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnapEdgeThreshold"));
-        doubleSpinBoxSnapEdgeThreshold->setGeometry(QRect(160, 100, 62, 22));
+        lineEditOrientation = new QLineEdit(DPOptionDialog);
+        lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
+        lineEditOrientation->setGeometry(QRect(92, 100, 131, 20));
+        lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         retranslateUi(DPOptionDialog);
 
@@ -81,13 +83,13 @@ public:
 
     void retranslateUi(QDialog *DPOptionDialog)
     {
-        DPOptionDialog->setWindowTitle(QApplication::translate("DPOptionDialog", "Option Dialog", 0));
-        label->setText(QApplication::translate("DPOptionDialog", "Epsilon:", 0));
-        pushButtonOK->setText(QApplication::translate("DPOptionDialog", "OK", 0));
-        pushButtonCancel->setText(QApplication::translate("DPOptionDialog", "Cancel", 0));
-        label_2->setText(QApplication::translate("DPOptionDialog", "Layering threshold:", 0));
-        label_3->setText(QApplication::translate("DPOptionDialog", "Snap-to-vertex threshold:", 0));
-        label_4->setText(QApplication::translate("DPOptionDialog", "Snap-to-edge threshold:", 0));
+        DPOptionDialog->setWindowTitle(QApplication::translate("DPOptionDialog", "Option Dialog", Q_NULLPTR));
+        label->setText(QApplication::translate("DPOptionDialog", "Epsilon:", Q_NULLPTR));
+        pushButtonOK->setText(QApplication::translate("DPOptionDialog", "OK", Q_NULLPTR));
+        pushButtonCancel->setText(QApplication::translate("DPOptionDialog", "Cancel", Q_NULLPTR));
+        label_2->setText(QApplication::translate("DPOptionDialog", "Layering threshold:", Q_NULLPTR));
+        label_3->setText(QApplication::translate("DPOptionDialog", "Snap-to-vertex threshold:", Q_NULLPTR));
+        label_4->setText(QApplication::translate("DPOptionDialog", "Orientation:", Q_NULLPTR));
     } // retranslateUi
 
 };

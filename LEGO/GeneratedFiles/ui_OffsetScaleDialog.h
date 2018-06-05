@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'OffsetScaleDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.0
+** Created by: Qt User Interface Compiler version 5.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -95,17 +95,17 @@ public:
 
     void retranslateUi(QDialog *OffsetScaleDialog)
     {
-        OffsetScaleDialog->setWindowTitle(QApplication::translate("OffsetScaleDialog", "OffsetScaleDialog", 0));
-        pushButtonD3->setText(QApplication::translate("OffsetScaleDialog", "D3", 0));
-        pushButtonD1->setText(QApplication::translate("OffsetScaleDialog", "D1", 0));
-        label_2->setText(QApplication::translate("OffsetScaleDialog", "Offset Y:", 0));
-        pushButtonOK->setText(QApplication::translate("OffsetScaleDialog", "OK", 0));
-        pushButtonD2->setText(QApplication::translate("OffsetScaleDialog", "D2", 0));
-        label->setText(QApplication::translate("OffsetScaleDialog", "Offset X:", 0));
-        label_4->setText(QApplication::translate("OffsetScaleDialog", "Scale:", 0));
-        pushButtonD4->setText(QApplication::translate("OffsetScaleDialog", "D4", 0));
-        pushButtonCancel->setText(QApplication::translate("OffsetScaleDialog", "Cancel", 0));
-        label_3->setText(QApplication::translate("OffsetScaleDialog", "Offset Z:", 0));
+        OffsetScaleDialog->setWindowTitle(QApplication::translate("OffsetScaleDialog", "OffsetScaleDialog", Q_NULLPTR));
+        pushButtonD3->setText(QApplication::translate("OffsetScaleDialog", "D3", Q_NULLPTR));
+        pushButtonD1->setText(QApplication::translate("OffsetScaleDialog", "D1", Q_NULLPTR));
+        label_2->setText(QApplication::translate("OffsetScaleDialog", "Offset Y:", Q_NULLPTR));
+        pushButtonOK->setText(QApplication::translate("OffsetScaleDialog", "OK", Q_NULLPTR));
+        pushButtonD2->setText(QApplication::translate("OffsetScaleDialog", "D2", Q_NULLPTR));
+        label->setText(QApplication::translate("OffsetScaleDialog", "Offset X:", Q_NULLPTR));
+        label_4->setText(QApplication::translate("OffsetScaleDialog", "Scale:", Q_NULLPTR));
+        pushButtonD4->setText(QApplication::translate("OffsetScaleDialog", "D4", Q_NULLPTR));
+        pushButtonCancel->setText(QApplication::translate("OffsetScaleDialog", "Cancel", Q_NULLPTR));
+        label_3->setText(QApplication::translate("OffsetScaleDialog", "Offset Z:", Q_NULLPTR));
     } // retranslateUi
 
 };

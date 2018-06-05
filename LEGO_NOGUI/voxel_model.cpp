@@ -1,33 +1,7 @@
-#pragma once
-
-#include <iostream>
-#include <QDir>
-#include <QString>
-#include <vector>
-#include <string>
-#include <opencv2/opencv.hpp>
+#include "voxel_model.h"
 
 namespace voxel_model {
-    
-    class Point3d {
-    public:
-        double x;
-        double y;
-        double z;
-    
-    public:
-        Point3d() {}
-        Point3d(double x, double y, double z) : x(x), y(y), z(z) {}
-    };
-    
-    class Triangle {
-    public:
-        int a,b,c;
-        
-    public:
-        Triangle(int a, int b, int c):a(a),b(b),c(c) {}
-    };
-      
+          
     void put_voxel(int x, int y, int z, std::vector<Point3d> &vertices, std::vector<Triangle> &faces) {
         
         auto v0 = Point3d(x - 0.5, y - 0.5, z - 0.5);
@@ -87,10 +61,10 @@ namespace voxel_model {
             for (int i=0; i<mat.rows; i++) {
                 for (int j=0; j<mat.cols; j++) {
                     
-                    if (k>0 and k<nslices and i>0 and i<mat.rows-1 and j>0 and j<mat.cols-1)
-                        if (voxel_data[k-1](i,j)>=thresh and voxel_data[k+1](i,j)>=thresh)
-                            if (voxel_data[k](i-1,j)>=thresh and voxel_data[k](i+1,j)>=thresh)
-                                if (voxel_data[k](i,j-1)>=thresh and voxel_data[k](i,j+1)>=thresh)
+					if (k>0 && k<nslices && i>0 && i<mat.rows - 1 && j>0 && j<mat.cols - 1)
+						if (voxel_data[k - 1](i, j) >= thresh && voxel_data[k + 1](i, j) >= thresh)
+							if (voxel_data[k](i - 1, j) >= thresh && voxel_data[k](i + 1, j) >= thresh)
+								if (voxel_data[k](i, j - 1) >= thresh && voxel_data[k](i, j + 1) >= thresh)
                                     continue;
                     
                     if (mat(i,j) >= thresh)

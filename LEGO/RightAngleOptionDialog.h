@@ -16,8 +16,8 @@ public:
 	
 	int getResolution();
 	double getLayeringThreshold();
-	double getSnapVertexThreshold();
-	double getSnapEdgeThreshold();
+	double getSnappingThreshold();
+	double getOrientation();
 
 public slots:
 	void onOK();

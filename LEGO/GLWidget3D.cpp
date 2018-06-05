@@ -369,29 +369,72 @@ void GLWidget3D::simplifyByAll(double alpha) {
 	update3DGeometry();
 }
 
-void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {	
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_DP, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, 0, 0, min_hole_ratio);
+/**
+* Simplify all the buildings by curve++ method.
+*
+* @param epsilon				The epsilon for DP method
+* @param layering_threshold		layering threshold
+* @param snapping_threshold		Threshold for snapping
+* @param orientation			principle orientation of the building in radian
+*/
+void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation) {
+	std::map<int, std::vector<double>> algorithms;
+	algorithms[simp::BuildingSimplification::ALG_DP] = { epsilon };
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold, orientation, min_hole_ratio);
 
 	show_mode = SHOW_DP;
 	update3DGeometry();
 }
 
-void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, 0, resolution, 0, 0, min_hole_ratio);
+/**
+* Simplify all the buildings by curve++ method.
+*
+* @param epsilon				The resolution
+* @param layering_threshold		layering threshold
+* @param snapping_threshold		Threshold for snapping
+* @param orientation			principle orientation of the building in radian
+*/
+void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation) {
+	std::map<int, std::vector<double>> algorithms;
+	algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (double)resolution };
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold, orientation, min_hole_ratio);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
 }
 
-void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_CURVE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, 0, min_hole_ratio);
+/**
+* Simplify all the buildings by curve++ method.
+*
+* @param epsilon				The epsilon for DP method
+* @param curve_threshold		curve threshold
+* @param layering_threshold		layering threshold
+* @param snapping_threshold		Threshold for snapping
+* @param orientation			principle orientation of the building in radian
+*/
+void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation) {
+	std::map<int, std::vector<double>> algorithms;
+	algorithms[simp::BuildingSimplification::ALG_CURVE] = { epsilon, curve_threshold };
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold, orientation, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
 }
 
-void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snap_vertex_threshold, double snap_edge_threshold) {
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE, false, 2.5 / scale, 0.5, layering_threshold, epsilon, 0, curve_threshold, angle_threshold, min_hole_ratio);
+/**
+ * Simplify all the buildings by curve++ method.
+ * 
+ * @param epsilon				The epsilon for DP method
+ * @param curve_threshold		curve threshold
+ * @param angle_threshold		angle threshold in radian
+ * @param layering_threshold	layering threshold
+ * @param snapping_threshold	Threshold for snapping
+ * @param orientation			principle orientation of the building in radian
+ */
+void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation) {
+	std::map<int, std::vector<double>> algorithms;
+	algorithms[simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE] = { epsilon, curve_threshold, angle_threshold };
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold, orientation, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();

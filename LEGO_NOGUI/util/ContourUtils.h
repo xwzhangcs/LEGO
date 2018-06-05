@@ -160,7 +160,8 @@ namespace util {
 	bool isSimple(const std::vector<cv::Point>& points);
 	void transform(std::vector<cv::Point2f>& polygon, const cv::Mat_<float>& m);
 	std::vector<cv::Point> removeRedundantPoint(const std::vector<cv::Point>& polygon);
-	std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
+	Ring removeRedundantPoint(const Ring& polygon);
+	//std::vector<cv::Point2f> removeRedundantPoint(const std::vector<cv::Point2f>& polygon);
 	Ring resolveSelfIntersection(const Ring& ring);
 
 	cv::Rect boundingBox(const std::vector<cv::Point>& polygon);

@@ -1,11 +1,13 @@
 {
-  "input_slice_filename" : "D:/LEGO/data/data_3/slice_001.png",
-  "output_mesh" : "D:/LEGO/output.obj",
-  "output_top_face" : "D:/LEGO/topface.txt",
-  "offset_x" : 0,
-  "offset_y" : 0,
-  "offset_z" : 0,
+  "do_voxel_model" : false,
+  "input_slice_filename" : "C:/gen/LEGO/run_test/AOI-D2-WPAFB/BuildingClusters/006/Slices/slice_000000.png",
+  "output_mesh" : "C:/gen/GitHub/LEGO/LEGO_NOGUI/output.obj",
+  "output_top_face" : "C:/gen/GitHub/LEGO/LEGO_NOGUI/topface.txt",
+  "offset_x" : 1.0,
+  "offset_y" : 1.0,
+  "offset_z" : 1.0,
   "scale" : 0.3,
+  "bulk_orientation" : 9.350424766540527,
   "contour_simplification_weight" : 0.5,
   "contour_snapping_threshold" : 0.7,
   "layering_threshold" : 0.7,
@@ -20,12 +22,12 @@
       "epsilon" : 20
     },
     "curve" : {
-      "use" : true,
+      "use" : false,
       "epsilon" : 16,
       "curve_threshold" : 2
     },
     "curvepp" : {
-      "use" : true,
+      "use" : false,
       "epsilon" : 16,
       "curve_threshold" : 2,
       "angle_threshold" : 10

@@ -6,11 +6,14 @@ namespace simp {
 	/**
 	* Simplify the footprint of the layer.
 	*
-	* @param slices	slice images of the layer
-	* @param epsilon	simplification parameter
-	* @return			simplified footprint
+	* @param polygon			contour polygon of the layer
+	* @param epsilon			epsilon parameter for DP method
+	* @param curve_threshold	maximum deviation of the point from the arc
+	* @param orientation		principle orientation of the contour in radian
+	* @param min_hole_ratio		hole will be removed if its area ratio to the contour is less than this threshold
+	* @return					simplified footprint
 	*/
-	util::Polygon CurveSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float min_hole_ratio) {
+	util::Polygon CurveSimplification::simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float orientation, float min_hole_ratio) {
 		util::Polygon ans;
 
 		// create a slice image from the input polygon

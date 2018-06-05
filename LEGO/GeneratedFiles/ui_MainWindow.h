@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.0
+** Created by: Qt User Interface Compiler version 5.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -191,38 +191,38 @@ public:
 
     void retranslateUi(QMainWindow *MainWindowClass)
     {
-        MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "LEGO", 0));
-        actionExit->setText(QApplication::translate("MainWindowClass", "Exit", 0));
-        actionOpenSliceImage->setText(QApplication::translate("MainWindowClass", "Open Slice Image", 0));
-        actionOpenSliceImage->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
-        actionRenderingBasic->setText(QApplication::translate("MainWindowClass", "Basic", 0));
-        actionRenderingSSAO->setText(QApplication::translate("MainWindowClass", "SSAO", 0));
-        actionRenderingHatching->setText(QApplication::translate("MainWindowClass", "Hatching", 0));
-        actionOpen->setText(QApplication::translate("MainWindowClass", "Open", 0));
-        actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", 0));
-        actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", 0));
-        actionSimplifyByDP->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker", 0));
-        actionSimplifyByRightAngle->setText(QApplication::translate("MainWindowClass", "Right Angle", 0));
-        actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", 0));
-        actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", 0));
-        actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "P", 0));
-        actionSaveImageHD->setText(QApplication::translate("MainWindowClass", "Save Image HD", 0));
-        actionColor->setText(QApplication::translate("MainWindowClass", "Color", 0));
-        actionTexture->setText(QApplication::translate("MainWindowClass", "Texture", 0));
-        actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", 0));
-        actionSimplifyByCurve->setText(QApplication::translate("MainWindowClass", "Curve", 0));
-        actionSimplifyByAll->setText(QApplication::translate("MainWindowClass", "All", 0));
-        actionDPTest->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker Test", 0));
-        actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", 0));
-        actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", 0));
-        actionSimplifyByCurveRightAngle->setText(QApplication::translate("MainWindowClass", "Curve + Right Angle", 0));
-        actionSaveOBJ->setText(QApplication::translate("MainWindowClass", "Save OBJ", 0));
-        actionSaveOBJ->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", 0));
-        actionSaveTopFaces->setText(QApplication::translate("MainWindowClass", "Save Top Faces", 0));
-        actionOffsetScale->setText(QApplication::translate("MainWindowClass", "Offset & Scale", 0));
-        menuFile->setTitle(QApplication::translate("MainWindowClass", "File", 0));
-        menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", 0));
-        menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", 0));
+        MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "LEGO", Q_NULLPTR));
+        actionExit->setText(QApplication::translate("MainWindowClass", "Exit", Q_NULLPTR));
+        actionOpenSliceImage->setText(QApplication::translate("MainWindowClass", "Open Slice Image", Q_NULLPTR));
+        actionOpenSliceImage->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", Q_NULLPTR));
+        actionRenderingBasic->setText(QApplication::translate("MainWindowClass", "Basic", Q_NULLPTR));
+        actionRenderingSSAO->setText(QApplication::translate("MainWindowClass", "SSAO", Q_NULLPTR));
+        actionRenderingHatching->setText(QApplication::translate("MainWindowClass", "Hatching", Q_NULLPTR));
+        actionOpen->setText(QApplication::translate("MainWindowClass", "Open", Q_NULLPTR));
+        actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", Q_NULLPTR));
+        actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", Q_NULLPTR));
+        actionSimplifyByDP->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker", Q_NULLPTR));
+        actionSimplifyByRightAngle->setText(QApplication::translate("MainWindowClass", "Right Angle", Q_NULLPTR));
+        actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", Q_NULLPTR));
+        actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", Q_NULLPTR));
+        actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "P", Q_NULLPTR));
+        actionSaveImageHD->setText(QApplication::translate("MainWindowClass", "Save Image HD", Q_NULLPTR));
+        actionColor->setText(QApplication::translate("MainWindowClass", "Color", Q_NULLPTR));
+        actionTexture->setText(QApplication::translate("MainWindowClass", "Texture", Q_NULLPTR));
+        actionColoringByLayer->setText(QApplication::translate("MainWindowClass", "Coloring by Layer", Q_NULLPTR));
+        actionSimplifyByCurve->setText(QApplication::translate("MainWindowClass", "Curve", Q_NULLPTR));
+        actionSimplifyByAll->setText(QApplication::translate("MainWindowClass", "All", Q_NULLPTR));
+        actionDPTest->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker Test", Q_NULLPTR));
+        actionRightAngleTest->setText(QApplication::translate("MainWindowClass", "Right Angle Test", Q_NULLPTR));
+        actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", Q_NULLPTR));
+        actionSimplifyByCurveRightAngle->setText(QApplication::translate("MainWindowClass", "Curve + Right Angle", Q_NULLPTR));
+        actionSaveOBJ->setText(QApplication::translate("MainWindowClass", "Save OBJ", Q_NULLPTR));
+        actionSaveOBJ->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", Q_NULLPTR));
+        actionSaveTopFaces->setText(QApplication::translate("MainWindowClass", "Save Top Faces", Q_NULLPTR));
+        actionOffsetScale->setText(QApplication::translate("MainWindowClass", "Offset & Scale", Q_NULLPTR));
+        menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
+        menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
+        menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));
     } // retranslateUi
 
 };

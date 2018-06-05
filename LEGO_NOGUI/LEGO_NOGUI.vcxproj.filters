@@ -54,6 +54,9 @@
     <ClCompile Include="util\VoxelBuilding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="voxel_model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h">
@@ -91,6 +94,9 @@
     </ClInclude>
     <ClInclude Include="util\VoxelBuilding.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="voxel_model.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

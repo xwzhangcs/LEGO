@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'CurveRightAngleOptionDialog.ui'
 **
-** Created by: Qt User Interface Compiler version 5.6.0
+** Created by: Qt User Interface Compiler version 5.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -17,6 +17,7 @@
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpinBox>
 
@@ -28,7 +29,7 @@ public:
     QLabel *label_2;
     QLabel *label_4;
     QDoubleSpinBox *doubleSpinBoxLayeringThreshold;
-    QDoubleSpinBox *doubleSpinBoxSnapVertexThreshold;
+    QDoubleSpinBox *doubleSpinBoxSnappingThreshold;
     QSpinBox *spinBoxEpsilon;
     QLabel *label_5;
     QDoubleSpinBox *doubleSpinBoxCurveThreshold;
@@ -36,9 +37,9 @@ public:
     QLabel *label;
     QPushButton *pushButtonOK;
     QLabel *label_3;
-    QDoubleSpinBox *doubleSpinBoxSnapEdgeThreshold;
     QLabel *label_6;
     QDoubleSpinBox *doubleSpinBoxAngleThreshold;
+    QLineEdit *lineEditOrientation;
 
     void setupUi(QDialog *CurveRightAngleOptionDialog)
     {
@@ -54,9 +55,9 @@ public:
         doubleSpinBoxLayeringThreshold = new QDoubleSpinBox(CurveRightAngleOptionDialog);
         doubleSpinBoxLayeringThreshold->setObjectName(QStringLiteral("doubleSpinBoxLayeringThreshold"));
         doubleSpinBoxLayeringThreshold->setGeometry(QRect(160, 100, 62, 22));
-        doubleSpinBoxSnapVertexThreshold = new QDoubleSpinBox(CurveRightAngleOptionDialog);
-        doubleSpinBoxSnapVertexThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnapVertexThreshold"));
-        doubleSpinBoxSnapVertexThreshold->setGeometry(QRect(160, 130, 62, 22));
+        doubleSpinBoxSnappingThreshold = new QDoubleSpinBox(CurveRightAngleOptionDialog);
+        doubleSpinBoxSnappingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnappingThreshold"));
+        doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 130, 62, 22));
         spinBoxEpsilon = new QSpinBox(CurveRightAngleOptionDialog);
         spinBoxEpsilon->setObjectName(QStringLiteral("spinBoxEpsilon"));
         spinBoxEpsilon->setGeometry(QRect(160, 10, 61, 22));
@@ -78,15 +79,16 @@ public:
         label_3 = new QLabel(CurveRightAngleOptionDialog);
         label_3->setObjectName(QStringLiteral("label_3"));
         label_3->setGeometry(QRect(20, 130, 131, 21));
-        doubleSpinBoxSnapEdgeThreshold = new QDoubleSpinBox(CurveRightAngleOptionDialog);
-        doubleSpinBoxSnapEdgeThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnapEdgeThreshold"));
-        doubleSpinBoxSnapEdgeThreshold->setGeometry(QRect(160, 160, 62, 22));
         label_6 = new QLabel(CurveRightAngleOptionDialog);
         label_6->setObjectName(QStringLiteral("label_6"));
         label_6->setGeometry(QRect(20, 70, 91, 21));
         doubleSpinBoxAngleThreshold = new QDoubleSpinBox(CurveRightAngleOptionDialog);
         doubleSpinBoxAngleThreshold->setObjectName(QStringLiteral("doubleSpinBoxAngleThreshold"));
         doubleSpinBoxAngleThreshold->setGeometry(QRect(160, 70, 62, 22));
+        lineEditOrientation = new QLineEdit(CurveRightAngleOptionDialog);
+        lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
+        lineEditOrientation->setGeometry(QRect(92, 160, 131, 20));
+        lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         retranslateUi(CurveRightAngleOptionDialog);
 
@@ -95,15 +97,15 @@ public:
 
     void retranslateUi(QDialog *CurveRightAngleOptionDialog)
     {
-        CurveRightAngleOptionDialog->setWindowTitle(QApplication::translate("CurveRightAngleOptionDialog", "CurveRightAngleOptionDialog", 0));
-        label_2->setText(QApplication::translate("CurveRightAngleOptionDialog", "Layering threshold:", 0));
-        label_4->setText(QApplication::translate("CurveRightAngleOptionDialog", "Snap-to-edge threshold:", 0));
-        label_5->setText(QApplication::translate("CurveRightAngleOptionDialog", "Curve threshold:", 0));
-        pushButtonCancel->setText(QApplication::translate("CurveRightAngleOptionDialog", "Cancel", 0));
-        label->setText(QApplication::translate("CurveRightAngleOptionDialog", "Epsilon:", 0));
-        pushButtonOK->setText(QApplication::translate("CurveRightAngleOptionDialog", "OK", 0));
-        label_3->setText(QApplication::translate("CurveRightAngleOptionDialog", "Snap-to-vertex threshold:", 0));
-        label_6->setText(QApplication::translate("CurveRightAngleOptionDialog", "Angle threshold:", 0));
+        CurveRightAngleOptionDialog->setWindowTitle(QApplication::translate("CurveRightAngleOptionDialog", "CurveRightAngleOptionDialog", Q_NULLPTR));
+        label_2->setText(QApplication::translate("CurveRightAngleOptionDialog", "Layering threshold:", Q_NULLPTR));
+        label_4->setText(QApplication::translate("CurveRightAngleOptionDialog", "Orientation:", Q_NULLPTR));
+        label_5->setText(QApplication::translate("CurveRightAngleOptionDialog", "Curve threshold:", Q_NULLPTR));
+        pushButtonCancel->setText(QApplication::translate("CurveRightAngleOptionDialog", "Cancel", Q_NULLPTR));
+        label->setText(QApplication::translate("CurveRightAngleOptionDialog", "Epsilon:", Q_NULLPTR));
+        pushButtonOK->setText(QApplication::translate("CurveRightAngleOptionDialog", "OK", Q_NULLPTR));
+        label_3->setText(QApplication::translate("CurveRightAngleOptionDialog", "Snapping threshold:", Q_NULLPTR));
+        label_6->setText(QApplication::translate("CurveRightAngleOptionDialog", "Angle threshold:", Q_NULLPTR));
     } // retranslateUi
 
 };

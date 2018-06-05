@@ -32,6 +32,7 @@
     <ClCompile Include="util\PlyWriter.cpp" />
     <ClCompile Include="util\TopFaceWriter.cpp" />
     <ClCompile Include="util\VoxelBuilding.cpp" />
+    <ClCompile Include="voxel_model.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h" />
@@ -46,6 +47,7 @@
     <ClInclude Include="util\PlyWriter.h" />
     <ClInclude Include="util\TopFaceWriter.h" />
     <ClInclude Include="util\VoxelBuilding.h" />
+    <ClInclude Include="voxel_model.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A84953E3-4DFB-4479-9C1B-022F9487F2EA}</ProjectGuid>

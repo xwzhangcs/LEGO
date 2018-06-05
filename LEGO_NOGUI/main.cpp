@@ -14,7 +14,7 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
 
-#include "voxel_model.cpp"
+#include "voxel_model.h"
 
 
 double readDoubleValue(const rapidjson::Value& node, const char* key) {
@@ -26,12 +26,33 @@ double readDoubleValue(const rapidjson::Value& node, const char* key) {
 	}
 }
 
-double readDoubleValue(const rapidjson::Value& node, const char* key, double default_value) {
+double readNumber(const rapidjson::Value& node, const char* key, double default_value) {
 	if (node.HasMember(key) && node[key].IsDouble()) {
 		return node[key].GetDouble();
 	}
+	else if (node.HasMember(key) && node[key].IsInt()) {
+		return node[key].GetInt();
+	}
 	else {
 		return default_value;
+	}
+}
+
+bool readBoolValue(const rapidjson::Value& node, const char* key) {
+	if (node.HasMember(key) && node[key].IsBool()) {
+		return node[key].GetBool();
+	}
+	else {
+		throw "Could not read bool from node";
+	}
+}
+
+QString readStringValue(const rapidjson::Value& node, const char* key) {
+	if (node.HasMember(key) && node[key].IsString()) {
+		return QString(node[key].GetString());
+	}
+	else {
+		throw "Could not read string from node";
 	}
 }
 
@@ -42,22 +63,22 @@ std::vector<double> readAlgorithmParams(rapidjson::Value& node, const QString& a
 		rapidjson::Value& use = alg["use"];
 		if (use.IsBool() && use.GetBool()) {
 			if (algorithm_name == "douglas_peucker") {
-				double epsilon = readDoubleValue(alg, "epsilon", 16);
+				double epsilon = readNumber(alg, "epsilon", 16);
 				return{ epsilon };
 			}
 			else if (algorithm_name == "right_angle") {
-				double epsilon = readDoubleValue(alg, "epsilon", 16);
+				double epsilon = readNumber(alg, "epsilon", 20);
 				return{ epsilon };
 			}
 			else if (algorithm_name == "curve") {
-				double epsilon = readDoubleValue(alg, "epsilon", 16);
-				double curve_threshold = readDoubleValue(alg, "curve_threshold", 2);
+				double epsilon = readNumber(alg, "epsilon", 16);
+				double curve_threshold = readNumber(alg, "curve_threshold", 2);
 				return{ epsilon, curve_threshold };
 			}
 			else if (algorithm_name == "curvepp") {
-				double epsilon = readDoubleValue(alg, "epsilon", 16);
-				double curve_threshold = readDoubleValue(alg, "curve_threshold", 2);
-				double angle_threshold = readDoubleValue(alg, "angle_threshold", 10);
+				double epsilon = readNumber(alg, "epsilon", 16);
+				double curve_threshold = readNumber(alg, "curve_threshold", 2);
+				double angle_threshold = readNumber(alg, "angle_threshold", 10) / 180.0 * CV_PI;
 				return{ epsilon, curve_threshold, angle_threshold };
 			}
 		}
@@ -78,25 +99,20 @@ int main(int argc, const char* argv[]) {
 		QTextStream in(&file);
 		rapidjson::Document doc;
 		doc.Parse(in.readAll().toUtf8().constData());
-
+		
 		std::vector<cv::Mat_<uchar>> voxel_data;
-
+		
 		// read input filename
 		bool do_voxel_model = false;
 		try {
-		  if (doc["do_voxel_model"].IsBool() and doc["do_voxel_model"].GetBool())
-		    do_voxel_model = true;
-		  if (doc["do_voxel_model"].IsString() and doc["do_voxel_model"].GetString()=="True")
-		    do_voxel_model = true;
-		  if (doc["do_voxel_model"].IsString() and doc["do_voxel_model"].GetString()=="true")
-		    do_voxel_model = true;
+			do_voxel_model = readBoolValue(doc, "do_voxel_model") || readStringValue(doc, "do_voxel_model").toLower() == "true";
 		}
 		catch (...) { }
 		
 		// read input filename
 		QString input_slice_filename;
 		try {
-			input_slice_filename = QString(doc["input_slice_filename"].GetString());
+			input_slice_filename = readStringValue(doc, "input_slice_filename");
 		}
 		catch (...) {
 			std::cerr << "Invalid data for input_slice_filename in the json file." << std::endl;
@@ -106,17 +122,17 @@ int main(int argc, const char* argv[]) {
 		// read output obj output_mesh
 		QString output_mesh;
 		try {
-			output_mesh = QString(doc["output_mesh"].GetString());
+			output_mesh = readStringValue(doc, "output_mesh");
 		}
 		catch (...) {
 			std::cerr << "Invalid data for output_mesh in the json file." << std::endl;
 			return -1;
 		}
-
+		
 		// read output topface filename
 		QString output_top_face;
 		try {
-			output_top_face = QString(doc["output_top_face"].GetString());
+			output_top_face = readStringValue(doc, "output_top_face");
 		}
 		catch (...) {
 			std::cerr << "Invalid data for output_top_face in the json file." << std::endl;
@@ -130,7 +146,7 @@ int main(int argc, const char* argv[]) {
 			return -1;
 		}
 		QDir dir = finfo.absoluteDir();
-
+		
 		// scan all the files in the directory to get a voxel data
 		QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
 		voxel_data.resize(files.size());
@@ -160,16 +176,19 @@ int main(int argc, const char* argv[]) {
 		}
 		
 		// read contour simplificaton weight
-		double contour_simplification_weight = readDoubleValue(doc, "contour_simplification_weight", 0.5);
+		double contour_simplification_weight = readNumber(doc, "contour_simplification_weight", 0.5);
 
 		// read layering threshold
-		double layering_threshold = readDoubleValue(doc, "layering_threshold", 0.7);
+		double layering_threshold = readNumber(doc, "layering_threshold", 0.7);
 
 		// read snapping threshold
-		double contour_snapping_threshold = readDoubleValue(doc, "contour_snapping_threshold", 0.7);
+		double contour_snapping_threshold = readNumber(doc, "contour_snapping_threshold", 0.7);
+				
+		// read orientation
+		double orientation = readNumber(doc, "bulk_orientation", 0.0) / 180.0 * CV_PI;
 
 		// read minimum hole ratio
-		double min_hole_ratio = readDoubleValue(doc, "min_hole_ratio", 0.02);
+		double min_hole_ratio = readNumber(doc, "min_hole_ratio", 0.02);
 
 		// read algorithms
 		std::map<int, std::vector<double>> algorithms;
@@ -200,7 +219,7 @@ int main(int argc, const char* argv[]) {
 
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 		int min_num_slices_per_layer = 2.5 / scale;
-		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, min_hole_ratio);
+		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_hole_ratio);
 
 		util::obj::OBJWriter::write(output_mesh.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 		util::topface::TopFaceWriter::write(output_top_face.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);

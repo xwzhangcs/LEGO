@@ -6,22 +6,19 @@ namespace simp {
 	/**
 	* Simplify the footprint of the layer.
 	*
-	* @param slices	slice images of the layer
-	* @param epsilon	simplification parameter
-	* @return			simplified footprint
+	* @param polygon		contour polygon of the layer
+	* @param resolution		simplification is performed based on the resolution
+	* @param orientation	principle orientation of the contour in radian
+	* @param min_hole_ratio	hole will be removed if its area ratio to the contour is less than this threshold
+	* @return				simplified footprint
 	*/
-	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float& angle, int& dx, int& dy, float min_hole_ratio) {
+	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float orientation, float min_hole_ratio) {
 		util::Polygon ans;
 
-		if (angle == -1) {
-			std::tuple<float, int, int> best_mat = simplifyContour(polygon.contour, ans.contour, resolution);
-			angle = std::get<0>(best_mat);
-			dx = std::get<1>(best_mat);
-			dy = std::get<2>(best_mat);
-		}
-		else {
-			simplifyContour(polygon.contour, ans.contour, resolution, angle, dx, dy, true);
-		}
+		std::tuple<float, int, int> best_mat = simplifyContour(polygon.contour, ans.contour, resolution, orientation);
+		float angle = std::get<0>(best_mat);
+		float dx = std::get<1>(best_mat);
+		float dy = std::get<2>(best_mat);
 		if (ans.contour.size() < 3) throw "Invalid contour. #vertices is less than 3.";
 
 		double area = cv::contourArea(ans.contour.points);
@@ -60,7 +57,7 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<float, int, int> RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution) {
+	std::tuple<float, int, int> RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float orientation) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -69,8 +66,8 @@ namespace simp {
 		int best_dy;
 
 		int step_size = std::max(1, resolution / 10);
-		for (int angle = 0; angle < 90; angle += 2) {
-			//std::cout << "angle=" << angle << std::endl;
+		for (int angle_id = 0; angle_id < 2; angle_id++) {
+			float angle = orientation + angle_id * 45.0 / 180.0 * CV_PI;
 
 			for (int dx = 0; dx < resolution; dx += step_size) {
 				for (int dy = 0; dy < resolution; dy += step_size) {
@@ -109,9 +106,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float angle, int dx, int dy, bool refine) {
-		double theta = angle / 180 * CV_PI;
-
+	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float theta, int dx, int dy, bool refine) {
 		// create a transformation matrix
 		cv::Mat_<float> M = (cv::Mat_<float>(3, 3) << cos(theta), -sin(theta), dx, sin(theta), cos(theta), dy, 0, 0, 1);
 
@@ -135,9 +130,9 @@ namespace simp {
 		// simplify the contour a little
 		std::vector<cv::Point2f> aa_contour_smoothed;
 		util::approxPolyDP(aa_contour, aa_contour_smoothed, resolution, true);
-		if (aa_contour_smoothed.size() > 3 && util::calculateIOU(aa_contour, aa_contour_smoothed) > 0.8) {
+		/*if (aa_contour_smoothed.size() > 3 && util::calculateIOU(aa_contour, aa_contour_smoothed) > 0.8) {
 			aa_contour = aa_contour_smoothed;
-		}
+		}*/
 
 		// scale down the polygon based on the resolution
 		std::vector<cv::Point> small_aa_polygon(aa_contour.size());
@@ -150,7 +145,7 @@ namespace simp {
 		if (bbox.width <= 1 && bbox.height <= 1) throw "Too small polygon.";
 
 		cv::Mat_<uchar> img;// = cv::Mat_<uchar>::zeros(bbox.height, bbox.width);
-		util::createImageFromContour(bbox.width + 2, bbox.height + 2, small_aa_polygon, cv::Point(1 - bbox.x, 1 - bbox.y), img, false);
+		util::createImageFromContour(bbox.width + 2, bbox.height + 2, small_aa_polygon, cv::Point(1 - bbox.x, 1 - bbox.y), img, true);
 
 		// clean the contour by removing small bumps
 		for (int r = 1; r < img.rows - 1; r++) {
@@ -174,7 +169,8 @@ namespace simp {
 			}
 		}
 
-		std::vector<util::Polygon> polygons = util::findContours(img, true);
+		//std::vector<util::Polygon> polygons = util::findContours(img, true);
+		std::vector<util::Polygon> polygons = findContours(img);
 		if (polygons.size() == 0) throw "No contour is found.";
 
 		// offset back and scale up the simplified scale-down polygon
@@ -183,7 +179,8 @@ namespace simp {
 			simplified_aa_contour[i] = cv::Point2f((polygons[0].contour[i].x + bbox.x - 1) * resolution, (polygons[0].contour[i].y + bbox.y - 1) * resolution);
 		}
 		
-		if (refine) {
+		//if (refine) {
+		if (false) {
 			std::vector<cv::Point> simplified_aa_contour_int(simplified_aa_contour.size());
 			for (int i = 0; i < simplified_aa_contour.size(); i++) {
 				simplified_aa_contour_int[i] = cv::Point(std::round(simplified_aa_contour[i].x), std::round(simplified_aa_contour[i].y));
@@ -423,6 +420,120 @@ namespace simp {
 			cell_count -= width * height;
 
 			polygon.primitive_shapes.push_back(boost::shared_ptr<util::PrimitiveShape>(new util::PrimitiveRectangle(polygon.mat, cv::Point2f(x_coords[x], y_coords[y]), cv::Point2f(x_coords[x + width], y_coords[y + height]))));
+		}
+	}
+
+	/**
+	 * Extract the contour from the image.
+	 * The edge should be axis aligned or 45 degree oriented.
+	 */
+	std::vector<util::Polygon> RightAngleSimplification::findContours(const cv::Mat_<uchar>& img) {
+		std::vector<util::Polygon> ans;
+
+		cv::Mat_<uchar> img2 = img.clone();
+		while (true) {
+			bool updated = false;
+			for (int r = 0; r < img.rows - 1; r++) {
+				for (int c = 0; c < img.cols - 1; c++) {
+					if (img2(r, c) == 255 && img2(r + 1, c + 1) == 255 && img2(r + 1, c) == 0 && img2(r, c + 1) == 0) {
+						updated = true;
+						img2(r + 1, c) = 255;
+					}
+					else if (img2(r, c) == 0 && img2(r + 1, c + 1) == 0 && img2(r + 1, c) == 255 && img2(r, c + 1) == 255) {
+						updated = true;
+						img2(r, c) = 255;
+					}
+				}
+			}
+			if (!updated) break;
+		}
+
+		// add padding
+		cv::Mat_<uchar> padded = cv::Mat_<uchar>::zeros(img2.rows + 1, img2.cols + 1);
+		img2.copyTo(padded(cv::Rect(0, 0, img2.cols, img2.rows)));
+
+		// dilate image
+		cv::Mat_<uchar> kernel = (cv::Mat_<uchar>(3, 3) << 1, 1, 0, 1, 1, 0, 0, 0, 0);
+		cv::dilate(padded, padded, kernel);
+
+		// extract contours
+		std::vector<std::vector<cv::Point>> contours;
+		std::vector<cv::Vec4i> hierarchy;
+		cv::findContours(padded, contours, hierarchy, cv::RETR_CCOMP, cv::CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+		for (int i = 0; i < hierarchy.size(); i++) {
+			if (hierarchy[i][3] != -1) continue;
+			if (contours[i].size() < 3) continue;
+
+			util::Polygon polygon;
+			polygon.contour.resize(contours[i].size());
+			for (int j = 0; j < contours[i].size(); j++) {
+				polygon.contour[j] = cv::Point2f(contours[i][j].x, contours[i][j].y);
+			}
+			polygon.contour = util::removeRedundantPoint(polygon.contour);
+			refineContour(polygon.contour);
+
+			if (polygon.contour.size() >= 3) {
+				// obtain all the holes inside this contour
+				int hole_id = hierarchy[i][2];
+				while (hole_id != -1) {
+					util::Ring hole;
+					hole.resize(contours[hole_id].size());
+					for (int j = 0; j < contours[hole_id].size(); j++) {
+						hole[j] = cv::Point2f(contours[hole_id][j].x, contours[hole_id][j].y);
+					}
+					hole = util::removeRedundantPoint(hole);
+					refineContour(hole);
+					polygon.holes.push_back(hole);
+					hole_id = hierarchy[hole_id][0];
+				}
+
+				ans.push_back(polygon);
+			}
+		}
+		
+		return ans;
+	}
+
+	void RightAngleSimplification::refineContour(util::Ring& polygon) {
+		polygon.counterClockwise();
+
+		util::Ring new_polygon;
+		for (int i = 0; i < polygon.size(); i++) {
+			new_polygon.push_back(polygon[i]);
+
+			int next = (i + 1) % polygon.size();
+			if (std::abs(polygon[i].x - polygon[next].x) == 1 && std::abs(polygon[i].y - polygon[next].y) == 1) {
+				if (polygon[next].x - polygon[i].x == 1 && polygon[next].y - polygon[i].y == 1) {
+					new_polygon.push_back(cv::Point2f(polygon[i].x, polygon[next].y));
+				}
+				else if (polygon[next].x - polygon[i].x == 1 && polygon[next].y - polygon[i].y == -1) {
+					new_polygon.push_back(cv::Point2f(polygon[next].x, polygon[i].y));
+				}
+				else if (polygon[next].x - polygon[i].x == -1 && polygon[next].y - polygon[i].y == 1) {
+					new_polygon.push_back(cv::Point2f(polygon[next].x, polygon[i].y));
+				}
+				else {
+					new_polygon.push_back(cv::Point2f(polygon[i].x, polygon[next].y));
+				}				
+			}
+		}
+		polygon = new_polygon;
+
+		// remove the redundant points just in case
+		for (int i = polygon.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + polygon.size()) % polygon.size();
+			if (polygon[i].x == polygon[prev].x && polygon[i].y == polygon[prev].y) polygon.points.erase(polygon.points.begin() + i);
+		}
+
+		// remove the collinear points
+		for (int i = polygon.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + polygon.size()) % polygon.size();
+			int next = (i + 1) % polygon.size();
+
+			if ((polygon[i].x - polygon[prev].x) * (polygon[next].y - polygon[i].y) == (polygon[i].y - polygon[prev].y) * (polygon[next].x - polygon[i].x)) {
+				polygon.points.erase(polygon.points.begin() + i);
+			}
 		}
 	}
 

@@ -36,7 +36,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Snap-to-edge threshold:</string>
+    <string>Orientation:</string>
    </property>
   </widget>
   <widget class="QDoubleSpinBox" name="doubleSpinBoxLayeringThreshold">
@@ -49,7 +49,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBoxSnapVertexThreshold">
+  <widget class="QDoubleSpinBox" name="doubleSpinBoxSnappingThreshold">
    <property name="geometry">
     <rect>
      <x>160</x>
@@ -141,17 +141,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Snap-to-vertex threshold:</string>
-   </property>
-  </widget>
-  <widget class="QDoubleSpinBox" name="doubleSpinBoxSnapEdgeThreshold">
-   <property name="geometry">
-    <rect>
-     <x>160</x>
-     <y>160</y>
-     <width>62</width>
-     <height>22</height>
-    </rect>
+    <string>Snapping threshold:</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_6">
@@ -175,6 +165,19 @@
      <width>62</width>
      <height>22</height>
     </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditOrientation">
+   <property name="geometry">
+    <rect>
+     <x>92</x>
+     <y>160</y>
+     <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
    </property>
   </widget>
  </widget>

@@ -67,7 +67,7 @@ namespace simp {
 		CurveSimplification() {}
 
 	public:
-		static util::Polygon simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float min_hole_ratio);
+		static util::Polygon simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float orientation, float min_hole_ratio);
 		static void decomposePolygon(util::Polygon input, util::Polygon& polygon, float epsilon, float curve_threshold);
 
 	private:
