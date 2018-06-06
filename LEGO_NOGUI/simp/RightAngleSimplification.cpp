@@ -169,9 +169,9 @@ namespace simp {
 			}
 		}
 
-		//std::vector<util::Polygon> polygons = util::findContours(img, true);
 		std::vector<util::Polygon> polygons = findContours(img);
 		if (polygons.size() == 0) throw "No contour is found.";
+		if (polygons.size() == 2) throw "Multiple contours are found.";
 
 		// offset back and scale up the simplified scale-down polygon
 		std::vector<cv::Point2f> simplified_aa_contour(polygons[0].contour.size());
@@ -208,9 +208,8 @@ namespace simp {
 			}
 		}
 
-		double cost = 1.0 / (0.01 + util::calculateIOU(aa_contour, simplified_aa_contour));
-		
 		// calculate the cost
+		double cost = 1.0 / (0.01 + util::calculateIOU(aa_contour, simplified_aa_contour));		
 		cost += simplified_aa_contour.size() * 0.2;
 
 		// transform back the simplified contour
