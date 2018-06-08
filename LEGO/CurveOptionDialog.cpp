@@ -11,9 +11,11 @@ CurveOptionDialog::CurveOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
 	ui.doubleSpinBoxLayeringThreshold->setMaximum(1.0);
 
-	ui.doubleSpinBoxSnappingThreshold->setValue(0.0);
+	ui.doubleSpinBoxSnappingThreshold->setValue(3.0);
 	ui.lineEditOrientation->setText("0");
-
+	ui.lineEditMinContourArea->setText("2");
+	ui.checkBoxAllowTriangleContour->setChecked(false);
+	ui.lineEditMaxOBBRatio->setText("10");
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
 }
@@ -39,6 +41,18 @@ double CurveOptionDialog::getSnappingThreshold() {
 
 double CurveOptionDialog::getOrientation() {
 	return ui.lineEditOrientation->text().toDouble();
+}
+
+double CurveOptionDialog::getMinContourArea() {
+	return ui.lineEditMinContourArea->text().toDouble();
+}
+
+bool CurveOptionDialog::isAllowTriangleContour() {
+	return ui.checkBoxAllowTriangleContour->isChecked();
+}
+
+double CurveOptionDialog::getMaxOBBRatio() {
+	return ui.lineEditMaxOBBRatio->text().toDouble();
 }
 
 void CurveOptionDialog::onOK() {

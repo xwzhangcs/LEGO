@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
@@ -38,15 +39,20 @@ public:
     QLabel *label_5;
     QDoubleSpinBox *doubleSpinBoxCurveThreshold;
     QLineEdit *lineEditOrientation;
+    QLineEdit *lineEditMinContourArea;
+    QLabel *label_6;
+    QCheckBox *checkBoxAllowTriangleContour;
+    QLabel *label_7;
+    QLineEdit *lineEditMaxOBBRatio;
 
     void setupUi(QDialog *CurveOptionDialog)
     {
         if (CurveOptionDialog->objectName().isEmpty())
             CurveOptionDialog->setObjectName(QStringLiteral("CurveOptionDialog"));
-        CurveOptionDialog->resize(242, 213);
+        CurveOptionDialog->resize(242, 294);
         pushButtonOK = new QPushButton(CurveOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(30, 170, 81, 31));
+        pushButtonOK->setGeometry(QRect(30, 250, 81, 31));
         doubleSpinBoxLayeringThreshold = new QDoubleSpinBox(CurveOptionDialog);
         doubleSpinBoxLayeringThreshold->setObjectName(QStringLiteral("doubleSpinBoxLayeringThreshold"));
         doubleSpinBoxLayeringThreshold->setGeometry(QRect(160, 70, 62, 22));
@@ -61,7 +67,7 @@ public:
         spinBoxEpsilon->setGeometry(QRect(160, 10, 61, 22));
         pushButtonCancel = new QPushButton(CurveOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(140, 170, 81, 31));
+        pushButtonCancel->setGeometry(QRect(140, 250, 81, 31));
         doubleSpinBoxSnappingThreshold = new QDoubleSpinBox(CurveOptionDialog);
         doubleSpinBoxSnappingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnappingThreshold"));
         doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 100, 62, 22));
@@ -81,6 +87,23 @@ public:
         lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
         lineEditOrientation->setGeometry(QRect(92, 130, 131, 20));
         lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        lineEditMinContourArea = new QLineEdit(CurveOptionDialog);
+        lineEditMinContourArea->setObjectName(QStringLiteral("lineEditMinContourArea"));
+        lineEditMinContourArea->setGeometry(QRect(162, 160, 61, 20));
+        lineEditMinContourArea->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        label_6 = new QLabel(CurveOptionDialog);
+        label_6->setObjectName(QStringLiteral("label_6"));
+        label_6->setGeometry(QRect(20, 160, 131, 21));
+        checkBoxAllowTriangleContour = new QCheckBox(CurveOptionDialog);
+        checkBoxAllowTriangleContour->setObjectName(QStringLiteral("checkBoxAllowTriangleContour"));
+        checkBoxAllowTriangleContour->setGeometry(QRect(20, 190, 141, 17));
+        label_7 = new QLabel(CurveOptionDialog);
+        label_7->setObjectName(QStringLiteral("label_7"));
+        label_7->setGeometry(QRect(18, 210, 131, 21));
+        lineEditMaxOBBRatio = new QLineEdit(CurveOptionDialog);
+        lineEditMaxOBBRatio->setObjectName(QStringLiteral("lineEditMaxOBBRatio"));
+        lineEditMaxOBBRatio->setGeometry(QRect(160, 210, 61, 20));
+        lineEditMaxOBBRatio->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         retranslateUi(CurveOptionDialog);
 
@@ -97,6 +120,9 @@ public:
         label->setText(QApplication::translate("CurveOptionDialog", "Epsilon:", Q_NULLPTR));
         label_4->setText(QApplication::translate("CurveOptionDialog", "Orientation:", Q_NULLPTR));
         label_5->setText(QApplication::translate("CurveOptionDialog", "Curve threshold:", Q_NULLPTR));
+        label_6->setText(QApplication::translate("CurveOptionDialog", "Minimum contour area:", Q_NULLPTR));
+        checkBoxAllowTriangleContour->setText(QApplication::translate("CurveOptionDialog", "Allow triangle contour", Q_NULLPTR));
+        label_7->setText(QApplication::translate("CurveOptionDialog", "Maximum OBB ratio:", Q_NULLPTR));
     } // retranslateUi
 
 };

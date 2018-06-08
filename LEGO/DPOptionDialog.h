@@ -18,6 +18,9 @@ public:
 	double getLayeringThreshold();
 	double getSnappingThreshold();
 	double getOrientation();
+	double getMinContourArea();
+	bool isAllowTriangleContour();
+	double getMaxOBBRatio();
 
 public slots:
 	void onOK();

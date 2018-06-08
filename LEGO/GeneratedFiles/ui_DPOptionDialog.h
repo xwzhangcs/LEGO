@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
@@ -36,23 +37,28 @@ public:
     QDoubleSpinBox *doubleSpinBoxSnappingThreshold;
     QLabel *label_4;
     QLineEdit *lineEditOrientation;
+    QLabel *label_5;
+    QLineEdit *lineEditMinContourArea;
+    QCheckBox *checkBoxAllowTriangleContour;
+    QLabel *label_6;
+    QLineEdit *lineEditMaxOBBRatio;
 
     void setupUi(QDialog *DPOptionDialog)
     {
         if (DPOptionDialog->objectName().isEmpty())
             DPOptionDialog->setObjectName(QStringLiteral("DPOptionDialog"));
-        DPOptionDialog->resize(246, 180);
+        DPOptionDialog->resize(246, 250);
         DPOptionDialog->setMinimumSize(QSize(246, 180));
-        DPOptionDialog->setMaximumSize(QSize(246, 180));
+        DPOptionDialog->setMaximumSize(QSize(246, 300));
         label = new QLabel(DPOptionDialog);
         label->setObjectName(QStringLiteral("label"));
         label->setGeometry(QRect(20, 10, 47, 21));
         pushButtonOK = new QPushButton(DPOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(30, 140, 81, 31));
+        pushButtonOK->setGeometry(QRect(30, 210, 81, 31));
         pushButtonCancel = new QPushButton(DPOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(140, 140, 81, 31));
+        pushButtonCancel->setGeometry(QRect(140, 210, 81, 31));
         label_2 = new QLabel(DPOptionDialog);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(20, 40, 91, 21));
@@ -75,6 +81,23 @@ public:
         lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
         lineEditOrientation->setGeometry(QRect(92, 100, 131, 20));
         lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        label_5 = new QLabel(DPOptionDialog);
+        label_5->setObjectName(QStringLiteral("label_5"));
+        label_5->setGeometry(QRect(20, 130, 121, 21));
+        lineEditMinContourArea = new QLineEdit(DPOptionDialog);
+        lineEditMinContourArea->setObjectName(QStringLiteral("lineEditMinContourArea"));
+        lineEditMinContourArea->setGeometry(QRect(160, 130, 61, 20));
+        lineEditMinContourArea->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        checkBoxAllowTriangleContour = new QCheckBox(DPOptionDialog);
+        checkBoxAllowTriangleContour->setObjectName(QStringLiteral("checkBoxAllowTriangleContour"));
+        checkBoxAllowTriangleContour->setGeometry(QRect(20, 160, 131, 17));
+        label_6 = new QLabel(DPOptionDialog);
+        label_6->setObjectName(QStringLiteral("label_6"));
+        label_6->setGeometry(QRect(20, 180, 121, 21));
+        lineEditMaxOBBRatio = new QLineEdit(DPOptionDialog);
+        lineEditMaxOBBRatio->setObjectName(QStringLiteral("lineEditMaxOBBRatio"));
+        lineEditMaxOBBRatio->setGeometry(QRect(160, 180, 61, 20));
+        lineEditMaxOBBRatio->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
 
         retranslateUi(DPOptionDialog);
 
@@ -90,6 +113,9 @@ public:
         label_2->setText(QApplication::translate("DPOptionDialog", "Layering threshold:", Q_NULLPTR));
         label_3->setText(QApplication::translate("DPOptionDialog", "Snap-to-vertex threshold:", Q_NULLPTR));
         label_4->setText(QApplication::translate("DPOptionDialog", "Orientation:", Q_NULLPTR));
+        label_5->setText(QApplication::translate("DPOptionDialog", "Minimum contour area:", Q_NULLPTR));
+        checkBoxAllowTriangleContour->setText(QApplication::translate("DPOptionDialog", "Allow triangle contour", Q_NULLPTR));
+        label_6->setText(QApplication::translate("DPOptionDialog", "Maximum OBB ratio:", Q_NULLPTR));
     } // retranslateUi
 
 };

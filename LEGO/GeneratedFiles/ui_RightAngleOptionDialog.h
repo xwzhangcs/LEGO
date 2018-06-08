@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QHeaderView>
@@ -36,12 +37,17 @@ public:
     QLabel *label_3;
     QDoubleSpinBox *doubleSpinBoxSnappingThreshold;
     QLineEdit *lineEditOrientation;
+    QLineEdit *lineEditMinContourArea;
+    QLabel *label_5;
+    QCheckBox *checkBoxAllowTriangleContour;
+    QLineEdit *lineEditMaxOBBRatio;
+    QLabel *label_6;
 
     void setupUi(QDialog *RightAngleOptionDialog)
     {
         if (RightAngleOptionDialog->objectName().isEmpty())
             RightAngleOptionDialog->setObjectName(QStringLiteral("RightAngleOptionDialog"));
-        RightAngleOptionDialog->resize(246, 172);
+        RightAngleOptionDialog->resize(246, 251);
         RightAngleOptionDialog->setMinimumSize(QSize(246, 172));
         RightAngleOptionDialog->setMaximumSize(QSize(346, 272));
         label = new QLabel(RightAngleOptionDialog);
@@ -52,10 +58,10 @@ public:
         spinBoxResolution->setGeometry(QRect(160, 10, 61, 22));
         pushButtonCancel = new QPushButton(RightAngleOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(130, 130, 81, 31));
+        pushButtonCancel->setGeometry(QRect(130, 210, 81, 31));
         pushButtonOK = new QPushButton(RightAngleOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(30, 130, 81, 31));
+        pushButtonOK->setGeometry(QRect(30, 210, 81, 31));
         doubleSpinBoxLayeringThreshold = new QDoubleSpinBox(RightAngleOptionDialog);
         doubleSpinBoxLayeringThreshold->setObjectName(QStringLiteral("doubleSpinBoxLayeringThreshold"));
         doubleSpinBoxLayeringThreshold->setGeometry(QRect(160, 40, 62, 22));
@@ -75,6 +81,23 @@ public:
         lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
         lineEditOrientation->setGeometry(QRect(92, 100, 131, 20));
         lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        lineEditMinContourArea = new QLineEdit(RightAngleOptionDialog);
+        lineEditMinContourArea->setObjectName(QStringLiteral("lineEditMinContourArea"));
+        lineEditMinContourArea->setGeometry(QRect(162, 130, 61, 20));
+        lineEditMinContourArea->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        label_5 = new QLabel(RightAngleOptionDialog);
+        label_5->setObjectName(QStringLiteral("label_5"));
+        label_5->setGeometry(QRect(20, 130, 131, 21));
+        checkBoxAllowTriangleContour = new QCheckBox(RightAngleOptionDialog);
+        checkBoxAllowTriangleContour->setObjectName(QStringLiteral("checkBoxAllowTriangleContour"));
+        checkBoxAllowTriangleContour->setGeometry(QRect(20, 160, 141, 17));
+        lineEditMaxOBBRatio = new QLineEdit(RightAngleOptionDialog);
+        lineEditMaxOBBRatio->setObjectName(QStringLiteral("lineEditMaxOBBRatio"));
+        lineEditMaxOBBRatio->setGeometry(QRect(162, 180, 61, 20));
+        lineEditMaxOBBRatio->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        label_6 = new QLabel(RightAngleOptionDialog);
+        label_6->setObjectName(QStringLiteral("label_6"));
+        label_6->setGeometry(QRect(20, 180, 131, 21));
 
         retranslateUi(RightAngleOptionDialog);
 
@@ -90,6 +113,9 @@ public:
         label_2->setText(QApplication::translate("RightAngleOptionDialog", "Layering threshold:", Q_NULLPTR));
         label_4->setText(QApplication::translate("RightAngleOptionDialog", "Orientation:", Q_NULLPTR));
         label_3->setText(QApplication::translate("RightAngleOptionDialog", "Snapping threshold:", Q_NULLPTR));
+        label_5->setText(QApplication::translate("RightAngleOptionDialog", "Minimum contour area:", Q_NULLPTR));
+        checkBoxAllowTriangleContour->setText(QApplication::translate("RightAngleOptionDialog", "Allow triangle contour", Q_NULLPTR));
+        label_6->setText(QApplication::translate("RightAngleOptionDialog", "Maximum OBB ratio:", Q_NULLPTR));
     } // retranslateUi
 
 };

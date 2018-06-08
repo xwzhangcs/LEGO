@@ -427,7 +427,12 @@ namespace util {
 					for (auto grandchild_layer : child_layer->children) {
 						layer->children.insert(layer->children.begin() + i, grandchild_layer);
 						grandchild_layer->bottom_height = child_layer->bottom_height;
-						grandchild_layer->raw_footprints.insert(grandchild_layer->raw_footprints.begin(), child_layer->raw_footprints.begin(), child_layer->raw_footprints.end());
+						//grandchild_layer->raw_footprints.insert(grandchild_layer->raw_footprints.begin(), child_layer->raw_footprints.begin(), child_layer->raw_footprints.end());
+
+						// add the bottom slice of the grandchild layer for N times, where N is the number of the slices in the child layer
+						for (int j = 0; j < child_layer->raw_footprints.size(); j++) {
+							grandchild_layer->raw_footprints.insert(grandchild_layer->raw_footprints.begin(), grandchild_layer->raw_footprints[0]);
+						}
 					}
 				}
 			}

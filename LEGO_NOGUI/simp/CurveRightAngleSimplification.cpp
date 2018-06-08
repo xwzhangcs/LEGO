@@ -34,14 +34,14 @@ namespace simp {
 		// tranlsate (bbox.x, bbox.y)
 		polygons[0].translate(bbox.x, bbox.y);
 
-		decomposePolygon(polygons[0], ans, epsilon, curve_threshold, angle_threshold);
+		decomposePolygon(polygons[0], ans, epsilon, curve_threshold, angle_threshold, orientation);
 		if (ans.contour.size() < 3){
 			throw "No building is found.";
 		}
 		return ans;
 	}
 
-	void CurveRightAngleSimplification::decomposePolygon(util::Polygon input, util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold) {
+	void CurveRightAngleSimplification::decomposePolygon(util::Polygon input, util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold, float orientation) {
 		
 		// check whether it's valid holes
 		bool bValidHoles = false;
@@ -59,7 +59,6 @@ namespace simp {
 			}
 		}
 		if (input.holes.size() == 0 || !bValidHoles){
-
 			std::vector<cv::Point2f> contour;
 			contour.resize(input.contour.size());
 			for (int i = 0; i < input.contour.size(); i++)
@@ -67,7 +66,7 @@ namespace simp {
 			bool bContainCurve = false;
 			util::Polygon output;
 			if (contour.size() > 100){
-				bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold);
+				bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold, orientation);
 			}
 			if (bContainCurve)
 			{
@@ -100,9 +99,10 @@ namespace simp {
 				cv::Rect bbox = util::boundingBox(polygon.contour.points);
 				cv::Mat_<uchar> img;
 				util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point2f(-bbox.x, -bbox.y), img);
-				float angle = axis_align(img);
-				angle = 180 - angle;
-
+				//float angle = axis_align(img);
+				//std::cout << "angle is " << angle << std::endl;
+				//angle = 180 - angle;
+				float angle = orientation * 180 / CV_PI;
 				cv::Mat_<float> M;
 				polygon.contour.points = transform_angle(polygon.contour.points, M, angle);
 				results_tmp = contour_rectify(polygon.contour.points, angle_threshold);
@@ -145,7 +145,7 @@ namespace simp {
 			util::Polygon output;
 			bool bContainCurve = false;
 			if (contour.size() > 100){
-				bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold);
+				bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold, orientation);
 			}
 			if (bContainCurve)
 			{
@@ -175,8 +175,9 @@ namespace simp {
 				cv::Rect bbox = util::boundingBox(polygon.contour.points);
 				cv::Mat_<uchar> img;
 				util::createImageFromPolygon(bbox.width, bbox.height, polygon, cv::Point2f(-bbox.x, -bbox.y), img);
-				float angle = axis_align(img);
-				angle = 180 - angle;
+				//float angle = axis_align(img);
+				//angle = 180 - angle;
+				float angle = orientation * 180 / CV_PI;
 				cv::Mat_<float> M;
 				polygon.contour.points = transform_angle(polygon.contour.points, M, angle);
 				results_tmp = contour_rectify(polygon.contour.points, angle_threshold);
@@ -200,7 +201,7 @@ namespace simp {
 				util::Polygon output;
 				bool bContainCurve = false;
 				if (contour.size() > 100){
-					bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold);
+					bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold, orientation);
 				}
 				if (bContainCurve)
 				{
@@ -294,7 +295,7 @@ namespace simp {
 	/**
 	* @return			false:not curve true: curve
 	*/
-	bool CurveRightAngleSimplification::approxContour(std::vector<cv::Point2f>& input, util::Polygon &output, float epsilon, float curve_threshold, float angle_threshold){
+	bool CurveRightAngleSimplification::approxContour(std::vector<cv::Point2f>& input, util::Polygon &output, float epsilon, float curve_threshold, float angle_threshold, float orientation){
 		bool bContainCurve = 0;
 		std::vector<cv::Point2f> clean_contour;
 		std::vector<int> contour_points_type;
@@ -490,6 +491,7 @@ namespace simp {
 				angle = axis_align(img);
 				angle = 180 - angle;
 			}
+			angle = orientation * 180 / CV_PI;
 			// transform
 			cv::Mat_<float> M;
 			final_contour = transform_angle(final_contour, M, angle);

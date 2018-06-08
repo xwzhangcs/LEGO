@@ -261,7 +261,7 @@ namespace util {
 	}
 
 	Polygon::Polygon() {
-		mat = cv::Mat_<float>::zeros(3, 3);
+		mat = cv::Mat_<float>::eye(3, 3);
 	}
 
 	Polygon Polygon::clone() const {
@@ -325,6 +325,66 @@ namespace util {
 		if (isClockwise(polygon)) {
 			std::reverse(polygon.begin(), polygon.end());
 		}
+	}
+
+	bool isSimple(const Polygon& polygon) {
+		if (polygon.contour.size() == 0) return false;
+
+		CGAL::Polygon_2<Kernel> pgn;
+		std::vector<cv::Point2f> contour = polygon.contour.getActualPoints().points;
+		for (int i = 0; i < contour.size(); i++) {
+			pgn.push_back(Kernel::Point_2(contour[i].x, contour[i].y));
+		}
+		if (!pgn.is_simple()) return false;
+
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			if (polygon.holes[i].size() == 0) continue;
+
+			CGAL::Polygon_2<Kernel> hl;
+			std::vector<cv::Point2f> hole = polygon.holes[i].getActualPoints().points;
+			for (int j = 0; j < hole.size(); j++) {
+				hl.push_back(Kernel::Point_2(hole[j].x, hole[j].y));
+			}
+			if (!hl.is_simple()) return false;
+		}
+		
+		for (int i = 0; i < contour.size(); i++) {
+			int i2 = (i + 1) % contour.size();
+
+			for (int j = 0; j < polygon.holes.size(); j++) {
+				std::vector<cv::Point2f> hole = polygon.holes[j].getActualPoints().points;
+
+				for (int k = 0; k < hole.size(); k++) {
+					int k2 = (k + 1) % hole.size();
+
+					if (isTangent(contour[i], contour[i2], hole[k], hole[k2])) return false;
+					double tab, tcd;
+					cv::Point2f intPt;
+					if (segmentSegmentIntersection(contour[i], contour[i2], hole[k], hole[k2], &tab, &tcd, true, intPt)) return false;
+				}
+			}
+		}
+		for (int i = 0; i < polygon.holes.size(); i++) {
+			std::vector<cv::Point2f> hole = polygon.holes[i].getActualPoints().points;
+
+			for (int j = i + 1; j < polygon.holes.size(); j++) {
+				std::vector<cv::Point2f> hole2 = polygon.holes[j].getActualPoints().points;
+
+				for (int k = 0; k < hole.size(); k++) {
+					int k2 = (k + 1) % hole.size();
+					for (int l = 0; l < hole2.size(); l++) {
+						int l2 = (l + 1) % hole2.size();
+
+						if (isTangent(hole[k], hole[k2], hole[l], hole[l2])) return false;
+						double tab, tcd;
+						cv::Point2f intPt;
+						if (segmentSegmentIntersection(hole[k], hole[k2], hole[l], hole[l2], &tab, &tcd, true, intPt)) return false;
+					}
+				}
+			}
+		}
+
+		return true;
 	}
 
 	bool isSimple(const Ring& points) {
@@ -468,6 +528,39 @@ namespace util {
 		}
 
 		return cv::Rect(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1);
+	}
+
+	cv::Rect calculateOBB(const std::vector<cv::Point2f>& polygon, cv::Mat_<float>& trans_mat) {
+		cv::Rect ans(0, 0, 0, 0);
+		trans_mat = (cv::Mat_<float>(2, 2) << 1, 0, 0, 1);
+		int min_area = std::numeric_limits<int>::max();
+
+		for (int i = 0; i < polygon.size(); i++) {
+			int next = (i + 1) % polygon.size();
+			if (length(polygon[next] - polygon[i]) == 0) continue;
+
+			// calculate the angle of the edge
+			float theta = std::atan2(polygon[next].y - polygon[i].y, polygon[next].x - polygon[i].x);
+			cv::Mat_<float> mat = (cv::Mat_<float>(2, 2) << std::cos(theta), std::sin(theta), -std::sin(theta), std::cos(theta));
+			
+			// rotate the polygon
+			std::vector<cv::Point2f> rotated_polygon(polygon.size());
+			for (int j = 0; j < polygon.size(); j++) {
+				cv::Mat_<float> p = (cv::Mat_<float>(2, 1) << polygon[j].x, polygon[j].y);
+				cv::Mat_<float> p2 = mat * p;
+				rotated_polygon[j] = cv::Point2f(p2(0, 0), p2(1, 0));
+			}
+
+			// calculate the bounding box
+			cv::Rect rect = boundingBox(rotated_polygon);
+			if (rect.width * rect.height < min_area) {
+				min_area = rect.width * rect.height;
+				ans = rect;
+				trans_mat = mat;
+			}
+		}
+
+		return ans;
 	}
 
 	bool withinPolygon(const cv::Point2f& pt, const Polygon& polygon) {
@@ -1014,6 +1107,98 @@ namespace util {
 		cv::resize(result, result, cv::Size(width, height), 0, 0, cv::INTER_NEAREST);
 	}
 
+	std::vector<util::Polygon> intersection(const util::Polygon& polygon1, const util::Polygon& polygon2) {
+		if (!isSimple(polygon1) || !isSimple(polygon2)) throw "Input polygon is not simple.";
+
+		// convert polygon1 to CGAL polygon
+		CGAL::Polygon_2<Kernel> pgn1;
+		std::vector<cv::Point2f> contour1 = polygon1.contour.getActualPoints().points;
+		counterClockwise(contour1);
+		for (int i = 0; i < contour1.size(); i++) {
+			pgn1.push_back(Kernel::Point_2(contour1[i].x, contour1[i].y));
+		}
+		if (!pgn1.is_simple()) throw "Input polygon is not simple.";
+		std::vector<CGAL::Polygon_2<Kernel>> pgn1_holes(polygon1.holes.size());
+		for (int i = 0; i < polygon1.holes.size(); i++) {
+			std::vector<cv::Point2f> hole = polygon1.holes[i].getActualPoints().points;
+			clockwise(hole);
+			for (int j = 0; j < hole.size(); j++) {
+				pgn1_holes[i].push_back(Kernel::Point_2(hole[j].x, hole[j].y));
+			}
+		}
+		CGAL::Polygon_with_holes_2<Kernel> ph1(pgn1, pgn1_holes.begin(), pgn1_holes.end());
+
+		// convert polygon2 to CGAL polygon
+		CGAL::Polygon_2<Kernel> pgn2;
+		std::vector<cv::Point2f> contour2 = polygon2.contour.getActualPoints().points;
+		counterClockwise(contour2);
+		for (int i = 0; i < contour2.size(); i++) {
+			pgn2.push_back(Kernel::Point_2(contour2[i].x, contour2[i].y));
+		}
+		if (!pgn2.is_simple()) throw "Input polygon is not simple.";
+		std::vector<CGAL::Polygon_2<Kernel>> pgn2_holes(polygon2.holes.size());
+		for (int i = 0; i < polygon2.holes.size(); i++) {
+			std::vector<cv::Point2f> hole = polygon2.holes[i].getActualPoints().points;
+			clockwise(hole);
+			for (int j = 0; j < hole.size(); j++) {
+				pgn2_holes[i].push_back(Kernel::Point_2(hole[j].x, hole[j].y));
+			}
+		}
+		CGAL::Polygon_with_holes_2<Kernel> ph2(pgn2, pgn2_holes.begin(), pgn2_holes.end());
+
+		// compute intersection
+		std::list<CGAL::Polygon_with_holes_2<Kernel>> result;
+		CGAL::intersection(ph1, ph2, std::back_inserter(result));
+
+		// convert the CGAL resutls to the vector of polygon
+		std::vector<util::Polygon> ans(result.size());
+		int polygon_id = 0;
+		for (auto rit = result.begin(); rit != result.end(); rit++, polygon_id++) {
+			for (auto it = rit->outer_boundary().vertices_begin(); it != rit->outer_boundary().vertices_end(); it++) {
+				ans[polygon_id].contour.push_back(cv::Point2f(CGAL::to_double(it->x()), CGAL::to_double(it->y())));
+			}
+
+			ans[polygon_id].holes.resize(rit->number_of_holes());
+			int hole_id = 0;
+			for (auto it = rit->holes_begin(); it != rit->holes_end(); it++, hole_id++) {
+				for (auto it2 = it->vertices_begin(); it2 != it->vertices_end(); it2++) {
+					ans[polygon_id].holes[hole_id].push_back(cv::Point2f(CGAL::to_double(it2->x()), CGAL::to_double(it2->y())));
+				}
+			}
+		}
+
+		// remove the vertex if the two adjacent segments are colinear
+		for (int i = ans.size() - 1; i >= 0; i--) {
+			for (int j = ans[i].contour.points.size() - 1; j >= 0; j--) {
+				int prev = (j - 1 + ans[i].contour.points.size()) % ans[i].contour.points.size();
+				int next = (j + 1) % ans[i].contour.points.size();
+				if (std::abs(crossProduct(ans[i].contour.points[j] - ans[i].contour.points[prev], ans[i].contour.points[next] - ans[i].contour.points[j])) < 0.00001) {
+					ans[i].contour.points.erase(ans[i].contour.points.begin() + j);
+				}
+			}
+			if (ans[i].contour.size() == 0) {
+				ans.erase(ans.begin() + i);
+				continue;
+			}
+
+			for (int j = ans[i].holes.size() - 1; j >= 0; j--) {
+				for (int k = ans[i].holes[j].points.size() - 1; k >= 0; k--) {
+					int prev = (k - 1 + ans[i].holes[j].points.size()) % ans[i].holes[j].points.size();
+					int next = (k + 1) % ans[i].holes[j].points.size();
+					if (std::abs(crossProduct(ans[i].holes[j].points[k] - ans[i].holes[j].points[prev], ans[i].holes[j].points[next] - ans[i].holes[j].points[k])) < 0.00001) {
+						ans[i].holes[j].points.erase(ans[i].holes[j].points.begin() + k);
+					}
+				}
+
+				if (ans[i].holes[j].size() == 0) ans[i].holes.erase(ans[i].holes.begin() + j);
+			}
+
+			if (!isSimple(ans[i])) ans.erase(ans.begin() + i);
+		}
+
+		return ans;
+	}
+
 	/**
 	 * Approximate a polygon using DP algorithm.
 	 * This function uses the OpenCV DP function, but if the resultant polygon is self-intersecting,
@@ -1070,6 +1255,25 @@ namespace util {
 	}
 	*/
 
+	void snapPolygon(const std::vector<util::Polygon>& ref_polygons, util::Polygon& polygon, float snapping_threshold) {
+		util::Polygon ans;
+
+		std::vector<cv::Point2f> contour = polygon.contour.getActualPoints().points;
+		util::snapPolygon(ref_polygons, contour, snapping_threshold);
+		ans.contour.points = contour;
+		if (!isSimple(ans.contour)) return;
+		
+		for (int j = 0; j < polygon.holes.size(); j++) {
+			std::vector<cv::Point2f> hole = polygon.holes[j].getActualPoints().points;
+			util::snapPolygon(ref_polygons, hole, snapping_threshold);
+			ans.holes.push_back(hole);
+		}
+
+		if (isSimple(ans)) {
+			polygon = ans;
+		}
+	}
+	
 	void snapPolygon(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold) {
 		std::vector<cv::Point2f> orig_polygon = polygon;
 
@@ -1157,6 +1361,129 @@ namespace util {
 		if (!segmentSegmentIntersection(p1, p2, polygon[i], polygon[prev], &tab, &tcd, false, int_pt1)) return false;
 		cv::Point2f int_pt2;
 		if (!segmentSegmentIntersection(p1, p2, polygon[i2], polygon[next], &tab, &tcd, false, int_pt2)) return false;
+
+		// check if the snapping causes self-intersection.
+		if (!isSimple({ polygon[i], int_pt1, int_pt2, polygon[i2] })) return false;
+
+		std::vector<cv::Point2f> orig_polygon = polygon;
+
+		// snap the edge
+		polygon[i] = int_pt1;
+		polygon[i2] = int_pt2;
+
+		if (!isSimple(polygon)) {
+			polygon = orig_polygon;
+			return false;
+		}
+
+		return true;
+	}
+
+	void snapPolygon2(const std::vector<util::Polygon>& ref_polygons, util::Polygon& polygon, float snapping_threshold) {
+		util::Polygon ans;
+
+		std::vector<cv::Point2f> contour = polygon.contour.getActualPoints().points;
+		util::snapPolygon2(ref_polygons, contour, snapping_threshold);
+		ans.contour.points = contour;
+		if (!isSimple(ans.contour)) return;
+
+		for (int j = 0; j < polygon.holes.size(); j++) {
+			std::vector<cv::Point2f> hole = polygon.holes[j].getActualPoints().points;
+			util::snapPolygon2(ref_polygons, hole, snapping_threshold);
+			ans.holes.push_back(hole);
+		}
+
+		if (isSimple(ans)) {
+			polygon = ans;
+		}
+	}
+
+	void snapPolygon2(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold) {
+		std::vector<cv::Point2f> orig_polygon = polygon;
+
+		for (int i = 0; i < polygon.size(); i++) {
+			int i2 = (i + 1) % polygon.size();
+
+			// find the closest almost-colinear edge from the reference polygons
+			float min_dist = std::numeric_limits<float>::max();
+			cv::Point2f pt1, pt2;
+
+			for (int j = 0; j < ref_polygons.size(); j++) {
+				std::vector<cv::Point2f> contour = ref_polygons[j].contour.getActualPoints().points;
+
+				for (int k = 0; k < contour.size(); k++) {
+					int k2 = (k + 1) % contour.size();
+
+					float dist = distance(contour[k], contour[k2], polygon[i], true);
+					float dist2 = distance(contour[k], contour[k2], polygon[i2], true);
+					float dot_product = std::abs(dotProduct(contour[k2] - contour[k], polygon[i2] - polygon[i]) / length(contour[k2] - contour[k]) / length(polygon[i2] - polygon[i]));
+					if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+						min_dist = dist + dist2;
+						pt1 = contour[k];
+						pt2 = contour[k2];
+					}
+
+					dist = distance(polygon[i], polygon[i2], contour[k], true);
+					dist2 = distance(polygon[i], polygon[i2], contour[k2], true);
+					if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+						min_dist = dist + dist2;
+						pt1 = contour[k];
+						pt2 = contour[k2];
+					}
+				}
+
+				for (int k = 0; k < ref_polygons[j].holes.size(); k++) {
+					std::vector<cv::Point2f> hole = ref_polygons[j].holes[k].getActualPoints().points;
+					for (int l = 0; l < hole.size(); l++) {
+						int l2 = (l + 1) % hole.size();
+
+						float dist = distance(hole[l], hole[l2], polygon[i], true);
+						float dist2 = distance(hole[l], hole[l2], polygon[i2], true);
+						float dot_product = std::abs(dotProduct(hole[l2] - hole[l], polygon[i2] - polygon[i]) / length(hole[l2] - hole[l]) / length(polygon[i2] - polygon[i]));
+						if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+							min_dist = dist + dist2;
+							pt1 = hole[l];
+							pt2 = hole[l2];
+						}
+
+						dist = distance(polygon[i], polygon[i2], hole[l], true);
+						dist2 = distance(polygon[i], polygon[i2], hole[l2], true);
+						if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
+							min_dist = dist + dist2;
+							pt1 = hole[l];
+							pt2 = hole[l2];
+						}
+					}
+				}
+			}
+
+			// snap the edge to the closest one
+			if (min_dist < std::numeric_limits<float>::max()) {
+				snapEdge2(pt1, pt2, polygon, i, i2);
+			}
+		}
+
+		// remove the degenrated points
+		for (int i = polygon.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + polygon.size()) % polygon.size();
+			if (length(polygon[i] - polygon[prev]) < 0.001) polygon.erase(polygon.begin() + i);
+		}
+
+		/*
+		if (!isSimple(polygon)) {
+		polygon = orig_polygon;
+		}
+		*/
+	}
+
+	bool snapEdge2(const cv::Point2f& p1, const cv::Point2f& p2, std::vector<cv::Point2f>& polygon, int i, int i2) {
+		int prev = (i - 1 + polygon.size()) % polygon.size();
+		int next = (i2 + 1) % polygon.size();
+
+		cv::Point2f int_pt1;
+		closestPoint(p1, p2, polygon[i], false, int_pt1);
+		cv::Point2f int_pt2;
+		closestPoint(p1, p2, polygon[i2], false, int_pt1);
 
 		// check if the snapping causes self-intersection.
 		if (!isSimple({ polygon[i], int_pt1, int_pt2, polygon[i2] })) return false;
@@ -1328,6 +1655,31 @@ namespace util {
 		intPoint = a + t0 * dirVec;
 
 		return true;
+	}
+
+	bool isTangent(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d) {
+		cv::Point2f u = b - a;
+		cv::Point2f v = d - c;
+
+		if (length(u) < 0.0000001 || length(v) < 0.0000001) {
+			return false;
+		}
+
+		if (std::abs(crossProduct(u, c - a)) > 0.0000001) return false;
+
+		float ca = dotProduct(u, c - a) / length(u) / length(u);
+		if (ca > 0 && ca < 1) return true;
+
+		float da = dotProduct(u, d - a) / length(u) / length(u);
+		if (da > 0 && da < 1) return true;
+
+		float ac = dotProduct(v, a - c) / length(v) / length(v);
+		if (ac > 0 && ac < 1) return true;
+
+		float bc = dotProduct(v, b - c) / length(v) / length(v);
+		if (bc > 0 && bc < 1) return true;
+
+		return false;
 	}
 
 	/**

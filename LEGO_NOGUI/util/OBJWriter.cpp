@@ -273,6 +273,8 @@ namespace util {
 			double roof_tile_size = 20.0 / scale;
 
 			for (auto& footprint : building->footprints) {
+				if (footprint.contour.size() == 0) continue;
+
 				std::vector<std::vector<cv::Point2f>> polygons;
 
 				cv::Rect bbox = util::boundingBox(footprint.contour.points);
@@ -314,6 +316,8 @@ namespace util {
 
 			// side faces
 			for (auto& footprint : building->footprints) {
+				if (footprint.contour.size() == 0) continue;
+
 				util::Ring polygon = footprint.contour.getActualPoints();
 				polygon.counterClockwise();
 								
@@ -354,6 +358,8 @@ namespace util {
 
 				// side faces of holes
 				for (auto& bh : footprint.holes) {
+					if (bh.size() == 0) continue;
+
 					util::Ring hole = bh.getActualPoints();
 					hole.clockwise();
 

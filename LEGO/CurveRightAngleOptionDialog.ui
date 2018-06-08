@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>242</width>
-    <height>238</height>
+    <height>321</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -96,7 +96,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>190</y>
+     <y>280</y>
      <width>81</width>
      <height>31</height>
     </rect>
@@ -122,7 +122,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>190</y>
+     <y>280</y>
      <width>81</width>
      <height>31</height>
     </rect>
@@ -173,6 +173,71 @@
      <x>92</x>
      <y>160</y>
      <width>131</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>18</x>
+     <y>190</y>
+     <width>131</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Minimum contour area:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditMinContourArea">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>190</y>
+     <width>61</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="checkBoxAllowTriangleContour">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>220</y>
+     <width>131</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Allow triangle contour</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_8">
+   <property name="geometry">
+    <rect>
+     <x>18</x>
+     <y>240</y>
+     <width>131</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Maximum OBB ratio:</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEditMaxOBBRatio">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>240</y>
+     <width>61</width>
      <height>20</height>
     </rect>
    </property>

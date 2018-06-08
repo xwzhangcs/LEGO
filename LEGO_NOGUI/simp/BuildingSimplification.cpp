@@ -19,9 +19,11 @@ namespace simp {
 	 * @param layering_threshold		Layering threshold
 	 * @param snapping_threshold		Snapping threshold
 	 * @param orientation				Principle orientation of the contour in radian
+	 * @param min_contour_area			Minimum area of the contour [pixel^2]. Note: the unit is already converted from m^2 to pixel^2.
+	 * @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 	 * @param min_hole_ratio			The minimum area ratio of a hole to the contour. If the area of the hole is too small, it will be removed.
 	 */
-	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float orientation, float min_hole_ratio) {
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float orientation, float min_contour_area, bool allow_triangle_contour, float max_obb_ratio, float min_hole_ratio) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		std::vector<std::tuple<float, long long, int>> records;
@@ -33,7 +35,7 @@ namespace simp {
 			for (auto component : components) {
 				try {
 					std::shared_ptr<util::BuildingLayer> building;
-					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_hole_ratio, records);
+					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, allow_triangle_contour, max_obb_ratio, min_hole_ratio, records);
 
 					buildings.push_back(building);
 				}
@@ -69,7 +71,7 @@ namespace simp {
 		algorithms[simp::BuildingSimplification::ALG_CURVE] = { epsilon, curve_threshold };
 		algorithms[simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE] = { epsilon, curve_threshold, angle_threshold };
 
-		return simplifyBuildings(voxel_buildings, algorithms, record_stats, min_num_slices_per_layer, alpha, layering_threshold, 0, 0, min_hole_ratio);
+		return simplifyBuildings(voxel_buildings, algorithms, record_stats, min_num_slices_per_layer, alpha, layering_threshold, 0, 0, 0, true, 10, min_hole_ratio);
 	}
 	
 	/**
@@ -84,7 +86,7 @@ namespace simp {
 	 * @param min_hole_ratio		The minimum area ratio of the hole to the contour
 	 * @param records				The statistics will be recorded.
 	 */
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, bool allow_triangle_contour, float max_obb_ratio, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 
 		// get baseline cost
@@ -114,9 +116,18 @@ namespace simp {
 					double epsilon = algorithms[ALG_DP][0];
 					util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+
+					// check if the shape is a triangle
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
+
+					// check the OBB ratio
+					cv::Mat_<float> m;
+					cv::Rect obb = util::calculateOBB(simplified_polygon.contour.points, m);
+					if (obb.width == 0 || obb.height == 0 || obb.width / obb.height > max_obb_ratio || obb.height / obb.width > max_obb_ratio) throw "OBB ratio is exceeded the threshold.";
+
+					// calculate cost
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-
 					if (cost < best_cost) {
 						best_algorithm = ALG_DP;
 						right_angle_for_all_contours = false;
@@ -136,6 +147,16 @@ namespace simp {
 					int resolution = algorithms[ALG_RIGHTANGLE][0];
 					util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, orientation, min_hole_ratio);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+
+					// check if the shape is a triangle
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
+
+					// check the OBB ratio
+					cv::Mat_<float> m;
+					cv::Rect obb = util::calculateOBB(simplified_polygon.contour.points, m);
+					if (obb.width == 0 || obb.height == 0 || obb.width / obb.height > max_obb_ratio || obb.height / obb.width > max_obb_ratio) throw "OBB ratio is exceeded the threshold.";
+
+					// calculate cost
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 					if (cost < best_cost) {
@@ -157,9 +178,18 @@ namespace simp {
 					float curve_threshold = algorithms[ALG_CURVE][1];
 					util::Polygon simplified_polygon = CurveSimplification::simplify(contours[i], epsilon, curve_threshold, orientation, min_hole_ratio);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+
+					// check if the shape is a triangle
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
+
+					// check the OBB ratio
+					cv::Mat_<float> m;
+					cv::Rect obb = util::calculateOBB(simplified_polygon.contour.points, m);
+					if (obb.width == 0 || obb.height == 0 || obb.width / obb.height > max_obb_ratio || obb.height / obb.width > max_obb_ratio) throw "OBB ratio is exceeded the threshold.";
+					
+					// calculate cost
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-
 					if (cost < best_cost) {
 						best_algorithm = ALG_CURVE;
 						right_angle_for_all_contours = false;
@@ -181,9 +211,18 @@ namespace simp {
 					float angle_threshold = algorithms[ALG_CURVE_RIGHTANGLE][2];
 					util::Polygon simplified_polygon = CurveRightAngleSimplification::simplify(contours[i], epsilon, curve_threshold, angle_threshold, orientation, min_hole_ratio);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					
+					// check if the shape is a triangle
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
+
+					// check the OBB ratio
+					cv::Mat_<float> m;
+					cv::Rect obb = util::calculateOBB(simplified_polygon.contour.points, m);
+					if (obb.width == 0 || obb.height == 0 || obb.width / obb.height > max_obb_ratio || obb.height / obb.width > max_obb_ratio) throw "OBB ratio is exceeded the threshold.";
+
+					// calculate cost
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-
 					if (cost < best_cost) {
 						best_algorithm = ALG_CURVE_RIGHTANGLE;
 						right_angle_for_all_contours = false;
@@ -203,6 +242,7 @@ namespace simp {
 					float epsilon = 2;
 					util::Polygon simplified_polygon = DPSimplification::simplify(contours[i], epsilon, min_hole_ratio);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
 
@@ -230,23 +270,52 @@ namespace simp {
 			else {
 				std::cout << "Selected algorithm: DP" << std::endl;
 			}
-			
+
 			// snap the edges
-			std::vector<cv::Point2f> simplified_contour = best_simplified_polygon.contour.getActualPoints().points;
-			util::snapPolygon(parent_contours, simplified_contour, snapping_threshold);
-			best_simplified_polygon.contour.points = simplified_contour;
-			best_simplified_polygon.mat = cv::Mat_<float>::eye(3, 3);
-			best_simplified_polygon.contour.mat = cv::Mat_<float>::eye(3, 3);
-			for (int j = 0; j < best_simplified_polygon.holes.size(); j++) {
-				std::vector<cv::Point2f> hole = best_simplified_polygon.holes[j].getActualPoints().points;
-				util::snapPolygon(parent_contours, hole, snapping_threshold);
-				best_simplified_polygon.holes[j].points = hole;
-				best_simplified_polygon.holes[j].mat = cv::Mat_<float>::eye(3, 3);
+			if (parent_contours.size() > 0 && snapping_threshold > 0) {
+				if (best_algorithm == ALG_RIGHTANGLE) {
+					util::snapPolygon(parent_contours, best_simplified_polygon, snapping_threshold);
+				}
+				else {
+					util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
+				}
 			}
-						
-			best_simplified_polygons.push_back(best_simplified_polygon);
+
+			// crop the contour such that it is completely inside the parent contours,
+			// and add the cropped contours to the results.
+			if (parent_contours.size() > 0) {
+				try {
+					for (int j = 0; j < parent_contours.size(); j++) {
+						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(best_simplified_polygon, parent_contours[j]);
+						for (int k = 0; k < cropped_simplified_polygons.size(); k++) {
+							if (isSimple(cropped_simplified_polygons[k])) {
+								best_simplified_polygons.push_back(cropped_simplified_polygons[k]);
+							}
+						}
+					}
+				} 
+				catch (...) {
+					if (isSimple(best_simplified_polygon)) {
+						best_simplified_polygons.push_back(best_simplified_polygon);
+					}
+				}
+			}
+			else {
+				best_simplified_polygons.push_back(best_simplified_polygon);
+			}
+
 			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
 		}
+
+
+		for (int i = best_simplified_polygons.size() - 1; i >= 0; i--) {
+			if (calculateArea(best_simplified_polygons[i]) < min_contour_area) {
+				best_simplified_polygons.erase(best_simplified_polygons.begin() + i);
+			}
+		}
+
+
+		if (best_simplified_polygons.size() == 0) throw "No valid contour.";
 
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygons, layer->bottom_height, layer->top_height));
 
@@ -262,7 +331,7 @@ namespace simp {
 					next_contour_area += util::calculateArea(child_layer->raw_footprints[0][i]);
 				}
 
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, best_simplified_polygons, algorithms, alpha, snapping_threshold, orientation, min_hole_ratio, records);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, best_simplified_polygons, algorithms, alpha, snapping_threshold, orientation, min_contour_area, allow_triangle_contour, max_obb_ratio, min_hole_ratio, records);
 				building->children.push_back(child);
 			}
 			catch (...) {

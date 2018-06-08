@@ -69,11 +69,11 @@ namespace simp {
 
 	public:
 		static util::Polygon simplify(const util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold, float orientation, float min_hole_ratio);
-		static void decomposePolygon(util::Polygon input, util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold);
+		static void decomposePolygon(util::Polygon input, util::Polygon& polygon, float epsilon, float curve_threshold, float angle_threshold, float orientation);
 
 	private:
 		static std::vector<util::Polygon> findContours(const cv::Mat_<uchar>& img);
-		static bool approxContour(std::vector<cv::Point2f>& input, util::Polygon &output, float epsilon, float curve_threshold, float angle_threshold);
+		static bool approxContour(std::vector<cv::Point2f>& input, util::Polygon &output, float epsilon, float curve_threshold, float angle_threshold, float orientation);
 		static bool concaveCurve(std::vector<cv::Point2f>& end_points, util::Polygon &polygon);
 
 		static cv::Point3f optimizeByBFGS(const std::vector<cv::Point2d>& points, cv::Point3d init_points);

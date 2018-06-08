@@ -376,11 +376,13 @@ void GLWidget3D::simplifyByAll(double alpha) {
 * @param layering_threshold		layering threshold
 * @param snapping_threshold		Threshold for snapping
 * @param orientation			principle orientation of the building in radian
+* @param min_contour_area		Minimum area of the contour [m^2].
+* @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 */
-void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation) {
+void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_DP] = { epsilon };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, allow_triangle_contour, max_obb_ratio, min_hole_ratio);
 
 	show_mode = SHOW_DP;
 	update3DGeometry();
@@ -393,11 +395,13 @@ void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double 
 * @param layering_threshold		layering threshold
 * @param snapping_threshold		Threshold for snapping
 * @param orientation			principle orientation of the building in radian
+* @param min_contour_area		Minimum area of the contour [m^2].
+* @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 */
-void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation) {
+void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (double)resolution };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, allow_triangle_contour, max_obb_ratio, min_hole_ratio);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
@@ -411,11 +415,13 @@ void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold,
 * @param layering_threshold		layering threshold
 * @param snapping_threshold		Threshold for snapping
 * @param orientation			principle orientation of the building in radian
+* @param min_contour_area		Minimum area of the contour [m^2].
+* @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 */
-void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation) {
+void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_CURVE] = { epsilon, curve_threshold };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, allow_triangle_contour, max_obb_ratio, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
@@ -430,197 +436,16 @@ void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double 
  * @param layering_threshold	layering threshold
  * @param snapping_threshold	Threshold for snapping
  * @param orientation			principle orientation of the building in radian
+ * @param min_contour_area		Minimum area of the contour [m^2].
+ * @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
  */
-void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation) {
+void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE] = { epsilon, curve_threshold, angle_threshold };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, allow_triangle_contour, max_obb_ratio, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
-}
-
-void GLWidget3D::dpTest() {
-	/*
-	for (int alpha_idx = 0; alpha_idx <= 10; alpha_idx++) {
-		double alpha = (double)alpha_idx * 0.1;
-
-		QString filename = QString("dp_alpha_%1.txt").arg(alpha);
-		QFile file(filename);
-		file.open(QIODevice::WriteOnly);
-		QTextStream out(&file);
-
-		// get baseline cost
-		std::vector<std::shared_ptr<util::BuildingLayer>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_DP, alpha, 0.9, 0.5, 0, 0);
-		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
-
-		double min_cost = std::numeric_limits<double>::max();
-		double best_layering_threshold;
-		double best_epsilon;
-		double best_error;
-		double best_simplicity;
-		double best_simplicity_baseline;
-
-		const int num_layering_samples = 5;
-		const int num_epsilon_samples = 5;
-		for (int layering_idx = 0; layering_idx <= num_layering_samples; layering_idx++) {
-			float layering_threshold = layering_idx * 1.0 / num_layering_samples + 0.0;
-			for (int epsilon_idx = 0; epsilon_idx <= num_epsilon_samples; epsilon_idx++) {
-				float epsilon = (float)epsilon_idx * 10 / num_epsilon_samples + 0.0;
-
-				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_DP, alpha, layering_threshold, epsilon, 0, 0);
-
-				// calculate the cost
-				std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-			
-				out << layering_threshold << "," << epsilon << "," << cost << endl;
-				if (cost < min_cost) {
-					min_cost = cost;
-					best_layering_threshold = layering_threshold;
-					best_epsilon = epsilon;
-					best_error = costs[0] / costs[1];
-					best_simplicity = costs[2];
-					best_simplicity_baseline = baseline_costs[2];
-				}
-			}
-		}
-		file.close();
-
-		std::cout << "----------------------------------------" << std::endl;
-		std::cout << "alpha: " << alpha << std::endl;
-		std::cout << "Best cost = " << min_cost << std::endl;
-		std::cout << "Best layering threshold = " << best_layering_threshold << std::endl;
-		std::cout << "Best epsilon = " << best_epsilon << std::endl;
-		std::cout << "Best error = " << best_error * voxel_count << " / " << voxel_count << " (" << best_error << ")" << std::endl;
-		std::cout << "Best simplicity = " << best_simplicity << " / " << best_simplicity_baseline << " (" << best_simplicity / best_simplicity_baseline << ")" << std::endl;
-	}
-	*/
-}
-
-void GLWidget3D::rightAngleTest() {
-	/*
-	for (int alpha_idx = 0; alpha_idx <= 10; alpha_idx++) {
-		double alpha = (double)alpha_idx * 0.1;
-
-		QString filename = QString("rightangle_alpha_%1.txt").arg(alpha);
-		QFile file(filename);
-		file.open(QIODevice::WriteOnly);
-		QTextStream out(&file);
-
-		// get baseline cost
-		std::vector<std::shared_ptr<util::BuildingLayer>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_DP, alpha, 0.9, 0.5, 0, 0);
-		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
-
-		double min_cost = std::numeric_limits<double>::max();
-		double best_layering_threshold;
-		double best_resolution;
-		double best_error;
-		double best_simplicity;
-		double best_simplicity_baseline;
-
-		const int num_layering_samples = 5;
-		const int num_resolution_samples = 5;
-		for (int layering_idx = 0; layering_idx <= num_layering_samples; layering_idx++) {
-			float layering_threshold = layering_idx * 0.8 / num_layering_samples + 0.1;
-			for (int resolution_idx = 0; resolution_idx <= num_resolution_samples; resolution_idx++) {
-				int resolution = (float)resolution_idx * 5 / num_resolution_samples + 2;
-
-				std::cout << "layering_idx = " << layering_idx << ", " << "resolution_idx = " << resolution_idx << std::endl;
-
-				buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_RIGHTANGLE, alpha, layering_threshold, 0, resolution, 0);
-
-				// calculate the cost
-				std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);
-				float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-				
-				out << layering_threshold << "," << resolution << "," << cost << endl;
-				if (cost < min_cost) {
-					min_cost = cost;
-					best_layering_threshold = layering_threshold;
-					best_resolution = resolution;
-					best_error = costs[0] / costs[1];
-					best_simplicity = costs[2];
-					best_simplicity_baseline = baseline_costs[2];
-				}
-			}
-		}
-		file.close();
-
-		std::cout << "----------------------------------------" << std::endl;
-		std::cout << "alpha: " << alpha << std::endl;
-		std::cout << "Best cost = " << min_cost << std::endl;
-		std::cout << "Best layering threshold = " << best_layering_threshold << std::endl;
-		std::cout << "Best resolution = " << best_resolution << std::endl;
-		std::cout << "Best error = " << best_error * voxel_count << " / " << voxel_count << " (" << best_error << ")" << std::endl;
-		std::cout << "Best simplicity = " << best_simplicity << " / " << best_simplicity_baseline << " (" << best_simplicity / best_simplicity_baseline << ")" << std::endl;
-	}
-	*/
-}
-
-void GLWidget3D::curveTest() {
-	/*
-	for (int alpha_idx = 0; alpha_idx <= 10; alpha_idx++) {
-		double alpha = (double)alpha_idx * 0.1;
-
-		QString filename = QString("curve_alpha_%1.txt").arg(alpha);
-		QFile file(filename);
-		file.open(QIODevice::WriteOnly);
-		QTextStream out(&file);
-
-		// get baseline cost
-		std::vector<std::shared_ptr<util::BuildingLayer>> baseline_buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_DP, alpha, 0.9, 0.5, 0, 0);
-		std::vector<float> baseline_costs = simp::BuildingSimplification::sumCost(baseline_buildings);
-
-		double min_cost = std::numeric_limits<double>::max();
-		double best_layering_threshold;
-		double best_epsilon;
-		double best_curve_threshold;
-		double best_error;
-		double best_simplicity;
-		double best_simplicity_baseline;
-
-		const int num_layering_samples = 5;
-		const int num_epsilon_samples = 5;
-		const int num_curve_threshold_samples = 5;
-		for (int layering_idx = 0; layering_idx <= num_layering_samples; layering_idx++) {
-			float layering_threshold = layering_idx * 1.0 / num_layering_samples + 0.0;
-			for (int epsilon_idx = 0; epsilon_idx <= num_epsilon_samples; epsilon_idx++) {
-				float epsilon = (float)epsilon_idx * 10 / num_epsilon_samples + 0.0;
-				for (int curve_threshold_idx = 0; curve_threshold_idx <= num_curve_threshold_samples; curve_threshold_idx++) {
-					float curve_threshold = (float)curve_threshold_idx * 3 / num_curve_threshold_samples + 1.0;
-
-					buildings = simp::BuildingSimplification::simplifyBuildings(disjoint_voxel_data, ground_level, simp::BuildingSimplification::ALG_CURVE, alpha, layering_threshold, epsilon, 0, curve_threshold);
-
-					// calculate the cost
-					std::vector<float> costs = simp::BuildingSimplification::sumCost(buildings);
-					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
-
-					out << layering_threshold << "," << epsilon << "," << curve_threshold << "," << cost << endl;
-					if (cost < min_cost) {
-						min_cost = cost;
-						best_layering_threshold = layering_threshold;
-						best_epsilon = epsilon;
-						best_curve_threshold = curve_threshold;
-						best_error = costs[0] / costs[1];
-						best_simplicity = costs[2];
-						best_simplicity_baseline = baseline_costs[2];
-					}
-				}
-			}
-		}
-		file.close();
-
-		std::cout << "----------------------------------------" << std::endl;
-		std::cout << "alpha: " << alpha << std::endl;
-		std::cout << "Best cost = " << min_cost << std::endl;
-		std::cout << "Best layering threshold = " << best_layering_threshold << std::endl;
-		std::cout << "Best epsilon = " << best_epsilon << std::endl;
-		std::cout << "Best curve threshold = " << best_curve_threshold << std::endl;
-		std::cout << "Best error = " << best_error * voxel_count << " / " << voxel_count << " (" << best_error << ")" << std::endl;
-		std::cout << "Best simplicity = " << best_simplicity << " / " << best_simplicity_baseline << " (" << best_simplicity / best_simplicity_baseline << ")" << std::endl;
-	}
-	*/
 }
 
 void GLWidget3D::update3DGeometry() {
@@ -815,6 +640,8 @@ void GLWidget3D::update3DGeometryWithoutRoof(std::shared_ptr<util::BuildingLayer
 	float floor_tile_height = 3.0f;
 
 	for (auto& bf : building->footprints) {
+		if (bf.contour.size() == 0) continue;
+
 		std::vector<std::vector<cv::Point2f>> polygons;
 
 		polygons = util::tessellate(bf.contour, bf.holes);

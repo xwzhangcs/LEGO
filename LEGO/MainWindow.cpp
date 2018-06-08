@@ -45,9 +45,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionSimplifyByRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByRightAngle()));
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
 	connect(ui.actionSimplifyByCurveRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByCurveRightAngle()));
-	connect(ui.actionDPTest, SIGNAL(triggered()), this, SLOT(onDPTest()));
-	connect(ui.actionRightAngleTest, SIGNAL(triggered()), this, SLOT(onRightAngleTest()));
-	connect(ui.actionCurveTest, SIGNAL(triggered()), this, SLOT(onCurveTest()));
 	connect(ui.actionOffsetScale, SIGNAL(triggered()), this, SLOT(onOffsetScale()));
 	connect(ui.actionColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionTexture, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
@@ -137,7 +134,7 @@ void MainWindow::onSimplifyByAll() {
 void MainWindow::onSimplifyByDP() {
 	DPOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByDP(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI);
+		glWidget->simplifyByDP(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
 		glWidget->update();
 	}
 }
@@ -145,7 +142,7 @@ void MainWindow::onSimplifyByDP() {
 void MainWindow::onSimplifyByRightAngle() {
 	RightAngleOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI);
+		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
 		glWidget->update();
 	}
 }
@@ -153,7 +150,7 @@ void MainWindow::onSimplifyByRightAngle() {
 void MainWindow::onSimplifyByCurve() {
 	CurveOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI);
+		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
 		glWidget->update();
 	}
 }
@@ -161,21 +158,9 @@ void MainWindow::onSimplifyByCurve() {
 void MainWindow::onSimplifyByCurveRightAngle() {
 	CurveRightAngleOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI);
+		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
 		glWidget->update();
 	}
-}
-
-void MainWindow::onDPTest() {
-	glWidget->dpTest();
-}
-
-void MainWindow::onRightAngleTest() {
-	glWidget->rightAngleTest();
-}
-
-void MainWindow::onCurveTest() {
-	glWidget->curveTest();
 }
 
 void MainWindow::onOffsetScale() {

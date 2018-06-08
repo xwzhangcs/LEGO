@@ -42,6 +42,9 @@ bool readBoolValue(const rapidjson::Value& node, const char* key) {
 	if (node.HasMember(key) && node[key].IsBool()) {
 		return node[key].GetBool();
 	}
+	else if (node.HasMember(key) && node[key].IsString()) {
+		return QString(node[key].GetString()).toLower() == "true";
+	}
 	else {
 		throw "Could not read bool from node";
 	}
@@ -105,7 +108,7 @@ int main(int argc, const char* argv[]) {
 		// read input filename
 		bool do_voxel_model = false;
 		try {
-			do_voxel_model = readBoolValue(doc, "do_voxel_model") || readStringValue(doc, "do_voxel_model").toLower() == "true";
+			do_voxel_model = readBoolValue(doc, "do_voxel_model");
 		}
 		catch (...) { }
 		
@@ -187,6 +190,15 @@ int main(int argc, const char* argv[]) {
 		// read orientation
 		double orientation = readNumber(doc, "bulk_orientation", 0.0) / 180.0 * CV_PI;
 
+		// read minimum contour area
+		double min_contour_area = readNumber(doc, "minimum_contour_area", 2.0) / scale / scale;
+
+		// read the flag whether a triangle contour is allowed
+		bool allow_triangle_contour = readBoolValue(doc, "allow_triangle_contour");
+
+		// read maximum obb ratio
+		double max_obb_ratio = readNumber(doc, "maximum_obb_ratio", 10.0);
+
 		// read minimum hole ratio
 		double min_hole_ratio = readNumber(doc, "min_hole_ratio", 0.02);
 
@@ -219,7 +231,7 @@ int main(int argc, const char* argv[]) {
 
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 		int min_num_slices_per_layer = 2.5 / scale;
-		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_hole_ratio);
+		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, allow_triangle_contour, max_obb_ratio, min_hole_ratio);
 
 		util::obj::OBJWriter::write(output_mesh.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 		util::topface::TopFaceWriter::write(output_top_face.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);

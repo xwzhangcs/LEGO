@@ -83,6 +83,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>..\LEGO_NOGUI;..\opencv3.4\include;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
