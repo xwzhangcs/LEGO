@@ -115,7 +115,7 @@ namespace util {
 		}
 
 		for (int iter = 0; iter < 10; iter++) {
-			if (pointcloud::shape::detectCurve(point_cloud, 0.000000001, std::max((int)(point_cloud.size() * 0.11), std::min((int)point_cloud.size(), 9000)), 5, 10, 0.9, 150, 400)) return true;
+			if (pointcloud::shape::detectCurve(point_cloud, 0.000000001, std::max((int)(point_cloud.size() * 0.11), std::min((int)point_cloud.size(), 8000)), 5, 10, 0.9, 150, 400)) return true;
 			//if (pointcloud::shape::detectCurve(point_cloud, 0.000000001, std::max((int)(point_cloud.size() * 0.18), std::min((int)point_cloud.size(), 10000)), 10, 10, 0.9, 150, 400)) return true;
 		}
 		return false;
