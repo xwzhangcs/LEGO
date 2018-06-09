@@ -62,10 +62,10 @@ public:
 	void saveImage(const QString& filename);
 	void showInputVoxel();
 	void simplifyByAll(double alpha);
-	void simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio);
-	void simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio);
-	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio);
-	void simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, bool allow_triangle_contour, float max_obb_ratio);
+	void simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
+	void simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
+	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
+	void simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<util::VoxelBuilding>& voxel_buildings);
 	void update3DGeometry(const std::shared_ptr<util::VoxelNode>& voxel_node, glm::vec4& color, std::vector<Vertex>& vertices);

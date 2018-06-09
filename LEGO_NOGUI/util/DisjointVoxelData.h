@@ -24,7 +24,7 @@ namespace util {
 		static cv::Mat_<uchar> getSliceOfCluster(const cv::Mat_<int>& clustering, int cluster_id, int& min_x, int& min_y, int& max_x, int& max_y);
 		static Polygon getPolygonFromCluster(const cv::Mat_<int>& clustering, int cluster_id);
 		static void convertCoordinatesOfPolygon(Polygon& polygon, int width, int height);
-		static std::shared_ptr<BuildingLayer> layeringBuilding(int building_id, const std::shared_ptr<VoxelNode>& voxel_node, float threshold, int min_num_slices_per_layer);
+		static std::vector<std::shared_ptr<BuildingLayer>> layeringBuilding(int building_id, const std::shared_ptr<VoxelNode>& voxel_node, float threshold, int min_num_slices_per_layer);
 		static void removeThinLayers(std::shared_ptr<BuildingLayer> layer, int min_num_slices_per_layer);
 	};
 

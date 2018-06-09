@@ -38,7 +38,7 @@ double readNumber(const rapidjson::Value& node, const char* key, double default_
 	}
 }
 
-bool readBoolValue(const rapidjson::Value& node, const char* key) {
+bool readBoolValue(const rapidjson::Value& node, const char* key, bool default_value) {
 	if (node.HasMember(key) && node[key].IsBool()) {
 		return node[key].GetBool();
 	}
@@ -46,7 +46,7 @@ bool readBoolValue(const rapidjson::Value& node, const char* key) {
 		return QString(node[key].GetString()).toLower() == "true";
 	}
 	else {
-		throw "Could not read bool from node";
+		return default_value;
 	}
 }
 
@@ -106,11 +106,7 @@ int main(int argc, const char* argv[]) {
 		std::vector<cv::Mat_<uchar>> voxel_data;
 		
 		// read input filename
-		bool do_voxel_model = false;
-		try {
-			do_voxel_model = readBoolValue(doc, "do_voxel_model");
-		}
-		catch (...) { }
+		bool do_voxel_model = readBoolValue(doc, "do_voxel_model", false);
 		
 		// read input filename
 		QString input_slice_filename;
@@ -193,11 +189,14 @@ int main(int argc, const char* argv[]) {
 		// read minimum contour area
 		double min_contour_area = readNumber(doc, "minimum_contour_area", 2.0) / scale / scale;
 
-		// read the flag whether a triangle contour is allowed
-		bool allow_triangle_contour = readBoolValue(doc, "allow_triangle_contour");
-
 		// read maximum obb ratio
 		double max_obb_ratio = readNumber(doc, "maximum_obb_ratio", 10.0);
+
+		// read the flag whether a triangle contour is allowed
+		bool allow_triangle_contour = readBoolValue(doc, "allow_triangle_contour", false);
+
+		// read the flag whether overhang is allowed
+		bool allow_overhang = readBoolValue(doc, "allow_overhang", false);
 
 		// read minimum hole ratio
 		double min_hole_ratio = readNumber(doc, "min_hole_ratio", 0.02);
@@ -231,7 +230,7 @@ int main(int argc, const char* argv[]) {
 
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 		int min_num_slices_per_layer = 2.5 / scale;
-		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, allow_triangle_contour, max_obb_ratio, min_hole_ratio);
+		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 		util::obj::OBJWriter::write(output_mesh.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 		util::topface::TopFaceWriter::write(output_top_face.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
@@ -266,8 +265,8 @@ int main(int argc, const char* argv[]) {
 		std::vector<cv::Mat_<uchar>> voxel_data;
 
 		// The weight ratio of the accuracy term to the simplicity term for the cost function.
-		float alpha = std::stof(argv[2]);
-		alpha = std::min(std::max(0.0f, alpha), 1.0f);
+		double alpha = std::stod(argv[2]);
+		alpha = std::min(std::max(0.0, alpha), 1.0);
 
 		// get directory
 		QFileInfo finfo(input_filename);
@@ -285,7 +284,7 @@ int main(int argc, const char* argv[]) {
 		}	
 		
 		// determine the layering threshold based on the weight ratio
-		float threshold = 0.01;
+		double threshold = 0.01;
 		if (alpha < 0.1) threshold = 0.1;
 		else if (alpha < 0.2) threshold = 0.3;
 		else if (alpha < 0.3) threshold = 0.4;
@@ -296,7 +295,7 @@ int main(int argc, const char* argv[]) {
 		else threshold = 0.99;
 
 		// determine the parameter for the DP method
-		float epsilon;
+		double epsilon;
 		if (alpha <= 0.06) epsilon = 24;
 		else if (alpha < 0.1) epsilon = 18;
 		else if (alpha < 0.2) epsilon = 12;
@@ -318,14 +317,14 @@ int main(int argc, const char* argv[]) {
 		else resolution = 2;
 		
 		// determine the parameter for the curve method
-		float curve_threshold;
-		if (alpha < 0.2) curve_threshold = 2.0f;
+		double curve_threshold;
+		if (alpha < 0.2) curve_threshold = 2.0;
 		else curve_threshold = 2.0f;
-		float angle_threshold = 10.0f / 180.0f * CV_PI;
-		if (alpha < 0.2) angle_threshold = 20.0f / 180.0f * CV_PI;
+		double angle_threshold = 10.0 / 180.0 * CV_PI;
+		if (alpha < 0.2) angle_threshold = 20.0 / 180.0 * CV_PI;
 
 		int min_num_slices_per_layer = 2.5 / scale;
-		float min_hole_ratio = 0.02;
+		double min_hole_ratio = 0.02;
 
 		time_t start = clock();
 		std::vector<util::VoxelBuilding> voxel_buildings = util::DisjointVoxelData::disjoint(voxel_data);

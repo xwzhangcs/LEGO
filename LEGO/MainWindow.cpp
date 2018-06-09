@@ -134,7 +134,7 @@ void MainWindow::onSimplifyByAll() {
 void MainWindow::onSimplifyByDP() {
 	DPOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByDP(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
+		glWidget->simplifyByDP(dlg.getEpsilon(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 		glWidget->update();
 	}
 }
@@ -142,7 +142,7 @@ void MainWindow::onSimplifyByDP() {
 void MainWindow::onSimplifyByRightAngle() {
 	RightAngleOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
+		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 		glWidget->update();
 	}
 }
@@ -150,7 +150,7 @@ void MainWindow::onSimplifyByRightAngle() {
 void MainWindow::onSimplifyByCurve() {
 	CurveOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
+		glWidget->simplifyByCurve(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 		glWidget->update();
 	}
 }
@@ -158,7 +158,7 @@ void MainWindow::onSimplifyByCurve() {
 void MainWindow::onSimplifyByCurveRightAngle() {
 	CurveRightAngleOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.isAllowTriangleContour(), dlg.getMaxOBBRatio());
+		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 		glWidget->update();
 	}
 }

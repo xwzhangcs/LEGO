@@ -1279,6 +1279,7 @@ namespace util {
 
 		for (int i = 0; i < polygon.size(); i++) {
 			int i2 = (i + 1) % polygon.size();
+			float len = length(polygon[i] - polygon[i2]);
 
 			// find the closest almost-colinear edge from the reference polygons
 			float min_dist = std::numeric_limits<float>::max();
@@ -1290,21 +1291,26 @@ namespace util {
 				for (int k = 0; k < contour.size(); k++) {
 					int k2 = (k + 1) % contour.size();
 
-					float dist = distance(contour[k], contour[k2], polygon[i], true);
-					float dist2 = distance(contour[k], contour[k2], polygon[i2], true);
 					float dot_product = std::abs(dotProduct(contour[k2] - contour[k], polygon[i2] - polygon[i]) / length(contour[k2] - contour[k]) / length(polygon[i2] - polygon[i]));
-					if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-						min_dist = dist + dist2;
-						pt1 = contour[k];
-						pt2 = contour[k2];
-					}
+					if (dot_product < 0.95) continue;
 
-					dist = distance(polygon[i], polygon[i2], contour[k], true);
-					dist2 = distance(polygon[i], polygon[i2], contour[k2], true);
-					if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-						min_dist = dist + dist2;
-						pt1 = contour[k];
-						pt2 = contour[k2];
+					float ref_len = length(contour[k] - contour[k2]);
+					float len_ratio = ref_len / len;
+
+					std::vector<float> dist(4);
+					dist[0] = distance(contour[k], contour[k2], polygon[i], true);
+					dist[1] = distance(contour[k], contour[k2], polygon[i2], true);
+					dist[2] = distance(polygon[i], polygon[i2], contour[k], true);
+					dist[3] = distance(polygon[i], polygon[i2], contour[k2], true);
+
+					for (int l = 0; l < dist.size(); l++) {
+						for (int m = l + 1; m < dist.size(); m++) {
+							if (dist[l] < snapping_threshold && dist[m] < snapping_threshold && len_ratio > 0.3 && dist[l] + dist[m] < min_dist) {
+								min_dist = dist[l] + dist[m];
+								pt1 = contour[k];
+								pt2 = contour[k2];
+							}
+						}
 					}
 				}
 
@@ -1313,21 +1319,26 @@ namespace util {
 					for (int l = 0; l < hole.size(); l++) {
 						int l2 = (l + 1) % hole.size();
 
-						float dist = distance(hole[l], hole[l2], polygon[i], true);
-						float dist2 = distance(hole[l], hole[l2], polygon[i2], true);
 						float dot_product = std::abs(dotProduct(hole[l2] - hole[l], polygon[i2] - polygon[i]) / length(hole[l2] - hole[l]) / length(polygon[i2] - polygon[i]));
-						if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-							min_dist = dist + dist2;
-							pt1 = hole[l];
-							pt2 = hole[l2];
-						}
+						if (dot_product < 0.95) continue;
 
-						dist = distance(polygon[i], polygon[i2], hole[l], true);
-						dist2 = distance(polygon[i], polygon[i2], hole[l2], true);
-						if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-							min_dist = dist + dist2;
-							pt1 = hole[l];
-							pt2 = hole[l2];
+						float ref_len = length(hole[l] - hole[l2]);
+						float len_ratio = ref_len / len;
+
+						std::vector<float> dist(4);
+						dist[0] = distance(hole[l], hole[l2], polygon[i], true);
+						dist[1] = distance(hole[l], hole[l2], polygon[i2], true);
+						dist[2] = distance(polygon[i], polygon[i2], hole[l], true);
+						dist[3] = distance(polygon[i], polygon[i2], hole[l2], true);
+
+						for (int m = 0; m < dist.size(); m++) {
+							for (int n = m + 1; n < dist.size(); n++) {
+								if (dist[m] < snapping_threshold && dist[n] < snapping_threshold && len_ratio > 0.3 && dist[m] + dist[n] < min_dist) {
+									min_dist = dist[m] + dist[n];
+									pt1 = hole[l];
+									pt2 = hole[l2];
+								}
+							}
 						}
 					}
 				}
@@ -1358,12 +1369,9 @@ namespace util {
 
 		double tab, tcd;
 		cv::Point2f int_pt1;
-		if (!segmentSegmentIntersection(p1, p2, polygon[i], polygon[prev], &tab, &tcd, false, int_pt1)) return false;
+		if (!segmentSegmentIntersection(p1, p2, polygon[i], polygon[prev], &tab, &tcd, false, int_pt1)) int_pt1 = polygon[i];
 		cv::Point2f int_pt2;
-		if (!segmentSegmentIntersection(p1, p2, polygon[i2], polygon[next], &tab, &tcd, false, int_pt2)) return false;
-
-		// check if the snapping causes self-intersection.
-		if (!isSimple({ polygon[i], int_pt1, int_pt2, polygon[i2] })) return false;
+		if (!segmentSegmentIntersection(p1, p2, polygon[i2], polygon[next], &tab, &tcd, false, int_pt2)) int_pt2 = polygon[i2];
 
 		std::vector<cv::Point2f> orig_polygon = polygon;
 
@@ -1403,6 +1411,7 @@ namespace util {
 
 		for (int i = 0; i < polygon.size(); i++) {
 			int i2 = (i + 1) % polygon.size();
+			float len = length(polygon[i] - polygon[i2]);
 
 			// find the closest almost-colinear edge from the reference polygons
 			float min_dist = std::numeric_limits<float>::max();
@@ -1414,21 +1423,26 @@ namespace util {
 				for (int k = 0; k < contour.size(); k++) {
 					int k2 = (k + 1) % contour.size();
 
-					float dist = distance(contour[k], contour[k2], polygon[i], true);
-					float dist2 = distance(contour[k], contour[k2], polygon[i2], true);
 					float dot_product = std::abs(dotProduct(contour[k2] - contour[k], polygon[i2] - polygon[i]) / length(contour[k2] - contour[k]) / length(polygon[i2] - polygon[i]));
-					if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-						min_dist = dist + dist2;
-						pt1 = contour[k];
-						pt2 = contour[k2];
-					}
+					if (dot_product < 0.95) continue;
 
-					dist = distance(polygon[i], polygon[i2], contour[k], true);
-					dist2 = distance(polygon[i], polygon[i2], contour[k2], true);
-					if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-						min_dist = dist + dist2;
-						pt1 = contour[k];
-						pt2 = contour[k2];
+					float ref_len = length(contour[k] - contour[k2]);
+					float len_ratio = ref_len / len;
+
+					std::vector<float> dist(4);
+					dist[0] = distance(contour[k], contour[k2], polygon[i], true);
+					dist[1] = distance(contour[k], contour[k2], polygon[i2], true);
+					dist[2] = distance(polygon[i], polygon[i2], contour[k], true);
+					dist[3] = distance(polygon[i], polygon[i2], contour[k2], true);
+
+					for (int l = 0; l < dist.size(); l++) {
+						for (int m = l + 1; m < dist.size(); m++) {
+							if (dist[l] < snapping_threshold && dist[m] < snapping_threshold && len_ratio > 0.3 && dist[l] + dist[m] < min_dist) {
+								min_dist = dist[l] + dist[m];
+								pt1 = contour[k];
+								pt2 = contour[k2];
+							}
+						}
 					}
 				}
 
@@ -1437,21 +1451,26 @@ namespace util {
 					for (int l = 0; l < hole.size(); l++) {
 						int l2 = (l + 1) % hole.size();
 
-						float dist = distance(hole[l], hole[l2], polygon[i], true);
-						float dist2 = distance(hole[l], hole[l2], polygon[i2], true);
 						float dot_product = std::abs(dotProduct(hole[l2] - hole[l], polygon[i2] - polygon[i]) / length(hole[l2] - hole[l]) / length(polygon[i2] - polygon[i]));
-						if ((dist < snapping_threshold || dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-							min_dist = dist + dist2;
-							pt1 = hole[l];
-							pt2 = hole[l2];
-						}
+						if (dot_product < 0.95) continue;
 
-						dist = distance(polygon[i], polygon[i2], hole[l], true);
-						dist2 = distance(polygon[i], polygon[i2], hole[l2], true);
-						if ((dist < snapping_threshold && dist2 < snapping_threshold) && dot_product > 0.95 && dist + dist2 < min_dist) {
-							min_dist = dist + dist2;
-							pt1 = hole[l];
-							pt2 = hole[l2];
+						float ref_len = length(hole[l] - hole[l2]);
+						float len_ratio = ref_len / len;
+
+						std::vector<float> dist(4);
+						dist[0] = distance(hole[l], hole[l2], polygon[i], true);
+						dist[1] = distance(hole[l], hole[l2], polygon[i2], true);
+						dist[2] = distance(polygon[i], polygon[i2], hole[l], true);
+						dist[3] = distance(polygon[i], polygon[i2], hole[l2], true);
+
+						for (int m = 0; m < dist.size(); m++) {
+							for (int n = m + 1; n < dist.size(); n++) {
+								if (dist[m] < snapping_threshold && dist[n] < snapping_threshold && len_ratio > 0.3 && dist[m] + dist[n] < min_dist) {
+									min_dist = dist[m] + dist[n];
+									pt1 = hole[l];
+									pt2 = hole[l2];
+								}
+							}
 						}
 					}
 				}
@@ -1483,10 +1502,7 @@ namespace util {
 		cv::Point2f int_pt1;
 		closestPoint(p1, p2, polygon[i], false, int_pt1);
 		cv::Point2f int_pt2;
-		closestPoint(p1, p2, polygon[i2], false, int_pt1);
-
-		// check if the snapping causes self-intersection.
-		if (!isSimple({ polygon[i], int_pt1, int_pt2, polygon[i2] })) return false;
+		closestPoint(p1, p2, polygon[i2], false, int_pt2);
 
 		std::vector<cv::Point2f> orig_polygon = polygon;
 

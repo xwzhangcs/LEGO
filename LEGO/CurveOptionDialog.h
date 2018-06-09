@@ -20,8 +20,9 @@ public:
 	double getSnappingThreshold();
 	double getOrientation();
 	double getMinContourArea();
-	bool isAllowTriangleContour();
 	double getMaxOBBRatio();
+	bool isAllowTriangleContour();
+	bool isAllowOverhang();
 
 public slots:
 	void onOK();

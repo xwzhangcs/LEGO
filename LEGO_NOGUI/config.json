@@ -12,8 +12,9 @@
   "contour_snapping_threshold" : 3.0,
   "layering_threshold" : 0.7,
   "minimum_contour_area" : 2.0,
-  "allow_triangle_contour" : false,
   "maximum_obb_ratio" : 10.0,
+  "allow_triangle_contour" : false,
+  "allow_overhang" : false,
   "contour_simplification_algorithms" : {
     "douglas_peucker" : {
       "use" : false,

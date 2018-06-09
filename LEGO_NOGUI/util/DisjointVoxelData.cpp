@@ -66,7 +66,8 @@ namespace util {
 		for (int z = 0; z < building_voxels.node_stack.size(); z++) {
 			for (int i = 0; i < building_voxels.node_stack[z].size(); i++) {
 				if (building_voxels.node_stack[z][i]->parents.size() == 0) {
-					bottom_building_layers.push_back(layeringBuilding(building_voxels.building_id, building_voxels.node_stack[z][i], threshold, min_num_slices_per_layer));
+					std::vector<std::shared_ptr<BuildingLayer>> layers = layeringBuilding(building_voxels.building_id, building_voxels.node_stack[z][i], threshold, min_num_slices_per_layer);
+					bottom_building_layers.insert(bottom_building_layers.end(), layers.begin(), layers.end());
 				}
 			}
 		}
@@ -348,7 +349,7 @@ namespace util {
 	/**
 	 * Layer the building.
 	 */
-	std::shared_ptr<BuildingLayer> DisjointVoxelData::layeringBuilding(int building_id, const std::shared_ptr<VoxelNode>& voxel_node, float threshold, int min_num_slices_per_layer) {
+	std::vector<std::shared_ptr<BuildingLayer>> DisjointVoxelData::layeringBuilding(int building_id, const std::shared_ptr<VoxelNode>& voxel_node, float threshold, int min_num_slices_per_layer) {
 		// create the bottom layer
 		std::shared_ptr<BuildingLayer> bottom_building_layer(std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, voxel_node->height, voxel_node->height + 1)));
 		bottom_building_layer->raw_footprints.push_back({ voxel_node->contour });
@@ -400,10 +401,13 @@ namespace util {
 			}
 		}
 
-		// Merge too thin layer to the one beneath
-		removeThinLayers(bottom_building_layer, min_num_slices_per_layer);
+		std::shared_ptr<BuildingLayer> root_layer(std::shared_ptr<BuildingLayer>(new BuildingLayer(building_id, -1, 0)));
+		root_layer->children.push_back(bottom_building_layer);
 
-		return bottom_building_layer;
+		// Merge too thin layer to the one beneath
+		removeThinLayers(root_layer, min_num_slices_per_layer);
+
+		return root_layer->children;
 	}
 
 	/**

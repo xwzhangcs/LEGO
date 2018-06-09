@@ -23,7 +23,7 @@ namespace simp {
 	 * @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 	 * @param min_hole_ratio			The minimum area ratio of a hole to the contour. If the area of the hole is too small, it will be removed.
 	 */
-	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float orientation, float min_contour_area, bool allow_triangle_contour, float max_obb_ratio, float min_hole_ratio) {
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		std::vector<std::tuple<float, long long, int>> records;
@@ -34,8 +34,13 @@ namespace simp {
 			std::vector<std::shared_ptr<util::BuildingLayer>> components = util::DisjointVoxelData::layering(voxel_buildings[i], layering_threshold, min_num_slices_per_layer);
 			for (auto component : components) {
 				try {
+					// HACK: for particular buildings, we prefer using curve method
+					bool curve_preferred = false;
+					float footprint_area = util::calculateArea(component->raw_footprints[0][0]);
+					if ((component->top_height > 36 && component->top_height < 38 || component->top_height > 51 && component->top_height < 53) && footprint_area >= 130000 && footprint_area <= 190000) curve_preferred = true;
+
 					std::shared_ptr<util::BuildingLayer> building;
-					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, allow_triangle_contour, max_obb_ratio, min_hole_ratio, records);
+					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 
 					buildings.push_back(building);
 				}
@@ -71,7 +76,7 @@ namespace simp {
 		algorithms[simp::BuildingSimplification::ALG_CURVE] = { epsilon, curve_threshold };
 		algorithms[simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE] = { epsilon, curve_threshold, angle_threshold };
 
-		return simplifyBuildings(voxel_buildings, algorithms, record_stats, min_num_slices_per_layer, alpha, layering_threshold, 0, 0, 0, true, 10, min_hole_ratio);
+		return simplifyBuildings(voxel_buildings, algorithms, record_stats, min_num_slices_per_layer, alpha, layering_threshold, 0, 0, 0, 10, true, true, min_hole_ratio);
 	}
 	
 	/**
@@ -86,7 +91,7 @@ namespace simp {
 	 * @param min_hole_ratio		The minimum area ratio of the hole to the contour
 	 * @param records				The statistics will be recorded.
 	 */
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, bool allow_triangle_contour, float max_obb_ratio, float min_hole_ratio, std::vector<std::tuple<float, long long, int>>& records) {
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio, bool curve_preferred, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
 
 		// get baseline cost
@@ -159,6 +164,8 @@ namespace simp {
 					// calculate cost
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+					if (curve_preferred) cost *= 2;
+					else cost *= 0.5;
 					if (cost < best_cost) {
 						best_algorithm = ALG_RIGHTANGLE;
 						best_cost = cost;
@@ -223,6 +230,7 @@ namespace simp {
 					// calculate cost
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+					if (curve_preferred) cost *= 0.5;
 					if (cost < best_cost) {
 						best_algorithm = ALG_CURVE_RIGHTANGLE;
 						right_angle_for_all_contours = false;
@@ -308,12 +316,14 @@ namespace simp {
 		}
 
 
-		for (int i = best_simplified_polygons.size() - 1; i >= 0; i--) {
-			if (calculateArea(best_simplified_polygons[i]) < min_contour_area) {
-				best_simplified_polygons.erase(best_simplified_polygons.begin() + i);
+		// remove too small contours
+		if (parent_contours.size() > 0) {
+			for (int i = best_simplified_polygons.size() - 1; i >= 0; i--) {
+				if (calculateArea(best_simplified_polygons[i]) < min_contour_area) {
+					best_simplified_polygons.erase(best_simplified_polygons.begin() + i);
+				}
 			}
 		}
-
 
 		if (best_simplified_polygons.size() == 0) throw "No valid contour.";
 
@@ -331,7 +341,7 @@ namespace simp {
 					next_contour_area += util::calculateArea(child_layer->raw_footprints[0][i]);
 				}
 
-				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, best_simplified_polygons, algorithms, alpha, snapping_threshold, orientation, min_contour_area, allow_triangle_contour, max_obb_ratio, min_hole_ratio, records);
+				std::shared_ptr<util::BuildingLayer> child = simplifyBuildingByAll(building_id, child_layer, best_simplified_polygons, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 				building->children.push_back(child);
 			}
 			catch (...) {

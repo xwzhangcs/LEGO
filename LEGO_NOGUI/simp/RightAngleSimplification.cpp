@@ -290,7 +290,7 @@ namespace simp {
 		int cnt = 0;
 		for (int iter = 0; iter < 300; iter++) {
 			bool updated = false;
-						
+
 			{
 				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1 - 1, cur_x2, cur_y1, cur_y2);
 				cv::Mat_<uchar> img2;
@@ -428,14 +428,6 @@ namespace simp {
 		std::vector<cv::Point> prop_contour(contour.size());
 		for (int i = 0; i < contour.size(); i++) {
 			prop_contour[i] = cv::Point(std::round((float)(contour[i].x - x1) / (x2 - x1) * (new_x2 - new_x1) + new_x1), std::round((float)(contour[i].y - y1) / (y2 - y1) * (new_y2 - new_y1) + new_y1));
-		}
-		return prop_contour;
-	}
-
-	std::vector<cv::Point> RightAngleSimplification::proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map) {
-		std::vector<cv::Point> prop_contour(contour.size());
-		for (int i = 0; i < contour.size(); i++) {
-			prop_contour[i] = cv::Point(x_map[contour[i].x], y_map[contour[i].y]);
 		}
 		return prop_contour;
 	}

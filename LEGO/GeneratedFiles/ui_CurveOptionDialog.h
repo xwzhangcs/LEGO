@@ -44,15 +44,16 @@ public:
     QCheckBox *checkBoxAllowTriangleContour;
     QLabel *label_7;
     QLineEdit *lineEditMaxOBBRatio;
+    QCheckBox *checkBoxAllowOverhang;
 
     void setupUi(QDialog *CurveOptionDialog)
     {
         if (CurveOptionDialog->objectName().isEmpty())
             CurveOptionDialog->setObjectName(QStringLiteral("CurveOptionDialog"));
-        CurveOptionDialog->resize(242, 294);
+        CurveOptionDialog->resize(242, 314);
         pushButtonOK = new QPushButton(CurveOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(30, 250, 81, 31));
+        pushButtonOK->setGeometry(QRect(30, 270, 81, 31));
         doubleSpinBoxLayeringThreshold = new QDoubleSpinBox(CurveOptionDialog);
         doubleSpinBoxLayeringThreshold->setObjectName(QStringLiteral("doubleSpinBoxLayeringThreshold"));
         doubleSpinBoxLayeringThreshold->setGeometry(QRect(160, 70, 62, 22));
@@ -67,7 +68,7 @@ public:
         spinBoxEpsilon->setGeometry(QRect(160, 10, 61, 22));
         pushButtonCancel = new QPushButton(CurveOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(140, 250, 81, 31));
+        pushButtonCancel->setGeometry(QRect(140, 270, 81, 31));
         doubleSpinBoxSnappingThreshold = new QDoubleSpinBox(CurveOptionDialog);
         doubleSpinBoxSnappingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnappingThreshold"));
         doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 100, 62, 22));
@@ -89,21 +90,24 @@ public:
         lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditMinContourArea = new QLineEdit(CurveOptionDialog);
         lineEditMinContourArea->setObjectName(QStringLiteral("lineEditMinContourArea"));
-        lineEditMinContourArea->setGeometry(QRect(162, 160, 61, 20));
+        lineEditMinContourArea->setGeometry(QRect(160, 160, 61, 20));
         lineEditMinContourArea->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         label_6 = new QLabel(CurveOptionDialog);
         label_6->setObjectName(QStringLiteral("label_6"));
         label_6->setGeometry(QRect(20, 160, 131, 21));
         checkBoxAllowTriangleContour = new QCheckBox(CurveOptionDialog);
         checkBoxAllowTriangleContour->setObjectName(QStringLiteral("checkBoxAllowTriangleContour"));
-        checkBoxAllowTriangleContour->setGeometry(QRect(20, 190, 141, 17));
+        checkBoxAllowTriangleContour->setGeometry(QRect(20, 220, 141, 17));
         label_7 = new QLabel(CurveOptionDialog);
         label_7->setObjectName(QStringLiteral("label_7"));
-        label_7->setGeometry(QRect(18, 210, 131, 21));
+        label_7->setGeometry(QRect(20, 190, 131, 21));
         lineEditMaxOBBRatio = new QLineEdit(CurveOptionDialog);
         lineEditMaxOBBRatio->setObjectName(QStringLiteral("lineEditMaxOBBRatio"));
-        lineEditMaxOBBRatio->setGeometry(QRect(160, 210, 61, 20));
+        lineEditMaxOBBRatio->setGeometry(QRect(160, 190, 61, 20));
         lineEditMaxOBBRatio->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        checkBoxAllowOverhang = new QCheckBox(CurveOptionDialog);
+        checkBoxAllowOverhang->setObjectName(QStringLiteral("checkBoxAllowOverhang"));
+        checkBoxAllowOverhang->setGeometry(QRect(20, 240, 141, 17));
 
         retranslateUi(CurveOptionDialog);
 
@@ -123,6 +127,7 @@ public:
         label_6->setText(QApplication::translate("CurveOptionDialog", "Minimum contour area:", Q_NULLPTR));
         checkBoxAllowTriangleContour->setText(QApplication::translate("CurveOptionDialog", "Allow triangle contour", Q_NULLPTR));
         label_7->setText(QApplication::translate("CurveOptionDialog", "Maximum OBB ratio:", Q_NULLPTR));
+        checkBoxAllowOverhang->setText(QApplication::translate("CurveOptionDialog", "Allow overhang", Q_NULLPTR));
     } // retranslateUi
 
 };

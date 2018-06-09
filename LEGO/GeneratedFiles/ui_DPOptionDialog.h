@@ -42,12 +42,13 @@ public:
     QCheckBox *checkBoxAllowTriangleContour;
     QLabel *label_6;
     QLineEdit *lineEditMaxOBBRatio;
+    QCheckBox *checkBoxAllowOverhang;
 
     void setupUi(QDialog *DPOptionDialog)
     {
         if (DPOptionDialog->objectName().isEmpty())
             DPOptionDialog->setObjectName(QStringLiteral("DPOptionDialog"));
-        DPOptionDialog->resize(246, 250);
+        DPOptionDialog->resize(246, 281);
         DPOptionDialog->setMinimumSize(QSize(246, 180));
         DPOptionDialog->setMaximumSize(QSize(246, 300));
         label = new QLabel(DPOptionDialog);
@@ -55,10 +56,10 @@ public:
         label->setGeometry(QRect(20, 10, 47, 21));
         pushButtonOK = new QPushButton(DPOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(30, 210, 81, 31));
+        pushButtonOK->setGeometry(QRect(30, 240, 81, 31));
         pushButtonCancel = new QPushButton(DPOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(140, 210, 81, 31));
+        pushButtonCancel->setGeometry(QRect(140, 240, 81, 31));
         label_2 = new QLabel(DPOptionDialog);
         label_2->setObjectName(QStringLiteral("label_2"));
         label_2->setGeometry(QRect(20, 40, 91, 21));
@@ -90,14 +91,17 @@ public:
         lineEditMinContourArea->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         checkBoxAllowTriangleContour = new QCheckBox(DPOptionDialog);
         checkBoxAllowTriangleContour->setObjectName(QStringLiteral("checkBoxAllowTriangleContour"));
-        checkBoxAllowTriangleContour->setGeometry(QRect(20, 160, 131, 17));
+        checkBoxAllowTriangleContour->setGeometry(QRect(20, 190, 131, 17));
         label_6 = new QLabel(DPOptionDialog);
         label_6->setObjectName(QStringLiteral("label_6"));
-        label_6->setGeometry(QRect(20, 180, 121, 21));
+        label_6->setGeometry(QRect(20, 160, 121, 21));
         lineEditMaxOBBRatio = new QLineEdit(DPOptionDialog);
         lineEditMaxOBBRatio->setObjectName(QStringLiteral("lineEditMaxOBBRatio"));
-        lineEditMaxOBBRatio->setGeometry(QRect(160, 180, 61, 20));
+        lineEditMaxOBBRatio->setGeometry(QRect(160, 160, 61, 20));
         lineEditMaxOBBRatio->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+        checkBoxAllowOverhang = new QCheckBox(DPOptionDialog);
+        checkBoxAllowOverhang->setObjectName(QStringLiteral("checkBoxAllowOverhang"));
+        checkBoxAllowOverhang->setGeometry(QRect(20, 210, 131, 17));
 
         retranslateUi(DPOptionDialog);
 
@@ -116,6 +120,7 @@ public:
         label_5->setText(QApplication::translate("DPOptionDialog", "Minimum contour area:", Q_NULLPTR));
         checkBoxAllowTriangleContour->setText(QApplication::translate("DPOptionDialog", "Allow triangle contour", Q_NULLPTR));
         label_6->setText(QApplication::translate("DPOptionDialog", "Maximum OBB ratio:", Q_NULLPTR));
+        checkBoxAllowOverhang->setText(QApplication::translate("DPOptionDialog", "Allow overhang", Q_NULLPTR));
     } // retranslateUi
 
 };
