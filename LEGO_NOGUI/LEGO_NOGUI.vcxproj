@@ -28,8 +28,10 @@
     <ClCompile Include="util\BuildingLayer.cpp" />
     <ClCompile Include="util\ContourUtils.cpp" />
     <ClCompile Include="util\DisjointVoxelData.cpp" />
+    <ClCompile Include="util\EfficientRansacCurveDetector.cpp" />
     <ClCompile Include="util\OBJWriter.cpp" />
     <ClCompile Include="util\PlyWriter.cpp" />
+    <ClCompile Include="util\PointSetShapeDetection.cpp" />
     <ClCompile Include="util\TopFaceWriter.cpp" />
     <ClCompile Include="util\VoxelBuilding.cpp" />
     <ClCompile Include="voxel_model.cpp" />
@@ -43,9 +45,12 @@
     <ClInclude Include="util\BuildingLayer.h" />
     <ClInclude Include="util\ContourUtils.h" />
     <ClInclude Include="util\DisjointVoxelData.h" />
+    <ClInclude Include="util\EfficientRansacCurveDetector.h" />
     <ClInclude Include="util\OBJWriter.h" />
     <ClInclude Include="util\PlyWriter.h" />
+    <ClInclude Include="util\PointSetShapeDetection.h" />
     <ClInclude Include="util\TopFaceWriter.h" />
+    <ClInclude Include="util\VerticalPlane.h" />
     <ClInclude Include="util\VoxelBuilding.h" />
     <ClInclude Include="voxel_model.h" />
   </ItemGroup>
@@ -112,14 +117,14 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\opencv3.4\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv3.4\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;C:\CGAL-4.12\include;C:\CGAL-4.12\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>-D_SCL_SECURE_NO_WARNINGS /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\opencv3.4\lib;$(QTDIR)\lib;$(CGAL_DIR)\lib;$(CGAL_DIR)\auxiliary\gmp\lib;$(BOOST_LIBRARYDIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core340d.lib;opencv_highgui340d.lib;opencv_imgcodecs340d.lib;opencv_imgproc340d.lib;qtmaind.lib;Qt5Cored.lib;CGAL_Core-vc120-mt-gd-4.10.1.lib;CGAL_ImageIO-vc120-mt-gd-4.10.1.lib;CGAL-vc120-mt-gd-4.10.1.lib;libgmp-10.lib;libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\opencv3.4\lib;$(QTDIR)\lib;C:\CGAL-4.12\lib;C:\CGAL-4.12\auxiliary\gmp\lib;$(BOOST_LIBRARYDIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_core340d.lib;opencv_highgui340d.lib;opencv_imgcodecs340d.lib;opencv_imgproc340d.lib;qtmaind.lib;Qt5Cored.lib;CGAL_Core-vc120-mt-gd-4.12.lib;CGAL_ImageIO-vc120-mt-gd-4.12.lib;CGAL-vc120-mt-gd-4.12.lib;libgmp-10.lib;libmpfr-4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -144,7 +149,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\opencv3.4\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;$(CGAL_DIR)\include;$(CGAL_DIR)\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\opencv3.4\include;$(QTDIR)\include;$(QTDIR)\include\QtCore;C:\CGAL-4.12\include;C:\CGAL-4.12\auxiliary\gmp\include;$(BOOST_INCLUDEDIR);$(DLIB);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions>/D_SCL_SECURE_NO_WARNINGS  /bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -152,8 +157,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>..\opencv3.4\lib;$(QTDIR)\lib;$(CGAL_DIR)\lib;$(CGAL_DIR)\auxiliary\gmp\lib;$(BOOST_LIBRARYDIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core340.lib;opencv_highgui340.lib;opencv_imgcodecs340.lib;opencv_imgproc340.lib;qtmain.lib;Qt5Core.lib;CGAL_Core-vc120-mt-4.10.1.lib;CGAL_ImageIO-vc120-mt-4.10.1.lib;CGAL-vc120-mt-4.10.1.lib;libgmp-10.lib;libmpfr-4.lib;libboost_thread-vc120-mt-1_58.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>..\opencv3.4\lib;$(QTDIR)\lib;C:\CGAL-4.12\lib;C:\CGAL-4.12\auxiliary\gmp\lib;$(BOOST_LIBRARYDIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_core340.lib;opencv_highgui340.lib;opencv_imgcodecs340.lib;opencv_imgproc340.lib;qtmain.lib;Qt5Core.lib;CGAL_Core-vc120-mt-4.12.lib;CGAL_ImageIO-vc120-mt-4.12.lib;CGAL-vc120-mt-4.12.lib;libgmp-10.lib;libmpfr-4.lib;libboost_thread-vc120-mt-1_58.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>

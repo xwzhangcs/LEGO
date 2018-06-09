@@ -164,6 +164,12 @@
     <ClCompile Include="..\LEGO_NOGUI\util\VoxelBuilding.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRansacCurveDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\PointSetShapeDetection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.ui">
@@ -290,6 +296,15 @@
     </ClInclude>
     <ClInclude Include="..\LEGO_NOGUI\util\VoxelBuilding.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\VerticalPlane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRansacCurveDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\PointSetShapeDetection.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

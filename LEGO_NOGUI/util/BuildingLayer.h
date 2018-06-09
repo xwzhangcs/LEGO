@@ -22,6 +22,7 @@ namespace util {
 		BuildingLayer(int building_id, const std::vector<util::Polygon>& footprints, float bottom_height, float top_height);
 
 		std::vector<util::Polygon> selectRepresentativeContours();
+		int getTopHeight();
 	};
 
 }

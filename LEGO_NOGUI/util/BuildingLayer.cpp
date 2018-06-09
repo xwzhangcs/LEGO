@@ -85,4 +85,12 @@ namespace util {
 		return contours;
 	}
 
+	int BuildingLayer::getTopHeight() {
+		int ans = top_height;
+		for (auto& child : children) {
+			ans = std::max(ans, child->getTopHeight());
+		}
+		return ans;
+	}
+
 }
