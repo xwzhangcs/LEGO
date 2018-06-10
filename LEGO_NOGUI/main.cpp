@@ -71,7 +71,8 @@ std::vector<double> readAlgorithmParams(rapidjson::Value& node, const QString& a
 			}
 			else if (algorithm_name == "right_angle") {
 				double epsilon = readNumber(alg, "epsilon", 20);
-				return{ epsilon };
+				bool optimization = readBoolValue(alg, "optimization", false);
+				return{ epsilon, optimization ? 1.0 : 0.0 };
 			}
 			else if (algorithm_name == "curve") {
 				double epsilon = readNumber(alg, "epsilon", 16);

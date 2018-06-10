@@ -43,12 +43,13 @@ public:
     QLineEdit *lineEditMaxOBBRatio;
     QLabel *label_6;
     QCheckBox *checkBoxAllowOverhang;
+    QCheckBox *checkBoxOptimization;
 
     void setupUi(QDialog *RightAngleOptionDialog)
     {
         if (RightAngleOptionDialog->objectName().isEmpty())
             RightAngleOptionDialog->setObjectName(QStringLiteral("RightAngleOptionDialog"));
-        RightAngleOptionDialog->resize(246, 281);
+        RightAngleOptionDialog->resize(246, 300);
         RightAngleOptionDialog->setMinimumSize(QSize(246, 172));
         RightAngleOptionDialog->setMaximumSize(QSize(346, 300));
         label = new QLabel(RightAngleOptionDialog);
@@ -59,49 +60,52 @@ public:
         spinBoxResolution->setGeometry(QRect(160, 10, 61, 22));
         pushButtonCancel = new QPushButton(RightAngleOptionDialog);
         pushButtonCancel->setObjectName(QStringLiteral("pushButtonCancel"));
-        pushButtonCancel->setGeometry(QRect(130, 240, 81, 31));
+        pushButtonCancel->setGeometry(QRect(130, 260, 81, 31));
         pushButtonOK = new QPushButton(RightAngleOptionDialog);
         pushButtonOK->setObjectName(QStringLiteral("pushButtonOK"));
-        pushButtonOK->setGeometry(QRect(30, 240, 81, 31));
+        pushButtonOK->setGeometry(QRect(30, 260, 81, 31));
         doubleSpinBoxLayeringThreshold = new QDoubleSpinBox(RightAngleOptionDialog);
         doubleSpinBoxLayeringThreshold->setObjectName(QStringLiteral("doubleSpinBoxLayeringThreshold"));
-        doubleSpinBoxLayeringThreshold->setGeometry(QRect(160, 40, 62, 22));
+        doubleSpinBoxLayeringThreshold->setGeometry(QRect(160, 60, 62, 22));
         label_2 = new QLabel(RightAngleOptionDialog);
         label_2->setObjectName(QStringLiteral("label_2"));
-        label_2->setGeometry(QRect(20, 40, 91, 21));
+        label_2->setGeometry(QRect(20, 60, 91, 21));
         label_4 = new QLabel(RightAngleOptionDialog);
         label_4->setObjectName(QStringLiteral("label_4"));
-        label_4->setGeometry(QRect(20, 100, 131, 21));
+        label_4->setGeometry(QRect(20, 120, 131, 21));
         label_3 = new QLabel(RightAngleOptionDialog);
         label_3->setObjectName(QStringLiteral("label_3"));
-        label_3->setGeometry(QRect(20, 70, 131, 21));
+        label_3->setGeometry(QRect(20, 90, 131, 21));
         doubleSpinBoxSnappingThreshold = new QDoubleSpinBox(RightAngleOptionDialog);
         doubleSpinBoxSnappingThreshold->setObjectName(QStringLiteral("doubleSpinBoxSnappingThreshold"));
-        doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 70, 62, 22));
+        doubleSpinBoxSnappingThreshold->setGeometry(QRect(160, 90, 62, 22));
         lineEditOrientation = new QLineEdit(RightAngleOptionDialog);
         lineEditOrientation->setObjectName(QStringLiteral("lineEditOrientation"));
-        lineEditOrientation->setGeometry(QRect(92, 100, 131, 20));
+        lineEditOrientation->setGeometry(QRect(92, 120, 131, 20));
         lineEditOrientation->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         lineEditMinContourArea = new QLineEdit(RightAngleOptionDialog);
         lineEditMinContourArea->setObjectName(QStringLiteral("lineEditMinContourArea"));
-        lineEditMinContourArea->setGeometry(QRect(162, 130, 61, 20));
+        lineEditMinContourArea->setGeometry(QRect(162, 150, 61, 20));
         lineEditMinContourArea->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         label_5 = new QLabel(RightAngleOptionDialog);
         label_5->setObjectName(QStringLiteral("label_5"));
-        label_5->setGeometry(QRect(20, 130, 131, 21));
+        label_5->setGeometry(QRect(20, 150, 131, 21));
         checkBoxAllowTriangleContour = new QCheckBox(RightAngleOptionDialog);
         checkBoxAllowTriangleContour->setObjectName(QStringLiteral("checkBoxAllowTriangleContour"));
-        checkBoxAllowTriangleContour->setGeometry(QRect(20, 190, 141, 17));
+        checkBoxAllowTriangleContour->setGeometry(QRect(20, 210, 141, 17));
         lineEditMaxOBBRatio = new QLineEdit(RightAngleOptionDialog);
         lineEditMaxOBBRatio->setObjectName(QStringLiteral("lineEditMaxOBBRatio"));
-        lineEditMaxOBBRatio->setGeometry(QRect(160, 160, 61, 20));
+        lineEditMaxOBBRatio->setGeometry(QRect(160, 180, 61, 20));
         lineEditMaxOBBRatio->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
         label_6 = new QLabel(RightAngleOptionDialog);
         label_6->setObjectName(QStringLiteral("label_6"));
-        label_6->setGeometry(QRect(20, 160, 131, 21));
+        label_6->setGeometry(QRect(20, 180, 131, 21));
         checkBoxAllowOverhang = new QCheckBox(RightAngleOptionDialog);
         checkBoxAllowOverhang->setObjectName(QStringLiteral("checkBoxAllowOverhang"));
-        checkBoxAllowOverhang->setGeometry(QRect(20, 210, 141, 17));
+        checkBoxAllowOverhang->setGeometry(QRect(20, 230, 141, 17));
+        checkBoxOptimization = new QCheckBox(RightAngleOptionDialog);
+        checkBoxOptimization->setObjectName(QStringLiteral("checkBoxOptimization"));
+        checkBoxOptimization->setGeometry(QRect(20, 40, 141, 17));
 
         retranslateUi(RightAngleOptionDialog);
 
@@ -121,6 +125,7 @@ public:
         checkBoxAllowTriangleContour->setText(QApplication::translate("RightAngleOptionDialog", "Allow triangle contour", Q_NULLPTR));
         label_6->setText(QApplication::translate("RightAngleOptionDialog", "Maximum OBB ratio:", Q_NULLPTR));
         checkBoxAllowOverhang->setText(QApplication::translate("RightAngleOptionDialog", "Allow overhang", Q_NULLPTR));
+        checkBoxOptimization->setText(QApplication::translate("RightAngleOptionDialog", "Optimization", Q_NULLPTR));
     } // retranslateUi
 
 };

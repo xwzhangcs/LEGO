@@ -77,7 +77,7 @@ namespace simp {
 
 		std::map<int, std::vector<double>> algorithms;
 		algorithms[simp::BuildingSimplification::ALG_DP] = { epsilon };
-		algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (float)resolution };
+		algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (double)resolution, 1.0 };
 		algorithms[simp::BuildingSimplification::ALG_CURVE] = { epsilon, curve_threshold };
 		algorithms[simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE] = { epsilon, curve_threshold, angle_threshold };
 
@@ -155,7 +155,8 @@ namespace simp {
 			if (algorithms.find(ALG_RIGHTANGLE) != algorithms.end()) {
 				try {
 					int resolution = algorithms[ALG_RIGHTANGLE][0];
-					util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, orientation, min_hole_ratio);
+					bool optimization = algorithms[ALG_RIGHTANGLE][1] > 0.0;
+					util::Polygon simplified_polygon = RightAngleSimplification::simplify(contours[i], resolution, orientation, min_hole_ratio, optimization);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 
 					// check if the shape is a triangle

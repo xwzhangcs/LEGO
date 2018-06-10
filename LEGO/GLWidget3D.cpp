@@ -398,9 +398,9 @@ void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double 
 * @param min_contour_area		Minimum area of the contour [m^2].
 * @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 */
-void GLWidget3D::simplifyByRightAngle(int resolution, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang) {
+void GLWidget3D::simplifyByRightAngle(int resolution, bool optimization, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang) {
 	std::map<int, std::vector<double>> algorithms;
-	algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (double)resolution };
+	algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (double)resolution, optimization ? 1.0 : 0.0 };
 	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 	show_mode = SHOW_RIGHTANGLE;

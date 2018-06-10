@@ -142,7 +142,7 @@ void MainWindow::onSimplifyByDP() {
 void MainWindow::onSimplifyByRightAngle() {
 	RightAngleOptionDialog dlg;
 	if (dlg.exec()) {
-		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
+		glWidget->simplifyByRightAngle(dlg.getResolution(), dlg.getOptimization(), dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 		glWidget->update();
 	}
 }

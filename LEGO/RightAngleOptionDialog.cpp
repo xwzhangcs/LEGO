@@ -4,6 +4,7 @@ RightAngleOptionDialog::RightAngleOptionDialog(QWidget *parent) : QDialog(parent
 	ui.setupUi(this);
 
 	ui.spinBoxResolution->setValue(20);
+	ui.checkBoxOptimization->setChecked(true);
 	ui.doubleSpinBoxLayeringThreshold->setValue(0.7);
 	ui.doubleSpinBoxLayeringThreshold->setSingleStep(0.1);
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
@@ -24,6 +25,10 @@ RightAngleOptionDialog::~RightAngleOptionDialog() {
 
 int RightAngleOptionDialog::getResolution() {
 	return ui.spinBoxResolution->value();
+}
+
+bool RightAngleOptionDialog::getOptimization() {
+	return ui.checkBoxOptimization->isChecked();
 }
 
 double RightAngleOptionDialog::getLayeringThreshold() {

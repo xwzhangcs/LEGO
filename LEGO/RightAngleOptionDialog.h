@@ -15,6 +15,7 @@ public:
 	~RightAngleOptionDialog();
 	
 	int getResolution();
+	bool getOptimization();
 	double getLayeringThreshold();
 	double getSnappingThreshold();
 	double getOrientation();

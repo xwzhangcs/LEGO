@@ -12,10 +12,10 @@ namespace simp {
 	* @param min_hole_ratio	hole will be removed if its area ratio to the contour is less than this threshold
 	* @return				simplified footprint
 	*/
-	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float orientation, float min_hole_ratio) {
+	util::Polygon RightAngleSimplification::simplify(const util::Polygon& polygon, int resolution, float orientation, float min_hole_ratio, bool optimization) {
 		util::Polygon ans;
 
-		std::tuple<float, int, int> best_mat = simplifyContour(polygon.contour, ans.contour, resolution, orientation);
+		std::tuple<float, int, int> best_mat = simplifyContour(polygon.contour, ans.contour, resolution, orientation, optimization);
 		float angle = std::get<0>(best_mat);
 		float dx = std::get<1>(best_mat);
 		float dy = std::get<2>(best_mat);
@@ -29,7 +29,7 @@ namespace simp {
 
 			try {
 				util::Ring simplified_hole;
-				simplifyContour(hole, simplified_hole, resolution, angle, dx, dy, true);
+				simplifyContour(hole, simplified_hole, resolution, angle, dx, dy, true, optimization);
 				if (simplified_hole.size() >= 3 && util::withinPolygon(simplified_hole, ans.contour)) {
 					ans.holes.push_back(simplified_hole);
 				}
@@ -57,7 +57,7 @@ namespace simp {
 	* @param resolution	resolution which defines how much simplified
 	* @return				best angle, dx, and dy that yiled the resulting simplified polygon
 	*/
-	std::tuple<float, int, int> RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float orientation) {
+	std::tuple<float, int, int> RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float orientation, bool optimization) {
 		result.clear();
 
 		double min_cost = std::numeric_limits<double>::max();
@@ -74,7 +74,7 @@ namespace simp {
 				for (int dy = 0; dy < resolution; dy += step_size) {
 					util::Ring simplified_contour;
 					try {
-						double cost = simplifyContour(contour, simplified_contour, resolution, angle, dx, dy, false);
+						double cost = simplifyContour(contour, simplified_contour, resolution, angle, dx, dy, false, optimization);
 
 						if (cost < min_cost) {
 							min_cost = cost;
@@ -94,7 +94,7 @@ namespace simp {
 		if (min_cost == std::numeric_limits<double>::max()) throw "No simplified polygon was found.";
 
 		// refine the simplified contour
-		simplifyContour(contour, result, resolution, best_angle, best_dx, best_dy, true);
+		simplifyContour(contour, result, resolution, best_angle, best_dx, best_dy, true, optimization);
 
 		return std::make_tuple(best_angle, best_dx, best_dy);
 	}
@@ -107,7 +107,7 @@ namespace simp {
 	* @param resolution		resolution which defines how much simplified
 	* @return				best cost
 	*/
-	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float theta, int dx, int dy, bool refine) {
+	double RightAngleSimplification::simplifyContour(const util::Ring& contour, util::Ring& result, int resolution, float theta, int dx, int dy, bool refine, bool vertex_refinement) {
 		// create a transformation matrix
 		cv::Mat_<float> M = (cv::Mat_<float>(3, 3) << cos(theta), -sin(theta), dx, sin(theta), cos(theta), dy, 0, 0, 1);
 
@@ -185,7 +185,13 @@ namespace simp {
 			for (int i = 0; i < simplified_aa_contour.size(); i++) {
 				simplified_aa_contour_int[i] = cv::Point(std::round(simplified_aa_contour[i].x), std::round(simplified_aa_contour[i].y));
 			}
-			double cost = 1.0 / (0.01 + optimizeSimplifiedContour(aa_contour_int, simplified_aa_contour_int));
+			double cost;
+			if (vertex_refinement) {
+				cost = 1.0 / (0.01 + optimizeVertices(aa_contour_int, simplified_aa_contour_int));
+			}
+			else {
+				cost = 1.0 / (0.01 + optimizeBBox(aa_contour_int, simplified_aa_contour_int));
+			}
 
 			// generate a simplified contour
 			if (util::isSimple(simplified_aa_contour_int)) {
@@ -222,6 +228,169 @@ namespace simp {
 	}
 
 	/**
+	* Optimize the simplified contour such that it best fits to the input contour.
+	* Return the IOU of the input contour and the optimized simplified contour.
+	*
+	* @param contour				input contour
+	* @param simplified_contour		simplified contour
+	* @return						intersection over union (IOU)
+	*/
+	double RightAngleSimplification::optimizeVertices(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour) {
+		// calculate the bounding box
+		int min_x = std::numeric_limits<int>::max();
+		int max_x = -std::numeric_limits<int>::max();
+		int min_y = std::numeric_limits<int>::max();
+		int max_y = -std::numeric_limits<int>::max();
+		for (int i = 0; i < contour.size(); i++) {
+			min_x = std::min(min_x, contour[i].x);
+			max_x = std::max(max_x, contour[i].x);
+			min_y = std::min(min_y, contour[i].y);
+			max_y = std::max(max_y, contour[i].y);
+		}
+		for (int i = 0; i < simplified_contour.size(); i++) {
+			min_x = std::min(min_x, simplified_contour[i].x);
+			max_x = std::max(max_x, simplified_contour[i].x);
+			min_y = std::min(min_y, simplified_contour[i].y);
+			max_y = std::max(max_y, simplified_contour[i].y);
+		}
+
+		// create the image of the input contour
+		cv::Mat_<uchar> img;
+		util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, contour, cv::Point(-min_x, -min_y), img);
+
+		// list up the parameters
+		std::map<int, int> x_map;
+		std::map<int, int> y_map;
+		for (int i = 0; i < simplified_contour.size(); i++) {
+			if (x_map.find(simplified_contour[i].x) == x_map.end()) {
+				x_map[simplified_contour[i].x] = simplified_contour[i].x;
+			}
+			if (y_map.find(simplified_contour[i].y) == y_map.end()) {
+				y_map[simplified_contour[i].y] = simplified_contour[i].y;
+			}
+		}
+
+		// optimize the parameters
+		double best_score = 0;
+		std::map<int, int> best_x_map;
+		std::map<int, int> best_y_map;
+
+		int cnt = 0;
+		for (int iter = 0; iter < 3000; iter++) {
+			bool updated = false;
+
+			auto prev_it = x_map.end();
+			auto next_it = x_map.begin();
+			next_it++;
+			for (auto it = x_map.begin(); it != x_map.end(); it++) {
+				std::map<int, int> prop_x_map = x_map;
+				prop_x_map[it->first]++;
+				if ((next_it != x_map.end() && prop_x_map[it->first] < prop_x_map[next_it->first]) || (next_it == x_map.end() && prop_x_map[it->first] <= max_x)) {
+					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
+					cv::Mat_<uchar> img2;
+					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
+					double score = util::calculateIOU(img, img2);
+					if (score > best_score) {
+						best_score = score;
+						best_x_map = prop_x_map;
+						best_y_map = y_map;
+						updated = true;
+					}
+				}
+
+				prop_x_map = x_map;
+				prop_x_map[it->first]--;
+				if ((prev_it != x_map.end() && prop_x_map[it->first] > prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
+					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
+					cv::Mat_<uchar> img2;
+					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
+					double score = util::calculateIOU(img, img2);
+					if (score > best_score) {
+						best_score = score;
+						best_x_map = prop_x_map;
+						best_y_map = y_map;
+						updated = true;
+					}
+				}
+
+				prev_it = it;
+				if (next_it != x_map.end())	next_it++;
+			}
+
+			prev_it = y_map.end();
+			next_it = y_map.begin();
+			next_it++;
+			for (auto it = y_map.begin(); it != y_map.end(); it++) {
+				std::map<int, int> prop_y_map = y_map;
+				prop_y_map[it->first]++;
+				if ((next_it != y_map.end() && prop_y_map[it->first] < prop_y_map[next_it->first]) || (next_it == y_map.end() && prop_y_map[it->first] <= max_y)) {
+					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
+					cv::Mat_<uchar> img2;
+					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
+					double score = util::calculateIOU(img, img2);
+					if (score > best_score) {
+						best_score = score;
+						best_x_map = x_map;
+						best_y_map = prop_y_map;
+						updated = true;
+					}
+				}
+
+				prop_y_map = y_map;
+				prop_y_map[it->first]--;
+				if ((prev_it != y_map.end() && prop_y_map[it->first] > prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
+					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
+					cv::Mat_<uchar> img2;
+					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
+					double score = util::calculateIOU(img, img2);
+					if (score > best_score) {
+						best_score = score;
+						best_x_map = x_map;
+						best_y_map = prop_y_map;
+						updated = true;
+					}
+				}
+
+				prev_it = it;
+				if (next_it != y_map.end())	next_it++;
+			}
+
+			// if no update, stop the optimization
+			if (!updated) break;
+
+			x_map = best_x_map;
+			y_map = best_y_map;
+		}
+
+		// merge two close coordinates
+		auto next_it = x_map.begin();
+		next_it++;
+		for (auto it = x_map.begin(); next_it != x_map.end(); it++, next_it++) {
+			if (std::abs(next_it->second - it->second) <= 1) {
+				x_map[next_it->first] = it->second;
+			}
+		}
+		next_it = y_map.begin();
+		next_it++;
+		for (auto it = y_map.begin(); next_it != y_map.end(); it++, next_it++) {
+			if (std::abs(next_it->second - it->second) <= 1) {
+				y_map[next_it->first] = it->second;
+			}
+		}
+
+		simplified_contour = proposedContour(simplified_contour, x_map, y_map);
+		return best_score;
+	}
+
+	std::vector<cv::Point> RightAngleSimplification::proposedContour(const std::vector<cv::Point>& contour, std::map<int, int>& x_map, std::map<int, int>& y_map) {
+		std::vector<cv::Point> prop_contour(contour.size());
+		for (int i = 0; i < contour.size(); i++) {
+			prop_contour[i] = cv::Point(x_map[contour[i].x], y_map[contour[i].y]);
+		}
+		return prop_contour;
+	}
+
+	/**
 	 * Optimize the simplified contour such that it best fits to the input contour.
 	 * Return the IOU of the input contour and the optimized simplified contour.
 	 *
@@ -229,7 +398,7 @@ namespace simp {
 	 * @param simplified_contour		simplified contour
 	 * @return						intersection over union (IOU)
 	 */
-	double RightAngleSimplification::optimizeSimplifiedContour(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour) {
+	double RightAngleSimplification::optimizeBBox(const std::vector<cv::Point>& contour, std::vector<cv::Point>& simplified_contour) {
 		// calculate the bounding box
 		int min_x = std::numeric_limits<int>::max();
 		int max_x = -std::numeric_limits<int>::max();
@@ -276,7 +445,7 @@ namespace simp {
 		int best_y1 = y1;
 		int best_y2 = y2;
 		{
-			std::vector<cv::Point> current_contour = proposedContour(simplified_contour, x1, x2, y1, y2, x1, x2, y1, y2);
+			std::vector<cv::Point> current_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, x1, x2, y1, y2);
 			cv::Mat_<uchar> img2;
 			util::createImageFromContour(image_width, image_height, current_contour, cv::Point(-min_x, -min_y), img2);
 			best_score = util::calculateIOU(img, img2);
@@ -292,7 +461,7 @@ namespace simp {
 			bool updated = false;
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1 - 1, cur_x2, cur_y1, cur_y2);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1 - 1, cur_x2, cur_y1, cur_y2);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -307,7 +476,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1 + 1, cur_x2, cur_y1, cur_y2);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1 + 1, cur_x2, cur_y1, cur_y2);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -322,7 +491,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2 - 1, cur_y1, cur_y2);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2 - 1, cur_y1, cur_y2);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -337,7 +506,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2 + 1, cur_y1, cur_y2);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2 + 1, cur_y1, cur_y2);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -352,7 +521,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1 - 1, cur_y2);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1 - 1, cur_y2);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -367,7 +536,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1 + 1, cur_y2);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1 + 1, cur_y2);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -382,7 +551,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1, cur_y2 - 1);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1, cur_y2 - 1);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -397,7 +566,7 @@ namespace simp {
 			}
 
 			{
-				std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1, cur_y2 + 1);
+				std::vector<cv::Point> proposed_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, cur_x1, cur_x2, cur_y1, cur_y2 + 1);
 				cv::Mat_<uchar> img2;
 				util::createImageFromContour(image_width, image_height, proposed_contour, cv::Point(-min_x, -min_y), img2);
 				double score = util::calculateIOU(img, img2);
@@ -420,11 +589,11 @@ namespace simp {
 			cur_y2 = best_y2;
 		}
 
-		simplified_contour = proposedContour(simplified_contour, x1, x2, y1, y2, best_x1, best_x2, best_y1, best_y2);
+		simplified_contour = proposedBBox(simplified_contour, x1, x2, y1, y2, best_x1, best_x2, best_y1, best_y2);
 		return best_score;
 	}
 
-	std::vector<cv::Point> RightAngleSimplification::proposedContour(const std::vector<cv::Point>& contour, int x1, int x2, int y1, int y2, int new_x1, int new_x2, int new_y1, int new_y2) {
+	std::vector<cv::Point> RightAngleSimplification::proposedBBox(const std::vector<cv::Point>& contour, int x1, int x2, int y1, int y2, int new_x1, int new_x2, int new_y1, int new_y2) {
 		std::vector<cv::Point> prop_contour(contour.size());
 		for (int i = 0; i < contour.size(); i++) {
 			prop_contour[i] = cv::Point(std::round((float)(contour[i].x - x1) / (x2 - x1) * (new_x2 - new_x1) + new_x1), std::round((float)(contour[i].y - y1) / (y2 - y1) * (new_y2 - new_y1) + new_y1));
