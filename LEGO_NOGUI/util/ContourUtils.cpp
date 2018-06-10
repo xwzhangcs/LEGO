@@ -375,10 +375,10 @@ namespace util {
 					for (int l = 0; l < hole2.size(); l++) {
 						int l2 = (l + 1) % hole2.size();
 
-						if (isTangent(hole[k], hole[k2], hole[l], hole[l2])) return false;
+						if (isTangent(hole[k], hole[k2], hole2[l], hole2[l2])) return false;
 						double tab, tcd;
 						cv::Point2f intPt;
-						if (segmentSegmentIntersection(hole[k], hole[k2], hole[l], hole[l2], &tab, &tcd, true, intPt)) return false;
+						if (segmentSegmentIntersection(hole[k], hole[k2], hole2[l], hole2[l2], &tab, &tcd, true, intPt)) return false;
 					}
 				}
 			}

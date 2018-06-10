@@ -35,27 +35,13 @@ namespace simp {
 			std::vector<std::shared_ptr<util::BuildingLayer>> components = util::DisjointVoxelData::layering(voxel_buildings[i], layering_threshold, min_num_slices_per_layer);
 			for (auto component : components) {
 				try {
-					// HACK: for particular buildings, we prefer using curve method
-					/*
-					bool curve_preferred = false;
-					float footprint_area = util::calculateArea(component->raw_footprints[0][0]);
-					if ((component->top_height > 36 && component->top_height < 38 || component->top_height > 51 && component->top_height < 53) && footprint_area >= 130000 && footprint_area <= 190000) curve_preferred = true;
-					*/
-
 					// Better approach using efficient RANSAC
 					int height = component->getTopHeight();
 					bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect2(component->raw_footprints);
-					if (curve_preferred) {
-						std::cout << "*************** Circle detected! ****************" << std::endl;
-					}
 
 					/*
 					int height = component->getTopHeight();
-					std::vector<util::Polygon> contours = component->selectRepresentativeContours();
 					bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect(contours[0]);
-					if (curve_preferred) {
-						std::cout << "*************** Circle detected! ****************" << std::endl;
-					}
 					*/
 
 					std::shared_ptr<util::BuildingLayer> building;
