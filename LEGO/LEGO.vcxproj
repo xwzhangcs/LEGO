@@ -102,7 +102,7 @@
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\glew;..\opencv3.4\lib;C:\CGAL-4.12\lib;C:\CGAL-4.12\auxiliary\gmp\lib;$(BOOST_LIBRARYDIR);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5OpenGLd.lib;opengl32.lib;glu32.lib;Qt5Widgetsd.lib;glew32.lib;opencv_core340d.lib;opencv_highgui340d.lib;opencv_imgcodecs340d.lib;opencv_imgproc340d.lib;CGAL_Core-vc120-mt-gd-4.10.1.lib;CGAL_ImageIO-vc120-mt-gd-4.10.1.lib;CGAL-vc120-mt-gd-4.10.1.lib;libgmp-10.lib;libmpfr-4.lib;libboost_thread-vc120-mt-gd-1_58.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5OpenGLd.lib;opengl32.lib;glu32.lib;Qt5Widgetsd.lib;glew32.lib;opencv_core340d.lib;opencv_highgui340d.lib;opencv_imgcodecs340d.lib;opencv_imgproc340d.lib;CGAL_Core-vc120-mt-gd-4.12.lib;CGAL_ImageIO-vc120-mt-gd-4.12.lib;CGAL-vc120-mt-gd-4.12.lib;libgmp-10.lib;libmpfr-4.lib;libboost_thread-vc120-mt-gd-1_58.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
