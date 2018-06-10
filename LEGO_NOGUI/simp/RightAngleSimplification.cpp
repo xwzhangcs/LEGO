@@ -285,7 +285,7 @@ namespace simp {
 			for (auto it = x_map.begin(); it != x_map.end(); it++) {
 				std::map<int, int> prop_x_map = x_map;
 				prop_x_map[it->first]++;
-				if ((next_it != x_map.end() && prop_x_map[it->first] < prop_x_map[next_it->first]) || (next_it == x_map.end() && prop_x_map[it->first] <= max_x)) {
+				if ((next_it != x_map.end() && prop_x_map[it->first] <= prop_x_map[next_it->first]) || (next_it == x_map.end() && prop_x_map[it->first] <= max_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
 					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
@@ -300,7 +300,7 @@ namespace simp {
 
 				prop_x_map = x_map;
 				prop_x_map[it->first]--;
-				if ((prev_it != x_map.end() && prop_x_map[it->first] > prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
+				if ((prev_it != x_map.end() && prop_x_map[it->first] >= prop_x_map[prev_it->first]) || (prev_it == x_map.end() && prop_x_map[it->first] >= min_x)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, prop_x_map, y_map);
 					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
@@ -323,7 +323,7 @@ namespace simp {
 			for (auto it = y_map.begin(); it != y_map.end(); it++) {
 				std::map<int, int> prop_y_map = y_map;
 				prop_y_map[it->first]++;
-				if ((next_it != y_map.end() && prop_y_map[it->first] < prop_y_map[next_it->first]) || (next_it == y_map.end() && prop_y_map[it->first] <= max_y)) {
+				if ((next_it != y_map.end() && prop_y_map[it->first] <= prop_y_map[next_it->first]) || (next_it == y_map.end() && prop_y_map[it->first] <= max_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
 					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
@@ -338,7 +338,7 @@ namespace simp {
 
 				prop_y_map = y_map;
 				prop_y_map[it->first]--;
-				if ((prev_it != y_map.end() && prop_y_map[it->first] > prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
+				if ((prev_it != y_map.end() && prop_y_map[it->first] >= prop_y_map[prev_it->first]) || (prev_it == y_map.end() && prop_y_map[it->first] >= min_y)) {
 					std::vector<cv::Point> proposed_contour = proposedContour(simplified_contour, x_map, prop_y_map);
 					cv::Mat_<uchar> img2;
 					util::createImageFromContour(max_x - min_x + 1, max_y - min_y + 1, proposed_contour, cv::Point(-min_x, -min_y), img2);
@@ -362,23 +362,21 @@ namespace simp {
 			y_map = best_y_map;
 		}
 
-		// merge two close coordinates
-		auto next_it = x_map.begin();
-		next_it++;
-		for (auto it = x_map.begin(); next_it != x_map.end(); it++, next_it++) {
-			if (std::abs(next_it->second - it->second) <= 1) {
-				x_map[next_it->first] = it->second;
-			}
-		}
-		next_it = y_map.begin();
-		next_it++;
-		for (auto it = y_map.begin(); next_it != y_map.end(); it++, next_it++) {
-			if (std::abs(next_it->second - it->second) <= 1) {
-				y_map[next_it->first] = it->second;
-			}
+		simplified_contour = proposedContour(simplified_contour, x_map, y_map);
+
+		// remove redundant points
+		for (int i = simplified_contour.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + simplified_contour.size()) % simplified_contour.size();
+			if (simplified_contour[i] == simplified_contour[prev]) simplified_contour.erase(simplified_contour.begin() + i);
 		}
 
-		simplified_contour = proposedContour(simplified_contour, x_map, y_map);
+		// remove colinear points
+		for (int i = simplified_contour.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + simplified_contour.size()) % simplified_contour.size();
+			int next = (i + 1) % simplified_contour.size();
+			if (std::abs(util::crossProduct(simplified_contour[i] - simplified_contour[prev], simplified_contour[next] - simplified_contour[i])) < 0.00001) simplified_contour.erase(simplified_contour.begin() + i);
+		}
+
 		return best_score;
 	}
 
