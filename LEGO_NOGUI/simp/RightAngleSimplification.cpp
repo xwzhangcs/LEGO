@@ -141,6 +141,18 @@ namespace simp {
 			small_aa_polygon[i] = cv::Point(std::round(aa_contour[i].x / resolution), std::round(aa_contour[i].y / resolution));
 		}
 
+		// remove small spikes
+		/*
+		for (int i = (int)small_aa_polygon.size() - 2; i >= 0; i--) {
+			int prev = (i - 1 + small_aa_polygon.size()) % small_aa_polygon.size();
+			int next = (i + 1) % small_aa_polygon.size();
+			if (small_aa_polygon[prev] == small_aa_polygon[next]) {
+				small_aa_polygon.erase(small_aa_polygon.begin() + i, small_aa_polygon.begin() + i + 2);
+				i--;
+			}
+		}
+		*/
+
 		// calculate the bounding box
 		cv::Rect bbox = util::boundingBox(small_aa_polygon);
 		if (bbox.width <= 1 && bbox.height <= 1) throw "Too small polygon.";

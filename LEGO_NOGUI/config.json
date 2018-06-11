@@ -13,6 +13,7 @@
   "layering_threshold" : 0.7,
   "minimum_contour_area" : 2.0,
   "maximum_obb_ratio" : 10.0,
+  "min_hole_ratio" : 0.02,
   "allow_triangle_contour" : false,
   "allow_overhang" : false,
   "contour_simplification_algorithms" : {
