@@ -32,9 +32,9 @@
     },
     "curvepp" : {
       "use" : true,
-      "epsilon" : 16,
-      "curve_threshold" : 2,
-      "angle_threshold" : 10
+      "epsilon" : 18,
+      "curve_threshold" : 2.5,
+      "angle_threshold" : 12
     }
   }
 }
