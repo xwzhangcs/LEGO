@@ -44,7 +44,7 @@ namespace util {
 				Efficient_ransac::Shape_range shapes = ransac.shapes();
 
 				int shape_id = 1;
-				for (auto& it = shapes.begin(); it != shapes.end(); it++, shape_id++) {
+				for (Efficient_ransac::Shape_range::iterator it = shapes.begin(); it != shapes.end(); it++, shape_id++) {
 					boost::shared_ptr<Efficient_ransac::Shape> shape = *it;
 
 					// Get specific parameters depending on detected shape.

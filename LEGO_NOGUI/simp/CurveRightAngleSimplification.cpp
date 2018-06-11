@@ -1325,9 +1325,9 @@ namespace simp {
 			cv::Point2d vec3(0, 1);
 			float angle = compute_abs_angle(vec1, vec2);
 			int type = 0;
-			float angle_1 = std::min(angle, abs(angle - 180));
+			float angle_1 = std::min(angle, (float)abs(angle - 180));
 			float angle_2 = abs(angle - 90);
-			float angle_3 = std::min(abs(angle - 45), abs(angle - 135));
+			float angle_3 = std::min((float)abs(angle - 45), (float)abs(angle - 135));
 
 			if (angle_1 < angle_2 && angle_1 < angle_3)
 				type = 1;

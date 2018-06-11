@@ -7,7 +7,6 @@
 #include <CGAL/Timer.h>
 #include <CGAL/number_utils.h>
 #include <CGAL/Shape_detection_3.h>
-#include <CGAL/Shape_detection_3/Shape_detection_traits.h>
 #include <CGAL/Point_set_3.h>
 #include <CGAL/Polygon_2_algorithms.h>
 #include <CGAL/Polygon_traits_2.h>
@@ -43,7 +42,8 @@ namespace util {
 
 			// In Shape_detection_traits the basic types, i.e., Point and Vector types
 			// as well as iterator type and property maps, are defined.
-			typedef CGAL::Shape_detection_3::Shape_detection_traits<Kernel, Pwn_vector, Point_map, Normal_map> Traits;
+			//typedef CGAL::Shape_detection_3::Shape_detection_traits<Kernel, Pwn_vector, Point_map, Normal_map> Traits;
+			typedef CGAL::Shape_detection_3::Efficient_RANSAC_traits<Kernel, Pwn_vector, Point_map, Normal_map> Traits;
 			typedef CGAL::Shape_detection_3::Efficient_RANSAC<Traits>    Efficient_ransac;
 			typedef CGAL::Shape_detection_3::Cylinder<Traits>			 Cylinder;
 			typedef VerticalPlane<Traits>								 VPlane;
