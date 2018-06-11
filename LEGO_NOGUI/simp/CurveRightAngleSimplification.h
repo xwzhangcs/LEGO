@@ -87,7 +87,8 @@ namespace simp {
 		static std::vector<cv::Point2f> transform(std::vector<cv::Point2f> contour, cv::Mat_<float> M);
 		static std::vector<cv::Point2f> rectify_curves(std::vector<cv::Point2f> contour, std::vector<std::vector<cv::Point2f>> curves, std::vector<std::vector<cv::Point2f>> curves_attrs, std::vector<std::vector<cv::Point2f>>& curves_rectify, std::vector<std::vector<cv::Point2f>>& curves_attrs_rectify, float snap_threshold);
 		static std::vector<cv::Point2f> del_redundant_points(std::vector<cv::Point2f> contour);
-		static std::vector<cv::Point2f> contour_rectify(std::vector<cv::Point2f>& contour, float threshold);
+		static std::vector<cv::Point2f> contour_rectify(std::vector<cv::Point2f>& contour, float threshold, float epsilon);
+		static std::vector<cv::Point2f> contour_rectify_no_curve(std::vector<cv::Point2f>& contour, float threshold, float epsilon);
 		static cv::Point2f find_center(cv::Point2f p1, cv::Point2f p2, cv::Point2f p3);
 
 	};
