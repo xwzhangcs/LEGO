@@ -202,6 +202,9 @@ int main(int argc, const char* argv[]) {
 		// read minimum hole ratio
 		double min_hole_ratio = readNumber(doc, "min_hole_ratio", 0.02);
 
+		// read minimum height of layer
+		double min_layer_height = readNumber(doc, "minimum_layer_height", 2.5) / scale;
+
 		// read algorithms
 		std::map<int, std::vector<double>> algorithms;
 		rapidjson::Value& algs = doc["contour_simplification_algorithms"];			
@@ -230,8 +233,7 @@ int main(int argc, const char* argv[]) {
 		std::vector<util::VoxelBuilding> voxel_buildings = util::DisjointVoxelData::disjoint(voxel_data);
 
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
-		int min_num_slices_per_layer = 2.5 / scale;
-		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_num_slices_per_layer, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_layer_height, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 		util::obj::OBJWriter::write(output_mesh.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 		util::topface::TopFaceWriter::write(output_top_face.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
