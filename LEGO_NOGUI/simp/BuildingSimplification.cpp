@@ -297,7 +297,7 @@ namespace simp {
 
 			// crop the contour such that it is completely inside the parent contours,
 			// and add the cropped contours to the results.
-			if (parent_contours.size() > 0) {
+			if (parent_contours.size() > 0 && !allow_overhang) {
 				try {
 					for (int j = 0; j < parent_contours.size(); j++) {
 						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(best_simplified_polygon, parent_contours[j]);
