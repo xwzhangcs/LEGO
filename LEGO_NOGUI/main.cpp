@@ -71,7 +71,7 @@ std::vector<double> readAlgorithmParams(rapidjson::Value& node, const QString& a
 			}
 			else if (algorithm_name == "right_angle") {
 				double epsilon = readNumber(alg, "epsilon", 20);
-				bool optimization = readBoolValue(alg, "optimization", false);
+				bool optimization = readBoolValue(alg, "optimization", true);
 				return{ epsilon, optimization ? 1.0 : 0.0 };
 			}
 			else if (algorithm_name == "curve") {
@@ -177,7 +177,7 @@ int main(int argc, const char* argv[]) {
 		
 		// read contour simplificaton weight
 		double contour_simplification_weight = readNumber(doc, "contour_simplification_weight", 0.5);
-
+		
 		// read layering threshold
 		double layering_threshold = readNumber(doc, "layering_threshold", 0.7);
 
