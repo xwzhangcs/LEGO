@@ -1282,7 +1282,7 @@ namespace util {
 			float len = length(polygon[i] - polygon[i2]);
 
 			// find the closest almost-colinear edge from the reference polygons
-			float min_dist = std::numeric_limits<float>::max();
+			float max_len_ratio = 0;
 			cv::Point2f pt1, pt2;
 
 			for (int j = 0; j < ref_polygons.size(); j++) {
@@ -1305,8 +1305,8 @@ namespace util {
 
 					for (int l = 0; l < dist.size(); l++) {
 						for (int m = l + 1; m < dist.size(); m++) {
-							if (dist[l] < snapping_threshold && dist[m] < snapping_threshold && len_ratio > 0.3 && dist[l] + dist[m] < min_dist) {
-								min_dist = dist[l] + dist[m];
+							if (dist[l] < snapping_threshold && dist[m] < snapping_threshold && len_ratio > 0.1 && len_ratio > max_len_ratio) {
+								max_len_ratio = len_ratio;
 								pt1 = contour[k];
 								pt2 = contour[k2];
 							}
@@ -1333,8 +1333,8 @@ namespace util {
 
 						for (int m = 0; m < dist.size(); m++) {
 							for (int n = m + 1; n < dist.size(); n++) {
-								if (dist[m] < snapping_threshold && dist[n] < snapping_threshold && len_ratio > 0.3 && dist[m] + dist[n] < min_dist) {
-									min_dist = dist[m] + dist[n];
+								if (dist[m] < snapping_threshold && dist[n] < snapping_threshold && len_ratio > 0.1 && len_ratio > max_len_ratio) {
+									max_len_ratio = len_ratio;
 									pt1 = hole[l];
 									pt2 = hole[l2];
 								}
@@ -1345,7 +1345,7 @@ namespace util {
 			}
 
 			// snap the edge to the closest one
-			if (min_dist < std::numeric_limits<float>::max()) {
+			if (max_len_ratio > 0) {
 				snapEdge(pt1, pt2, polygon, i, i2);
 			}
 		}
@@ -1414,7 +1414,7 @@ namespace util {
 			float len = length(polygon[i] - polygon[i2]);
 
 			// find the closest almost-colinear edge from the reference polygons
-			float min_dist = std::numeric_limits<float>::max();
+			float max_len_ratio = 0;
 			cv::Point2f pt1, pt2;
 
 			for (int j = 0; j < ref_polygons.size(); j++) {
@@ -1437,8 +1437,8 @@ namespace util {
 
 					for (int l = 0; l < dist.size(); l++) {
 						for (int m = l + 1; m < dist.size(); m++) {
-							if (dist[l] < snapping_threshold && dist[m] < snapping_threshold && len_ratio > 0.3 && dist[l] + dist[m] < min_dist) {
-								min_dist = dist[l] + dist[m];
+							if (dist[l] < snapping_threshold && dist[m] < snapping_threshold && len_ratio > 0.1 && len_ratio > max_len_ratio) {
+								max_len_ratio = len_ratio;
 								pt1 = contour[k];
 								pt2 = contour[k2];
 							}
@@ -1465,8 +1465,8 @@ namespace util {
 
 						for (int m = 0; m < dist.size(); m++) {
 							for (int n = m + 1; n < dist.size(); n++) {
-								if (dist[m] < snapping_threshold && dist[n] < snapping_threshold && len_ratio > 0.3 && dist[m] + dist[n] < min_dist) {
-									min_dist = dist[m] + dist[n];
+								if (dist[m] < snapping_threshold && dist[n] < snapping_threshold && len_ratio > 0.1 && len_ratio > max_len_ratio) {
+									max_len_ratio = len_ratio;
 									pt1 = hole[l];
 									pt2 = hole[l2];
 								}
@@ -1477,7 +1477,7 @@ namespace util {
 			}
 
 			// snap the edge to the closest one
-			if (min_dist < std::numeric_limits<float>::max()) {
+			if (max_len_ratio > 0) {
 				snapEdge2(pt1, pt2, polygon, i, i2);
 			}
 		}
