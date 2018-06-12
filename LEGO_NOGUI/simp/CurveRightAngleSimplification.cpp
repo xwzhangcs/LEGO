@@ -143,8 +143,10 @@ namespace simp {
 
 			util::Polygon output;
 			bool bContainCurve = false;
-			if (contour.size() > 100){
+			if (contour.size() > 500){
 				bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold, orientation);
+				if (output.contour.size() <= 3)
+					bContainCurve = false;
 			}
 			if (bContainCurve)
 			{
@@ -198,8 +200,10 @@ namespace simp {
 
 				util::Polygon output;
 				bool bContainCurve = false;
-				if (contour.size() > 100){
+				if (contour.size() > 500){
 					bContainCurve = approxContour(contour, output, epsilon, curve_threshold, angle_threshold, orientation);
+					if (output.contour.size() <= 3)
+						bContainCurve = false;
 				}
 				if (bContainCurve)
 				{
@@ -425,10 +429,30 @@ namespace simp {
 		for (int i = start_init; i < start_init + contour_points_type.size();){
 			simplified_curve_tmp.clear();
 			bool bCurve = false;
+			bool bHead = true;
+			cv::Point2f curve_center_last;
+			cv::Point2f curve_center_current;
 			while (contour_points_type[i % contour_points_type.size()] == 2 && i < start_init + contour_points_type.size()){
 				bCurve = true;
-				simplified_curve_tmp.push_back(clean_contour[i % contour_points_type.size()]);
-				i++;
+				if (bHead){
+					curve_center_last = cv::Point2f(contour_points_circle[i % contour_points_type.size()].x, contour_points_circle[i % contour_points_type.size()].y);
+					bHead = false;
+					simplified_curve_tmp.push_back(clean_contour[i % contour_points_type.size()]);
+					i++;
+				}
+				else{
+					curve_center_current = cv::Point2f(contour_points_circle[i % contour_points_type.size()].x, contour_points_circle[i % contour_points_type.size()].y);
+					float dis = cv::norm(curve_center_last - curve_center_current);
+					//std::cout << "dis is " << dis << std::endl;
+					if (dis < 1.0f)
+					{
+						simplified_curve_tmp.push_back(clean_contour[i % contour_points_type.size()]);
+						i++;
+					}
+					else{
+						break;
+					}
+				}
 			}
 			// simplify the curve using less points
 			if (bCurve){
@@ -445,7 +469,7 @@ namespace simp {
 				float interval_degrees = angle_start_end / interval_points;
 				float radius = cv::norm(simplified_curve_tmp[0] - center);
 
-				if (abs(angle_start_end) >= 60 && radius > 30){
+				if ((abs(angle_start_end) >= 60 && radius > 30) || (abs(angle_start_end) >= 180 && radius > 20)){
 					for (int k = 0; k < interval_points; k++){
 						float x = radius * cos(CV_PI * (angle_start + interval_degrees * k) / 180) + center.x;
 						float y = radius * sin(CV_PI * (angle_start + interval_degrees * k) / 180) + center.y;
@@ -894,12 +918,18 @@ namespace simp {
 		bool bValid = true;
 		// compute max_error
 		double max_error = 0;
+		std::vector<double> errors;
+		errors.resize(points.size());
 		for (int i = 0; i < points.size(); i++){
 			double tmp = abs((cv::norm(center - points.at(i)) - abs(radius)));
 			//tmp= glm::pow((glm::length2(center - points.at(i)) - radius*radius), 2);
+			errors[i] = tmp;
 			if (tmp > max_error)
 				max_error = tmp;
 		}
+		std::sort(errors.begin(), errors.end());
+		float ratio = 0.90;
+		max_error = errors[errors.size() * ratio];
 		// compute angle_v1
 		float angle_v1 = compute_interval(points[0] - center, points[points.size() / 2] - center, points[points.size() - 1] - center);
 		//double angle_v1 = abs(compute_angle(points[0] - center, points[points.size() - 1] - center));
@@ -1043,6 +1073,8 @@ namespace simp {
 		std::vector<cv::Point2f> result_contour;
 		std::vector<int> insert_pos;
 		insert_pos.resize(curves.size());
+		std::vector<std::pair<bool, bool>> insert_pos_new;
+		insert_pos_new.resize(curves.size());
 		for (int i = 0; i < curves.size(); i++){
 			curve_tmp.clear();
 			curve_attrs_tmp.clear();
@@ -1057,7 +1089,7 @@ namespace simp {
 			double start_dis = 0.0f, end_dis = 0.0;
 			cv::Point2f tmp = (start_point + end_point) * 0.5;
 			cv::Point2f dir = (tmp - mid_point) / cv::norm(tmp - mid_point);
-			cv::Point2f new_point = tmp + 5 * dir;
+			cv::Point2f new_point = tmp + 40 * dir;
 			Segment CD(point_t(mid_point.x, mid_point.y), point_t(new_point.x, new_point.y));
 
 			int start_index = -1, end_index = -1;
@@ -1086,8 +1118,10 @@ namespace simp {
 				end_dis = cv::norm(end_point - contour[end_index]);
 				if (start_dis <= snap_threshold && start_index != end_index){
 					start_point = contour[start_index];
+					insert_pos_new[i].first = false;
 				}
 				else{
+					insert_pos_new[i].first = true;
 					// find intersection
 					//cv::Point2f dir = (start_point - mid_point) / cv::norm(start_point - mid_point);
 					//cv::Point2f new_point = start_point + 10 * dir;
@@ -1108,7 +1142,7 @@ namespace simp {
 					int tmp_index = 0;
 					float interval_x = (contour[end_index].x - contour[start_index].x) / sample_num;
 					float interval_y = (contour[end_index].y - contour[start_index].y) / sample_num;
-					for (int k = 0; k <= sample_num; k++){
+					for (int k = 1; k < sample_num; k++){
 						cv::Point2f new_point(contour[start_index].x + interval_x * k, contour[start_index].y + interval_y * k);
 						smaple_points.push_back(new_point);
 						float new_dis = cv::norm(new_point - start_point);
@@ -1117,20 +1151,23 @@ namespace simp {
 							tmp_dis = new_dis;
 						}
 					}
-					start_point = smaple_points[tmp_index];
+					start_point = smaple_points[tmp_index - 1];
 
 
 				}
-				if (end_dis <= snap_threshold && start_index != end_index)
+				if (end_dis <= snap_threshold && start_index != end_index){
 					end_point = contour[end_index];
+					insert_pos_new[i].second = false;
+				}
 				else{
+					insert_pos_new[i].second = true;
 					std::vector<cv::Point2f> smaple_points;
 					int sample_num = 50;
 					float tmp_dis = 1000;
 					int tmp_index = 0;
 					float interval_x = (contour[end_index].x - contour[start_index].x) / sample_num;
 					float interval_y = (contour[end_index].y - contour[start_index].y) / sample_num;
-					for (int k = 0; k <= sample_num; k++){
+					for (int k = 1; k < sample_num; k++){
 						cv::Point2f new_point(contour[start_index].x + interval_x * k, contour[start_index].y + interval_y * k);
 						smaple_points.push_back(new_point);
 						float new_dis = cv::norm(new_point - end_point);
@@ -1139,7 +1176,7 @@ namespace simp {
 							tmp_dis = new_dis;
 						}
 					}
-					end_point = smaple_points[tmp_index];
+					end_point = smaple_points[tmp_index-1];
 				}
 
 			}
@@ -1204,13 +1241,17 @@ namespace simp {
 				}
 			}
 			if (bInsert){
+				if (insert_pos_new[insert_index].first)
+					result_contour.push_back(contour[i]);
 				for (int k = 0; k < curves_rectify[insert_index].size(); k++){
 					if (insert_pos[insert_index] == contour.size() - 1 && k == curves_rectify[insert_index].size() - 1)
 						continue;
-					else
+					else{
 						result_contour.push_back(curves_rectify[insert_index][k]);
+					}
 				}
-				i++;
+				if (!insert_pos_new[insert_index].second)
+					i++;
 			}
 			else
 				result_contour.push_back(contour[i]);
