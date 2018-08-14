@@ -48,6 +48,11 @@ namespace simp {
 					std::shared_ptr<util::BuildingLayer> building;
 					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 
+					// regularizer
+					{
+						generateImagesForAllLayers(building, 0);
+					}
+
 					buildings.push_back(building);
 				}
 				catch (...) {}
@@ -255,7 +260,6 @@ namespace simp {
 			if (algorithms.find(ALG_EFFICIENT_RANSAC) != algorithms.end()) {
 				try {
 					util::Polygon simplified_polygon = EfficientRansacSimplification::simplify(contours[i], algorithms[ALG_EFFICIENT_RANSAC], orientation, min_hole_ratio);
-					std::cout << "simplified_polygon size is " << simplified_polygon.contour.size() << std::endl;
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 
 					// check if the shape is a triangle
@@ -322,18 +326,18 @@ namespace simp {
 			}
 
 			// snap the edges
-			if (parent_contours.size() > 0 && snapping_threshold > 0) {
+			/*if (parent_contours.size() > 0 && snapping_threshold > 0) {
 				if (best_algorithm == ALG_RIGHTANGLE) {
 					util::snapPolygon(parent_contours, best_simplified_polygon, snapping_threshold);
 				}
 				else {
 					util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
 				}
-			}
+			}*/
 
 			// crop the contour such that it is completely inside the parent contours,
 			// and add the cropped contours to the results.
-			if (parent_contours.size() > 0 && !allow_overhang) {
+			if (/*parent_contours.size() > 0 && !allow_overhang*/false) {
 				try {
 					for (int j = 0; j < parent_contours.size(); j++) {
 						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(best_simplified_polygon, parent_contours[j]);
@@ -417,4 +421,20 @@ namespace simp {
 		return ans;
 	}
 
+	/**
+	* Generate images for all layers/
+	*
+	* @param		root
+	* @param		image index
+	*/
+	void BuildingSimplification::generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index){
+		cv::Rect bbox = util::boundingBox(building->footprints[0].contour.points);
+		cv::Mat_<uchar> img;
+		util::createImageFromPolygon(bbox.width, bbox.height, building->footprints[0], cv::Point2f(-bbox.x, -bbox.y), img);
+		std::string img_name = "../data/regularizer_" + std::to_string(index) + ".png";
+		cv::imwrite(img_name, img);
+		index++;
+		for (auto child_layer : building->children)
+			generateImagesForAllLayers(child_layer, index);
+	}
 }

@@ -21,7 +21,7 @@ EfficientRANSACOptionDialog::EfficientRANSACOptionDialog(QWidget *parent)
 
 	ui.lineEditContourMaxError->setText("20");
 	ui.lineEditContourAngleThreshold->setText("10");
-	ui.doubleSpinBoxLayeringThreshold->setValue(0.7);
+	ui.doubleSpinBoxLayeringThreshold->setValue(0.8);
 	ui.doubleSpinBoxLayeringThreshold->setSingleStep(0.1);
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
 	ui.doubleSpinBoxLayeringThreshold->setMaximum(1.0);
