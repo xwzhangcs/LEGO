@@ -182,25 +182,22 @@
     <ClCompile Include="..\LEGO_NOGUI\simp\EfficientRansacSimplification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\CurveDetector.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\CurveDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRANSACUtil.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSAC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\LineDetector.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSACUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\OrientationEstimator.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\LineDetector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\PrimitiveShape.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\PrimitiveShape.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\ContourGenerator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRANSAC.cpp">
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\ContourGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -351,25 +348,22 @@
     <ClInclude Include="..\LEGO_NOGUI\simp\EfficientRansacSimplification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\ContourGenerator.h">
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\CurveDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\CurveDetector.h">
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSAC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRANSACUtil.h">
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSACUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\LineDetector.h">
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\LineDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\OrientationEstimator.h">
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\PrimitiveShape.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\PrimitiveShape.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRANSAC.h">
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\ContourGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

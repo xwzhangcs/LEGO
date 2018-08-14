@@ -138,6 +138,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\ContourGenerator.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\CurveDetector.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSAC.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSACUtil.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\LineDetector.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\PrimitiveShape.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\BuildingSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\CurveSimplification.cpp" />
@@ -145,19 +151,12 @@
     <ClCompile Include="..\LEGO_NOGUI\simp\EfficientRansacSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\RightAngleSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\BuildingLayer.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\ContourGenerator.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\ContourUtils.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\CurveDetector.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\DisjointVoxelData.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRANSAC.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\EfficientRansacCurveDetector.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRANSACUtil.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\LineDetector.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\OBJWriter.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\OrientationEstimator.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\PlyWriter.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\PointSetShapeDetection.cpp" />
-    <ClCompile Include="..\LEGO_NOGUI\util\PrimitiveShape.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\TopFaceWriter.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\util\VoxelBuilding.cpp" />
     <ClCompile Include="AllOptionDialog.cpp" />
@@ -279,6 +278,12 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\ContourGenerator.h" />
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\CurveDetector.h" />
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSAC.h" />
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\EfficientRANSACUtil.h" />
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\LineDetector.h" />
+    <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\PrimitiveShape.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\BuildingSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\CurveSimplification.h" />
@@ -286,19 +291,12 @@
     <ClInclude Include="..\LEGO_NOGUI\simp\EfficientRansacSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\RightAngleSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\BuildingLayer.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\ContourGenerator.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\ContourUtils.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\CurveDetector.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\DisjointVoxelData.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRANSAC.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\EfficientRansacCurveDetector.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRANSACUtil.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\LineDetector.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\OBJWriter.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\OrientationEstimator.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\PlyWriter.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\PointSetShapeDetection.h" />
-    <ClInclude Include="..\LEGO_NOGUI\util\PrimitiveShape.h" />
     <ClInclude Include="..\LEGO_NOGUI\util\TopFaceWriter.h" />
     <CustomBuild Include="AllOptionDialog.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

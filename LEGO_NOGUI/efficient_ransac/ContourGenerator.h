@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 #include "PrimitiveShape.h"
-#include "ContourUtils.h"
+#include "../util/ContourUtils.h"
 
 
 class ContourGenerator {

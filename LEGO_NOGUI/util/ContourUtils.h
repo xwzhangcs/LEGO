@@ -211,4 +211,7 @@ namespace util {
 	void mark_domains(CDT& cdt);
 
 	bool lineLineIntersection(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d, double *tab, double *tcd, bool segment_only, cv::Point2f& int_pt);
+
+	float estimate(const std::vector<util::Polygon>& polygons);
+	float estimate(const std::vector<cv::Point2f>& polygon);
 }

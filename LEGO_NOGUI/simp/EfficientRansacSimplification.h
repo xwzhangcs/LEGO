@@ -6,12 +6,11 @@
 #include "../util/ContourUtils.h"
 #include <dlib/optimization.h>
 #include <unordered_map>
-#include "../util/CurveDetector.h"
-#include "../util/LineDetector.h"
-#include "../util/OrientationEstimator.h"
-#include "../util/PrimitiveShape.h"
-#include "../util/ContourGenerator.h"
-#include "../util/EfficientRANSAC.h"
+#include "../efficient_ransac/CurveDetector.h"
+#include "../efficient_ransac/LineDetector.h"
+#include "../efficient_ransac/PrimitiveShape.h"
+#include "../efficient_ransac/ContourGenerator.h"
+#include "../efficient_ransac/EfficientRANSAC.h"
 
 namespace simp {
 

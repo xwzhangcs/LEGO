@@ -46,7 +46,7 @@ namespace simp {
 
 	void EfficientRansacSimplification::generateContours(util::Polygon polygon, util::Polygon& ans, const std::vector<double>& parameters, float orientation) {
 		// detect principal orientation
-		float principal_orientation = OrientationEstimator::estimate(polygon.contour.points);
+		float principal_orientation = util::estimate(polygon.contour.points);
 
 		// use the principal orientation, +45, +90, +135 degrees as principal orientations
 		std::vector<float> principal_orientations;
