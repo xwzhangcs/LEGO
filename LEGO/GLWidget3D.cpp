@@ -448,6 +448,33 @@ void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshol
 	update3DGeometry();
 }
 
+/**
+* Simplify all the buildings by efficientRansac method.
+*
+* @param curve_num_iterations				The iterations for curve detection
+* @param curve_min_points					minimum number of points on the curve
+* @param curve_max_error_ratio_to_radius	max error for supporting points on the curve
+* @param curve_cluster_epsilon				the cluster to choose curve
+* @param curve_min_angle					minimum angle for the curve
+* @param curve_min_radius					minimum radius for the curve
+* @param curve_max_radius					maximum radius for the curve
+* @param line_num_iterations				The iterations for line detection
+* @param line_min_points					minimum number of points on the line segment
+* @param line_max_error						max error for supporting points on the line
+* @param line_cluster_epsilon				the cluster to choose line
+* @param line_min_length					minimum length for the line
+* @param line_angle_threshold				angle threshold for the line
+* @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
+*/
+void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double curve_min_points, double curve_max_error_ratio_to_radius, double curve_cluster_epsilon, double curve_min_angle, double curve_min_radius, double curve_max_radius, double line_num_iterations, double line_min_points, double line_max_error, double line_cluster_epsilon, double line_min_length, double line_angle_threshold, double contour_max_error, double contour_angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang){
+	std::map<int, std::vector<double>> algorithms;
+	algorithms[simp::BuildingSimplification::ALG_EFFICIENT_RANSAC] = { curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, contour_max_error, contour_angle_threshold };
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+
+	show_mode = SHOW_EFFICIENT_RANSAC;
+	update3DGeometry();
+}
+
 void GLWidget3D::update3DGeometry() {
 	if (show_mode == SHOW_INPUT) {
 		update3DGeometry(voxel_buildings);

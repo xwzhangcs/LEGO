@@ -50,6 +50,7 @@ public:
     QAction *actionSaveOBJ;
     QAction *actionSaveTopFaces;
     QAction *actionOffsetScale;
+    QAction *actionSimplifyByEfficientRANSAC;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -133,6 +134,8 @@ public:
         actionSaveTopFaces->setObjectName(QStringLiteral("actionSaveTopFaces"));
         actionOffsetScale = new QAction(MainWindowClass);
         actionOffsetScale->setObjectName(QStringLiteral("actionOffsetScale"));
+        actionSimplifyByEfficientRANSAC = new QAction(MainWindowClass);
+        actionSimplifyByEfficientRANSAC->setObjectName(QStringLiteral("actionSimplifyByEfficientRANSAC"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -177,6 +180,7 @@ public:
         menuSimplify->addAction(actionSimplifyByRightAngle);
         menuSimplify->addAction(actionSimplifyByCurve);
         menuSimplify->addAction(actionSimplifyByCurveRightAngle);
+        menuSimplify->addAction(actionSimplifyByEfficientRANSAC);
         menuSimplify->addSeparator();
         menuSimplify->addAction(actionDPTest);
         menuSimplify->addAction(actionRightAngleTest);
@@ -228,6 +232,7 @@ public:
 #endif // QT_NO_SHORTCUT
         actionSaveTopFaces->setText(QApplication::translate("MainWindowClass", "Save Top Faces", Q_NULLPTR));
         actionOffsetScale->setText(QApplication::translate("MainWindowClass", "Offset & Scale", Q_NULLPTR));
+        actionSimplifyByEfficientRANSAC->setText(QApplication::translate("MainWindowClass", "EfficientRANSAC", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));

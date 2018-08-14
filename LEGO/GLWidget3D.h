@@ -19,7 +19,7 @@ class GLWidget3D : public QGLWidget {
 	Q_OBJECT
 
 public:
-	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_ALL, SHOW_DP, SHOW_RIGHTANGLE, SHOW_CURVE };
+	enum SHOW_MODE { SHOW_INPUT = 0, SHOW_ALL, SHOW_DP, SHOW_RIGHTANGLE, SHOW_CURVE, SHOW_EFFICIENT_RANSAC };
 	enum COLOR_MODE { COLOR = 0, TEXTURE };
 
 public:
@@ -66,6 +66,7 @@ public:
 	void simplifyByRightAngle(int resolution, bool optimization, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
 	void simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
 	void simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
+	void simplifyByEfficientRansac(double curve_num_iterations, double curve_min_points, double curve_max_error_ratio_to_radius, double curve_cluster_epsilon, double curve_min_angle, double curve_min_radius, double curve_max_radius, double line_num_iterations, double line_min_points, double line_max_error, double line_cluster_epsilon, double line_min_length, double line_angle_threshold, double contour_max_error, double contour_angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang);
 	void update3DGeometry();
 	void update3DGeometry(const std::vector<util::VoxelBuilding>& voxel_buildings);
 	void update3DGeometry(const std::shared_ptr<util::VoxelNode>& voxel_node, glm::vec4& color, std::vector<Vertex>& vertices);

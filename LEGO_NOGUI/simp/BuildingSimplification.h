@@ -9,7 +9,7 @@ namespace simp {
 	
 	class BuildingSimplification {
 	public:
-		enum ALGORITHM { ALG_UNKNOWN = 0, ALG_ALL, ALG_DP, ALG_RIGHTANGLE, ALG_CURVE, ALG_CURVE_RIGHTANGLE };
+		enum ALGORITHM { ALG_UNKNOWN = 0, ALG_ALL, ALG_DP, ALG_RIGHTANGLE, ALG_CURVE, ALG_CURVE_RIGHTANGLE, ALG_EFFICIENT_RANSAC };
 
 	protected:
 		BuildingSimplification() {}

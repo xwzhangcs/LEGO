@@ -5,6 +5,7 @@
 #include "RightAngleSimplification.h"
 #include "CurveSimplification.h"
 #include "CurveRightAngleSimplification.h"
+#include "EfficientRansacSimplification.h"
 #include "../util/EfficientRansacCurveDetector.h"
 
 namespace simp {
@@ -250,6 +251,38 @@ namespace simp {
 				catch (...) {}
 			}
 
+			// try efficient ransac
+			if (algorithms.find(ALG_EFFICIENT_RANSAC) != algorithms.end()) {
+				try {
+					util::Polygon simplified_polygon = EfficientRansacSimplification::simplify(contours[i], algorithms[ALG_EFFICIENT_RANSAC], orientation, min_hole_ratio);
+					std::cout << "simplified_polygon size is " << simplified_polygon.contour.size() << std::endl;
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
+
+					// check if the shape is a triangle
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
+
+					// check the OBB ratio
+					cv::Mat_<float> m;
+					cv::Rect obb = util::calculateOBB(simplified_polygon.contour.points, m);
+					if (obb.width == 0 || obb.height == 0 || obb.width / obb.height > max_obb_ratio || obb.height / obb.width > max_obb_ratio) throw "OBB ratio is exceeded the threshold.";
+
+					// calculate cost
+					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
+					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+					if (curve_preferred) cost *= 0.5;
+					if (cost < best_cost) {
+						best_algorithm = ALG_EFFICIENT_RANSAC;
+						right_angle_for_all_contours = false;
+						best_cost = cost;
+						best_simplified_polygon = simplified_polygon;
+
+						best_error = costs[0] / costs[1];
+						best_num_primitive_shapes = costs[2];
+					}
+				}
+				catch (...) { std::cout << "exception" << std::endl; }
+			}
+
 			if (best_algorithm == ALG_UNKNOWN) {
 				// try Douglas-Peucker when no method works
 				try {
@@ -280,6 +313,9 @@ namespace simp {
 			}
 			else if (best_algorithm == ALG_CURVE || best_algorithm == ALG_CURVE_RIGHTANGLE) {
 				std::cout << "Selected algorithm: CSRA" << std::endl;
+			}
+			else if (best_algorithm == ALG_EFFICIENT_RANSAC) {
+				std::cout << "Selected algorithm: EFFICIENT RANSAC" << std::endl;
 			}
 			else {
 				std::cout << "Selected algorithm: DP" << std::endl;

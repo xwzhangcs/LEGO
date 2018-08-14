@@ -8,6 +8,7 @@
 #include "RightAngleOptionDialog.h"
 #include "CurveOptionDialog.h"
 #include "CurveRightAngleOptionDialog.h"
+#include "EfficientRANSACOptionDialog.h"
 #include "OffsetScaleDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -45,6 +46,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionSimplifyByRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByRightAngle()));
 	connect(ui.actionSimplifyByCurve, SIGNAL(triggered()), this, SLOT(onSimplifyByCurve()));
 	connect(ui.actionSimplifyByCurveRightAngle, SIGNAL(triggered()), this, SLOT(onSimplifyByCurveRightAngle()));
+	connect(ui.actionSimplifyByEfficientRANSAC, SIGNAL(triggered()), this, SLOT(onSimplifyByEfficientRANSAC()));
 	connect(ui.actionOffsetScale, SIGNAL(triggered()), this, SLOT(onOffsetScale()));
 	connect(ui.actionColor, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
 	connect(ui.actionTexture, SIGNAL(triggered()), this, SLOT(onColoringModeChanged()));
@@ -160,6 +162,13 @@ void MainWindow::onSimplifyByCurveRightAngle() {
 	if (dlg.exec()) {
 		glWidget->simplifyByCurveRightAngle(dlg.getEpsilon(), dlg.getCurveThreshold(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 		glWidget->update();
+	}
+}
+
+void MainWindow::onSimplifyByEfficientRANSAC() {
+	EfficientRANSACOptionDialog dlg;
+	if (dlg.exec()) {
+		glWidget->simplifyByEfficientRansac(dlg.getCurveNumIterations(), dlg.getCurveMinPoints(), dlg.getCurveMaxErrorRatioToRadius(), dlg.getCurveClusterEpsilon(), dlg.getCurveMinAngle() / 180.0 * CV_PI, dlg.getCurveMinRadius(), dlg.getCurveMaxRadius(), dlg.getLineNumIterations(), dlg.getLineMinPoints(), dlg.getLineMaxError(), dlg.getLineClusterEpsilon(), dlg.getLineMinLength(), dlg.getLineAngleThreshold() / 180.0 * CV_PI, dlg.getContourMaxError(), dlg.getContourAngleThreshold() / 180.0 * CV_PI, dlg.getLayeringThreshold(), dlg.getSnappingThreshold(), dlg.getOrientation() / 180.0 * CV_PI, dlg.getMinContourArea(), dlg.getMaxOBBRatio(), dlg.isAllowTriangleContour(), dlg.isAllowOverhang());
 	}
 }
 

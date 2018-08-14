@@ -58,6 +58,7 @@
     <addaction name="actionSimplifyByRightAngle"/>
     <addaction name="actionSimplifyByCurve"/>
     <addaction name="actionSimplifyByCurveRightAngle"/>
+    <addaction name="actionSimplifyByEfficientRANSAC"/>
     <addaction name="separator"/>
     <addaction name="actionDPTest"/>
     <addaction name="actionRightAngleTest"/>
@@ -265,6 +266,11 @@
   <action name="actionOffsetScale">
    <property name="text">
     <string>Offset &amp; Scale</string>
+   </property>
+  </action>
+  <action name="actionSimplifyByEfficientRANSAC">
+   <property name="text">
+    <string>EfficientRANSAC</string>
    </property>
   </action>
  </widget>

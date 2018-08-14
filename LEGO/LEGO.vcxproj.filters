@@ -170,6 +170,39 @@
     <ClCompile Include="..\LEGO_NOGUI\util\PointSetShapeDetection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_EfficientRANSACOptionDialog.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_EfficientRANSACOptionDialog.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="EfficientRANSACOptionDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\simp\EfficientRansacSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\CurveDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRANSACUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\LineDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\OrientationEstimator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\PrimitiveShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\ContourGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\util\EfficientRANSAC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.ui">
@@ -218,6 +251,12 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
     <CustomBuild Include="OffsetScaleDialog.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EfficientRANSACOptionDialog.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="EfficientRANSACOptionDialog.ui">
       <Filter>Form Files</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -305,6 +344,33 @@
     </ClInclude>
     <ClInclude Include="..\LEGO_NOGUI\util\PointSetShapeDetection.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_EfficientRANSACOptionDialog.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\simp\EfficientRansacSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\ContourGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\CurveDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRANSACUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\LineDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\OrientationEstimator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\PrimitiveShape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\util\EfficientRANSAC.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -29,6 +29,7 @@ public slots:
 	void onSimplifyByRightAngle();
 	void onSimplifyByCurve();
 	void onSimplifyByCurveRightAngle();
+	void onSimplifyByEfficientRANSAC();
 	void onOffsetScale();
 	void onColoringModeChanged();
 	void onRenderingModeChanged();

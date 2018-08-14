@@ -179,6 +179,7 @@ namespace util {
 	double calculateArea(const Polygon& polygon);
 	double calculateArea(const cv::Mat_<uchar>& img);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner);
+	std::vector<Polygon> findContours(const cv::Mat_<uchar>& image, int threshold, bool simplify, bool allow_diagonal, bool dilate);
 	Ring addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img);
 	void findContour(const cv::Mat_<uchar>& img, std::vector<cv::Point>& contour);
 	void createImageFromContour(int width, int height, const std::vector<cv::Point>& contour, const cv::Point& offset, cv::Mat_<uchar>& result, bool erode = true);
@@ -209,4 +210,5 @@ namespace util {
 	void mark_domains(CDT& ct, CDT::Face_handle start, int index, std::list<CDT::Edge>& border);
 	void mark_domains(CDT& cdt);
 
+	bool lineLineIntersection(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d, double *tab, double *tcd, bool segment_only, cv::Point2f& int_pt);
 }
