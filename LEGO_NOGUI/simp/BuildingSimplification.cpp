@@ -25,7 +25,7 @@ namespace simp {
 	 * @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 	 * @param min_hole_ratio			The minimum area ratio of a hole to the contour. If the area of the hole is too small, it will be removed.
 	 */
-	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio) {
+	std::vector<std::shared_ptr<util::BuildingLayer>> BuildingSimplification::simplifyBuildings(std::vector<util::VoxelBuilding>& voxel_buildings, std::map<int, std::vector<double>>& algorithms, bool record_stats, int min_num_slices_per_layer, float alpha, float layering_threshold, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio, const std::vector<regularizer::Config>& regularizer_configs) {
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
 
 		std::vector<std::tuple<float, long long, int>> records;
@@ -49,8 +49,16 @@ namespace simp {
 					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 
 					// regularizer
+					if (regularizer_configs.size() >= 0)
 					{
-						generateImagesForAllLayers(building, 0);
+						
+						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
+						std::vector<std::pair<int, int>>layers_relationship;
+						generateVectorForAllLayers(building, 0, layers, layers_relationship);
+						std::cout << "layers_relationship.size() is " << layers_relationship.size() << std::endl;
+						// test layer_relationship
+						for (int l = 0; l < layers_relationship.size(); l++)
+							std::cout <<"(" <<layers_relationship[l].first << ", " << layers_relationship[l].second <<")"<< std::endl;
 					}
 
 					buildings.push_back(building);
@@ -424,17 +432,28 @@ namespace simp {
 	/**
 	* Generate images for all layers/
 	*
+	* @param		input root building
+	* @param		config files
+	*/
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::shared_ptr<util::BuildingLayer> building, std::vector<regularizer::Config>& regularizer_configs){
+		return building;
+	}
+
+	/**
+	* Generate images for all layers/
+	*
 	* @param		root
 	* @param		image index
 	*/
-	void BuildingSimplification::generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index){
-		cv::Rect bbox = util::boundingBox(building->footprints[0].contour.points);
-		cv::Mat_<uchar> img;
-		util::createImageFromPolygon(bbox.width, bbox.height, building->footprints[0], cv::Point2f(-bbox.x, -bbox.y), img);
-		std::string img_name = "../data/regularizer_" + std::to_string(index) + ".png";
-		cv::imwrite(img_name, img);
-		index++;
-		for (auto child_layer : building->children)
-			generateImagesForAllLayers(child_layer, index);
+	int BuildingSimplification::generateVectorForAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship){
+		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(root->building_id, root->footprints, root->bottom_height, root->top_height));
+		layers.push_back(building);
+		int current_layer_id = layer_id;
+		for (auto child_layer : root->children){
+			layer_id++;
+			layers_relationship.push_back(std::make_pair(current_layer_id, layer_id));
+			layer_id = generateVectorForAllLayers(child_layer, layer_id, layers, layers_relationship);
+		}
+		return layer_id;
 	}
 }

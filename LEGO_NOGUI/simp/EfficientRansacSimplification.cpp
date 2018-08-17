@@ -29,7 +29,7 @@ namespace simp {
 		std::vector<util::Polygon> polygons = util::findContours(img, 40, false, true, false);
 		if (polygons.size() == 0) throw "No building is found.";
 		{
-			std::string img_name = "../data/" + std::to_string(rand() % 100) + ".png";
+			std::string img_name = "../data/" + std::to_string(rand() % 500) + ".png";
 			cv::imwrite(img_name, img);
 			std::cout << "img file name is " << img_name << std::endl;
 		}

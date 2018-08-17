@@ -16,6 +16,9 @@
 #include "util/OBJWriter.h"
 #include "util/PlyWriter.h"
 #include "util/TopFaceWriter.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers)) {
 	this->mainWin = parent;
@@ -466,10 +469,156 @@ void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshol
 * @param line_angle_threshold				angle threshold for the line
 * @param allow_triangle_contour	True if a triangle is allowed as a simplified contour shape
 */
-void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double curve_min_points, double curve_max_error_ratio_to_radius, double curve_cluster_epsilon, double curve_min_angle, double curve_min_radius, double curve_max_radius, double line_num_iterations, double line_min_points, double line_max_error, double line_cluster_epsilon, double line_min_length, double line_angle_threshold, double contour_max_error, double contour_angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang){
+void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double curve_min_points, double curve_max_error_ratio_to_radius, double curve_cluster_epsilon, double curve_min_angle, double curve_min_radius, double curve_max_radius, double line_num_iterations, double line_min_points, double line_max_error, double line_cluster_epsilon, double line_min_length, double line_angle_threshold, double contour_max_error, double contour_angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, QString config_filename){
 	std::map<int, std::vector<double>> algorithms;
+	std::vector<regularizer::Config> regularizer_configs;
 	algorithms[simp::BuildingSimplification::ALG_EFFICIENT_RANSAC] = { curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, contour_max_error, contour_angle_threshold };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+	if (!config_filename.isEmpty()){
+		QFile file(config_filename);
+		if (!file.open(QIODevice::ReadOnly)) {
+			std::cerr << "File was not readable: " << std::endl;
+		}
+		else{
+			QTextStream in(&file);
+			rapidjson::Document doc;
+			doc.Parse(in.readAll().toUtf8().constData());
+			int num_runs = doc["num_runs"].GetInt();
+			std::cout << "num_runs is " << num_runs << std::endl;
+			regularizer_configs.resize(num_runs);
+			for (int i = 0; i < num_runs; i++){
+				bool bUseIntra = false;
+				float intraWeight = 0.0f;
+				bool bUseInter = false;
+				float interWeight = 0.0f;
+				bool bUseRaOpt = false;
+				float angle_threshold_RA = 0.0f;
+				float raWeight = 0.0f;
+				bool bUseParallelOpt = false;
+				float angle_threshold_parallel = 0.0f;
+				float parallelWeight = 0.0f;
+				bool bUseSymmetryLineOpt = false;
+				float symmetryWeight = 0.0f;
+				bool bUseAccuracyOpt = false;
+				float accuracyWeight = 0.0f;
+				bool bUsePointSnapOpt = false;
+				float pointDisThreshold = 0.0f;
+				float pointWeight = 0.0f;
+				bool bUseSegSnapOpt = false;
+				float segDisThreshold = 0.0f;
+				float segAngleThreshold = 0.0f;
+				float segWeight = 0.0f;
+
+				// get parameters for each run
+				QString run_name = "Opt" + QString::number(i + 1);
+				rapidjson::Value& algs_run = doc[run_name.toUtf8().constData()];
+				
+				bUseIntra = algs_run["UseIntra"].GetBool();
+				bUseInter = algs_run["UseInter"].GetBool();
+				intraWeight = algs_run["Intra_Weight"].GetFloat();
+				interWeight = algs_run["Inter_Weight"].GetFloat();
+				if (bUseIntra){
+					rapidjson::Value& algs = algs_run["IntraOpt"];
+					//ra
+					rapidjson::Value& algs_ra = algs["RA"];
+					bUseRaOpt = algs_ra["UseOpt"].GetBool();
+					angle_threshold_RA = algs_ra["AngleThreshold"].GetFloat();
+					raWeight = algs_ra["Weight"].GetFloat();
+					//symmetry
+					rapidjson::Value& algs_symmetry = algs["Symmetry"];
+					bUseSymmetryLineOpt = algs_symmetry["UseOpt"].GetBool();
+					symmetryWeight = algs_symmetry["Weight"].GetFloat();
+					// parallel
+					rapidjson::Value& algs_parallel = algs["Parallel"];
+					bUseParallelOpt = algs_parallel["UseOpt"].GetBool();
+					angle_threshold_parallel = algs_parallel["AngleThreshold"].GetFloat();
+					parallelWeight = algs_parallel["Weight"].GetFloat();
+					// accuracy
+					rapidjson::Value& algs_accuracy = algs["Accuracy"];
+					bUseAccuracyOpt = algs_accuracy["UseOpt"].GetBool();
+					accuracyWeight = algs_accuracy["Weight"].GetFloat();
+				}
+				if (bUseInter){
+					rapidjson::Value& algs = algs_run["InterOpt"];
+					// point snap
+					rapidjson::Value& algs_point = algs["PointSnap"];
+					bUsePointSnapOpt = algs_point["UseOpt"].GetBool();
+					pointDisThreshold = algs_point["DisThreshold"].GetFloat();
+					pointWeight = algs_point["Weight"].GetFloat();
+					// seg snap
+					rapidjson::Value& algs_seg = algs["SegSnap"];
+					bUseSegSnapOpt = algs_seg["UseOpt"].GetBool();
+					segDisThreshold = algs_seg["DisThreshold"].GetFloat();
+					segAngleThreshold = algs_seg["AngleThreshold"].GetFloat();
+					segWeight = algs_seg["Weight"].GetFloat();
+				}
+				//check weights
+				if (bUseInter || bUseIntra){
+					float weight = 0.0f;
+					if (bUseInter)
+						weight += interWeight;
+					if (bUseIntra)
+						weight += intraWeight;
+					if (abs(weight - 1.0f) < 0.0001)
+					{
+						//
+					}
+					else{
+						std::cout << "Please check intra and inter weight assignment!!!" << std::endl;
+						return;
+					}
+				}
+				if (bUseIntra){
+					//check the sum weight equals 1
+					float weight = 0.0f;
+					if (bUseRaOpt)
+						weight += raWeight;
+					if (bUseParallelOpt)
+						weight += parallelWeight;
+					if (bUseSymmetryLineOpt)
+						weight += symmetryWeight;
+					if (bUseAccuracyOpt)
+						weight += accuracyWeight;
+					if (abs(weight - 1.0f) < 0.0001)
+					{
+						//
+					}
+					else{
+						std::cout << "Please check intra weight assignment!!!" << std::endl;
+						return;
+					}
+				}
+				if (bUseInter){
+					float weight = 0.0f;
+					if (bUsePointSnapOpt)
+						weight += pointWeight;
+					if (bUseSegSnapOpt)
+						weight += segWeight;
+					if (abs(weight - 1.0f) < 0.0001)
+					{
+						//
+					}
+					else{
+						std::cout << "Please check inter weight assignment!!!" << std::endl;
+						return;
+					}
+				}
+				regularizer::Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold, pointWeight, bUseSegSnapOpt, segDisThreshold, segAngleThreshold, segWeight);
+				regularizer_configs[i] = config;
+				{
+					std::cout << "bUseRa " << config.bUseRaOpt << " ra angle is " << config.angle_threshold_RA << " ra weight is " << config.raWeight << std::endl;
+					std::cout << "bUseParallel " << config.bUseParallelOpt << " Parallel angle is " << config.angle_threshold_parallel << " Parallel weight is " << config.parallelWeight << std::endl;
+					std::cout << "bUseSymmetry " << config.bUseSymmetryLineOpt << " Symmetry weight is " << config.symmetryWeight << std::endl;
+					std::cout << "bUseAccuracy " << config.bUseAccuracyOpt << " Accuracy weight is " << config.accuracyWeight << std::endl;
+				}
+				{
+					std::cout << "bUsePoint " << config.bUsePointSnapOpt << " Point threshold is " << config.pointDisThreshold << " Point weight is " << config.pointWeight << std::endl;
+					std::cout << "bUseSeg " << config.bUseSegSnapOpt << " seg angle is " << config.segAngleThreshold << " seg weight is " << config.segWeight << std::endl;
+				}
+			}
+			file.close();
+		}
+	}
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, regularizer_configs);
 
 	show_mode = SHOW_EFFICIENT_RANSAC;
 	update3DGeometry();

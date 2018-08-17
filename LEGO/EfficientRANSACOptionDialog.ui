@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>307</width>
-    <height>611</height>
+    <height>660</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -590,7 +590,7 @@
    <property name="geometry">
     <rect>
      <x>68</x>
-     <y>568</y>
+     <y>621</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -603,7 +603,7 @@
    <property name="geometry">
     <rect>
      <x>198</x>
-     <y>568</y>
+     <y>621</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -611,6 +611,55 @@
    <property name="text">
     <string>Cancel</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_4">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>560</y>
+     <width>281</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Regularizer</string>
+   </property>
+   <widget class="QLabel" name="label_24">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>47</width>
+      <height>13</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Opt:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditInputConfig">
+    <property name="geometry">
+     <rect>
+      <x>73</x>
+      <y>20</y>
+      <width>141</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonInputConfig">
+    <property name="geometry">
+     <rect>
+      <x>223</x>
+      <y>20</y>
+      <width>51</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

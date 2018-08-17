@@ -1,4 +1,5 @@
 #include "EfficientRANSACOptionDialog.h"
+#include <QFileDialog>
 
 EfficientRANSACOptionDialog::EfficientRANSACOptionDialog(QWidget *parent)
 	: QDialog(parent)
@@ -35,6 +36,7 @@ EfficientRANSACOptionDialog::EfficientRANSACOptionDialog(QWidget *parent)
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
+	connect(ui.pushButtonInputConfig, SIGNAL(clicked()), this, SLOT(onGetConfigFile()));
 }
 
 EfficientRANSACOptionDialog::~EfficientRANSACOptionDialog()
@@ -129,10 +131,21 @@ bool EfficientRANSACOptionDialog::isAllowOverhang() {
 	return ui.checkBoxAllowOverhang->isChecked();
 }
 
+QString EfficientRANSACOptionDialog::getConfigFile(){
+	return ui.lineEditInputConfig->text();
+}
+
 void EfficientRANSACOptionDialog::onOK() {
 	accept();
 }
 
 void EfficientRANSACOptionDialog::onCancel() {
 	reject();
+}
+
+void EfficientRANSACOptionDialog::onGetConfigFile(){
+	QString dir = QFileDialog::getOpenFileName(this, tr("Load config file..."), ui.lineEditInputConfig->text(), tr("Config file (*.json)"));
+	if (!dir.isEmpty()) {
+		ui.lineEditInputConfig->setText(dir);
+	}
 }

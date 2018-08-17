@@ -37,6 +37,7 @@ public:
 	double getMaxOBBRatio();
 	bool isAllowTriangleContour();
 	bool isAllowOverhang();
+	QString getConfigFile();
 
 private:
 	Ui::EfficientRANSACOptionDialog ui;
@@ -44,6 +45,7 @@ private:
 public slots:
 	void onOK();
 	void onCancel();
+	void onGetConfigFile();
 };
 
 #endif
