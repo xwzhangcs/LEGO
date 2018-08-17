@@ -7,6 +7,8 @@
 #include "CurveRightAngleSimplification.h"
 #include "EfficientRansacSimplification.h"
 #include "../util/EfficientRansacCurveDetector.h"
+#include "../regularizer/ShapeFitLayer.h"
+#include "../regularizer/ShapeFitLayersAll.h"
 
 namespace simp {
 
@@ -55,10 +57,23 @@ namespace simp {
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
 						generateVectorForAllLayers(building, 0, layers, layers_relationship);
-						std::cout << "layers_relationship.size() is " << layers_relationship.size() << std::endl;
-						// test layer_relationship
-						for (int l = 0; l < layers_relationship.size(); l++)
-							std::cout <<"(" <<layers_relationship[l].first << ", " << layers_relationship[l].second <<")"<< std::endl;
+						//{
+						//	// test layers
+						//	for (int l = 0; l < layers.size(); l++){
+						//		cv::Rect bbox = util::boundingBox(layers[l]->footprints[0].contour.points);
+						//		cv::Mat_<uchar> img;
+						//		util::createImageFromPolygon(bbox.width, bbox.height, layers[l]->footprints[0], cv::Point2f(-bbox.x, -bbox.y), img);
+						//		std::vector<util::Polygon> polygons = util::findContours(img, 40, false, true, false);
+						//		if (polygons.size() == 0) throw "No building is found.";
+						//		{
+						//			std::string img_name = "../data/" + std::to_string(l) + ".png";
+						//			cv::imwrite(img_name, img);
+						//		}
+						//	}
+						//	// test layer_relationship
+						//	for (int l = 0; l < layers_relationship.size(); l++)
+						//		std::cout << "(" << layers_relationship[l].first << ", " << layers_relationship[l].second << ")" << std::endl;
+						//}
 					}
 
 					buildings.push_back(building);
@@ -435,8 +450,25 @@ namespace simp {
 	* @param		input root building
 	* @param		config files
 	*/
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::shared_ptr<util::BuildingLayer> building, std::vector<regularizer::Config>& regularizer_configs){
-		return building;
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, std::vector<regularizer::Config>& regularizer_configs){
+		int num_runs = regularizer_configs.size();
+		for (int i = 0; i < num_runs; i++){
+			bool bUseIntra = regularizer_configs[i].bUseIntra;
+			bool bUseInter = regularizer_configs[i].bUseInter;
+			std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+			if (bUseIntra && !bUseInter){
+				for (int j = 0; j < layers.size(); j++){
+					ShapeFitLayer::fit(layers[j]->footprints, layers[j]->footprints, regularizer_configs[i]);
+
+				}
+			}
+			else if (bUseInter){
+				
+			}
+			else{
+				// do nothing
+			}
+		}
 	}
 
 	/**

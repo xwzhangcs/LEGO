@@ -175,6 +175,7 @@ namespace util {
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);
 	double calculateIOU(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2);
+	double calculateIOUbyImage(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2, int image_size);
 	double calculateIOU(const std::vector<Polygon>& polygons1, const std::vector<Polygon>& polygons2);
 	double calculateArea(const Polygon& polygon);
 	double calculateArea(const cv::Mat_<uchar>& img);
@@ -202,6 +203,7 @@ namespace util {
 	cv::Point3f crossProduct(const cv::Point3f& v1, const cv::Point3f& v2);
 	float closestPoint(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segmentOnly, cv::Point2f& pt);
 	float distance(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, bool segmentOnly);
+	float distance(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d);
 	bool segmentSegmentIntersection(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d, double *tab, double *tcd, bool segmentOnly, cv::Point2f& intPoint);
 	bool isTangent(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d);
 	// tessellation
@@ -214,4 +216,16 @@ namespace util {
 
 	float estimate(const std::vector<util::Polygon>& polygons);
 	float estimate(const std::vector<cv::Point2f>& polygon);
+
+	// score
+	float calculateScoreRaOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold);
+	float calculateScoreParallelOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold);
+	float lineLineAngle(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d);
+
+	// compute mirror point
+	cv::Point2f mirrorPoint(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c);
+
+	// score for point snap
+	float calculateScorePointOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<cv::Point2f>& init_src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, const std::vector<std::vector<cv::Point2f>>& des_ini_layer_polygons, float dis_threshold);
+	float calculateScoreSegOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<cv::Point2f>& init_src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, const std::vector<std::vector<cv::Point2f>>& des_ini_layer_polygons, float dis_threshold, float angle_threshold);
 }
