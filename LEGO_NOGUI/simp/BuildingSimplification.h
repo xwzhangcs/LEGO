@@ -23,7 +23,10 @@ namespace simp {
 		static std::shared_ptr<util::BuildingLayer> simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio, bool curve_preferred, std::vector<std::tuple<float, long long, int>>& records);
 		static std::vector<float> calculateCost(const util::Polygon& simplified_polygon, const util::Polygon& polygon, int height);
 		static int generateVectorForAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship);
-		static std::shared_ptr<util::BuildingLayer> regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, std::vector<regularizer::Config>& regularizer_configs);
+		static void generateBuildingFromAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship);
+		static void generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index);
+		static std::shared_ptr<util::BuildingLayer> regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs);
+		static void post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold);
 	};
 
 }

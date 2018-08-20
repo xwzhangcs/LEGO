@@ -12,6 +12,7 @@ namespace util {
 		int building_id;
 		std::vector<std::vector<util::Polygon>> raw_footprints;
 		std::vector<util::Polygon> footprints;
+		std::vector<util::Polygon> presentativeContours;
 		float bottom_height;
 		float top_height;
 		std::vector<std::shared_ptr<BuildingLayer>> children;

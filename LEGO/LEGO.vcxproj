@@ -145,6 +145,9 @@
     <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\LineDetector.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\efficient_ransac\PrimitiveShape.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\regularizer\Config.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\regularizer\ShapeFitLayer.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\regularizer\ShapeFitLayersAll.cpp" />
+    <ClCompile Include="..\LEGO_NOGUI\regularizer\SymmetryLineDetector.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\BuildingSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.cpp" />
     <ClCompile Include="..\LEGO_NOGUI\simp\CurveSimplification.cpp" />
@@ -286,6 +289,9 @@
     <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\LineDetector.h" />
     <ClInclude Include="..\LEGO_NOGUI\efficient_ransac\PrimitiveShape.h" />
     <ClInclude Include="..\LEGO_NOGUI\regularizer\Config.h" />
+    <ClInclude Include="..\LEGO_NOGUI\regularizer\ShapeFitLayer.h" />
+    <ClInclude Include="..\LEGO_NOGUI\regularizer\ShapeFitLayersAll.h" />
+    <ClInclude Include="..\LEGO_NOGUI\regularizer\SymmetryLineDetector.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\BuildingSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\CurveRightAngleSimplification.h" />
     <ClInclude Include="..\LEGO_NOGUI\simp\CurveSimplification.h" />

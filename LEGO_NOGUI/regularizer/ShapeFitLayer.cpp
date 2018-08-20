@@ -1,4 +1,6 @@
 #include "ShapeFitLayer.h"
+#include "SymmetryLineDetector.h"
+
 
 ShapeFitLayer::ShapeFitLayer() {
 }
@@ -17,6 +19,7 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 	float angle_threshold_parallel = config.angle_threshold_parallel;
 	float parallelWeight = config.parallelWeight;
 	bool bUseSymmetryLineOpt = config.bUseSymmetryLineOpt;
+	float symmetryIouThreshold = config.symmetryIouThreshold;
 	std::vector<std::vector<cv::Point2f>> symmetry_lines;
 	float symmetryWeight = config.symmetryWeight;
 	bool bUseAccuracyOpt = config.bUseAccuracyOpt;
@@ -50,6 +53,25 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 		}
 	}
 	if (bUseSymmetryLineOpt){
+		// find symmetry lines
+		symmetry_lines.resize(polygons.size());
+		for (int i = 0; i < polygons.size(); i++){
+			std::vector<cv::Point2f> computed_symmetry_line = SymmetryLineDetector::fitSymmetryLine(polygons[i].contour.points);
+			std::vector<cv::Point2f> symmetry_polygon;
+			for (int j = 0; j < polygons[i].contour.size(); j++) {
+				symmetry_polygon.push_back(util::mirrorPoint(computed_symmetry_line[0], computed_symmetry_line[1], polygons[i].contour[j]));
+			}
+
+			// calculate IOU between mirror polygon and original polygon
+			float similarity_iou = util::calculateIOU(polygons[i].contour.points, symmetry_polygon);
+			if (similarity_iou >= symmetryIouThreshold * 0.01){
+				symmetry_lines[i] = computed_symmetry_line;
+			}
+			else{
+				symmetry_lines[i].clear();
+			}
+		}
+		
 		for (int i = 0; i < symmetry_lines.size(); i++){
 			for (int j = 0; j < symmetry_lines[i].size(); j++){
 				min_x = std::min(min_x, symmetry_lines[i][j].x);
@@ -200,4 +222,5 @@ bool ShapeFitLayer::validRAorParallel(const std::vector<cv::Point2f>& polygon, b
 		}
 		return false;
 	}
+	return false;
 }

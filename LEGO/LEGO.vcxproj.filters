@@ -203,6 +203,15 @@
     <ClCompile Include="..\LEGO_NOGUI\regularizer\Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\regularizer\ShapeFitLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\regularizer\ShapeFitLayersAll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LEGO_NOGUI\regularizer\SymmetryLineDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="MainWindow.ui">
@@ -370,6 +379,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\LEGO_NOGUI\regularizer\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\regularizer\ShapeFitLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\regularizer\ShapeFitLayersAll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LEGO_NOGUI\regularizer\SymmetryLineDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -497,6 +497,7 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 				float angle_threshold_parallel = 0.0f;
 				float parallelWeight = 0.0f;
 				bool bUseSymmetryLineOpt = false;
+				float symmetryIouThreshold = 0.0f;
 				float symmetryWeight = 0.0f;
 				bool bUseAccuracyOpt = false;
 				float accuracyWeight = 0.0f;
@@ -524,8 +525,9 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 					angle_threshold_RA = algs_ra["AngleThreshold"].GetFloat();
 					raWeight = algs_ra["Weight"].GetFloat();
 					//symmetry
-					rapidjson::Value& algs_symmetry = algs["Symmetry"];
+					rapidjson::Value& algs_symmetry = algs["Symmetry"]; 
 					bUseSymmetryLineOpt = algs_symmetry["UseOpt"].GetBool();
+					symmetryIouThreshold = algs_symmetry["IouThreshold"].GetFloat();
 					symmetryWeight = algs_symmetry["Weight"].GetFloat();
 					// parallel
 					rapidjson::Value& algs_parallel = algs["Parallel"];
@@ -602,7 +604,7 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 						return;
 					}
 				}
-				regularizer::Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold, pointWeight, bUseSegSnapOpt, segDisThreshold, segAngleThreshold, segWeight);
+				regularizer::Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryIouThreshold, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold, pointWeight, bUseSegSnapOpt, segDisThreshold, segAngleThreshold, segWeight);
 				regularizer_configs[i] = config;
 				/*{
 					std::cout << "bUseRa " << config.bUseRaOpt << " ra angle is " << config.angle_threshold_RA << " ra weight is " << config.raWeight << std::endl;

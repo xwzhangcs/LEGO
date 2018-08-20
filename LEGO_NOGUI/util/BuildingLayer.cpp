@@ -81,6 +81,7 @@ namespace util {
 		}
 
 		this->footprints = contours;
+		this->presentativeContours = contours;
 
 		return contours;
 	}

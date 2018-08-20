@@ -50,6 +50,10 @@ namespace simp {
 					std::shared_ptr<util::BuildingLayer> building;
 					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 
+					{
+						// before regularizer
+						generateImagesForAllLayers(building, 0);
+					}
 					// regularizer
 					if (regularizer_configs.size() >= 0)
 					{
@@ -74,6 +78,12 @@ namespace simp {
 						//	for (int l = 0; l < layers_relationship.size(); l++)
 						//		std::cout << "(" << layers_relationship[l].first << ", " << layers_relationship[l].second << ")" << std::endl;
 						//}
+						building = regularizerBuilding(layers, layers_relationship, regularizer_configs);
+						
+					}
+					{
+						// after regularizer
+						generateImagesForAllLayers(building, 100);
 					}
 
 					buildings.push_back(building);
@@ -450,24 +460,63 @@ namespace simp {
 	* @param		input root building
 	* @param		config files
 	*/
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, std::vector<regularizer::Config>& regularizer_configs){
-		int num_runs = regularizer_configs.size();
-		for (int i = 0; i < num_runs; i++){
-			bool bUseIntra = regularizer_configs[i].bUseIntra;
-			bool bUseInter = regularizer_configs[i].bUseInter;
-			std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
-			if (bUseIntra && !bUseInter){
-				for (int j = 0; j < layers.size(); j++){
-					ShapeFitLayer::fit(layers[j]->footprints, layers[j]->footprints, regularizer_configs[i]);
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs){
+		//int num_runs = regularizer_configs.size();
+		//for (int i = 0; i < num_runs; i++){
+		//	bool bUseIntra = regularizer_configs[i].bUseIntra;
+		//	bool bUseInter = regularizer_configs[i].bUseInter;
+		//	std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+		//	if (bUseIntra && !bUseInter){
+		//		for (int j = 0; j < layers.size(); j++){
+		//			layers[j]->footprints = ShapeFitLayer::fit(layers[j]->footprints, layers[j]->footprints, regularizer_configs[i]);
+		//			post_processing(layers[j], 10);
 
+		//		}
+		//	}
+		//	else if (bUseInter){
+		//		ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
+		//		for (int j = 0; j < layers.size(); j++){
+		//			post_processing(layers[j], 10);
+		//		}
+		//	}
+		//	else{
+		//		// do nothing
+		//	}
+		//}
+		// create output building 
+		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
+		return layers[0];
+	}
+
+	void BuildingSimplification::post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold){
+		std::vector<std::vector<cv::Point2f>> new_contours;
+		new_contours.resize(layer->footprints.size());
+		for (int i = 0; i < layer->footprints.size(); i++){
+			if (layer->footprints[i].contour.size() < 4){
+				new_contours[i] = layer->footprints[i].contour.points;
+				continue;
+			}
+			int total_segments = layer->footprints[i].contour.size();
+			// note: start from -1
+			for (int j = 0; j < layer->footprints[i].contour.size(); j++){
+				int first_start = (j - 1 + total_segments) % total_segments;
+				int first_end = (j) % total_segments;
+				int second_start = (j) % total_segments;
+				int second_end = (j + 1) % total_segments;
+				cv::Point2f a = layer->footprints[i].contour[first_start];
+				cv::Point2f b = layer->footprints[i].contour[first_end];
+				cv::Point2f c = layer->footprints[i].contour[second_start];
+				cv::Point2f d = layer->footprints[i].contour[second_end];
+				float angle = util::lineLineAngle(a, b, c, d);
+				if (abs(angle) <= angle_threshold || abs(angle - 180) <= angle_threshold){
+					continue;
+				}
+				else{
+					new_contours[i].push_back(b);
 				}
 			}
-			else if (bUseInter){
-				
-			}
-			else{
-				// do nothing
-			}
+			layer->footprints[i].contour.points.clear();
+			layer->footprints[i].contour.points = new_contours[i];
 		}
 	}
 
@@ -487,5 +536,39 @@ namespace simp {
 			layer_id = generateVectorForAllLayers(child_layer, layer_id, layers, layers_relationship);
 		}
 		return layer_id;
+	}
+
+	/**
+	* Generate images for all layers/
+	*
+	* @param		root
+	* @param		image index
+	*/
+	void BuildingSimplification::generateBuildingFromAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship){
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].first == layer_id){
+				int child_layer_id = layers_relationship[i].second;
+				generateBuildingFromAllLayers(layers[child_layer_id], child_layer_id, layers, layers_relationship);
+				root->children.push_back(layers[child_layer_id]);
+			}
+		}
+	}
+
+
+	/**
+	* Generate images for all layers/
+	*
+	* @param		root
+	* @param		image index
+	*/
+	void BuildingSimplification::generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index){
+		cv::Rect bbox = util::boundingBox(building->footprints[0].contour.points);
+		cv::Mat_<uchar> img;
+		util::createImageFromPolygon(bbox.width, bbox.height, building->footprints[0], cv::Point2f(-bbox.x, -bbox.y), img);
+		std::string img_name = "../data/regularizer_" + std::to_string(index) + ".png";
+		cv::imwrite(img_name, img);
+		index++;
+		for (auto child_layer : building->children)
+			generateImagesForAllLayers(child_layer, index);
 	}
 }

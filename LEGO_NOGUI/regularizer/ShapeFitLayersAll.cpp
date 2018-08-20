@@ -4,6 +4,7 @@
 #include "../rapidjson/document.h"
 #include "../rapidjson/writer.h"
 #include "../rapidjson/stringbuffer.h"
+#include "SymmetryLineDetector.h"
 
 ShapeFitLayersAll::ShapeFitLayersAll() {
 }
@@ -11,78 +12,31 @@ ShapeFitLayersAll::ShapeFitLayersAll() {
 ShapeFitLayersAll::~ShapeFitLayersAll() {
 }
 
-void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
+void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, regularizer::Config config)
 {
-	bool bUseIntra = false;
-	float intraWeight = 0.0f;
-	bool bUseInter = false;
-	float interWeight = 0.0f;
-	bool bUseRaOpt = false;
-	float angle_threshold_RA = 0.0f;
-	float raWeight = 0.0f;
-	bool bUseParallelOpt = false;
-	float angle_threshold_parallel = 0.0f;
-	float parallelWeight = 0.0f;
-	bool bUseSymmetryLineOpt = false;
-	float symmetryWeight = 0.0f;
-	bool bUseAccuracyOpt = false;
-	float accuracyWeight = 0.0f;
-	bool bUsePointSnapOpt = false;
-	float pointDisThreshold = 0.0f;
-	float pointWeight = 0.0f;
-	bool bUseSegSnapOpt = false;
-	float segDisThreshold = 0.0f;
-	float segAngleThreshold = 0.0f;
-	float segWeight = 0.0f;
-
-	QFile file(config_file);
-	if (!file.open(QIODevice::ReadOnly)) {
-		std::cerr << "File was not readable: " << std::endl;
-		return;
-	}
-	QTextStream in(&file);
-	rapidjson::Document doc;
-	doc.Parse(in.readAll().toUtf8().constData());
-	bUseIntra = doc["UseIntra"].GetBool();
-	bUseInter = doc["UseInter"].GetBool();
-	intraWeight = doc["Intra_Weight"].GetFloat();
-	interWeight = doc["Inter_Weight"].GetFloat();
-	if (bUseIntra){
-		rapidjson::Value& algs = doc["IntraOpt"];
-		//ra
-		rapidjson::Value& algs_ra = algs["RA"];
-		bUseRaOpt = algs_ra["UseOpt"].GetBool();
-		angle_threshold_RA = algs_ra["AngleThreshold"].GetFloat();
-		raWeight = algs_ra["Weight"].GetFloat();
-		//symmetry
-		rapidjson::Value& algs_symmetry = algs["Symmetry"];
-		bUseSymmetryLineOpt = algs_symmetry["UseOpt"].GetBool();
-		symmetryWeight = algs_symmetry["Weight"].GetFloat();
-		// parallel
-		rapidjson::Value& algs_parallel = algs["Parallel"];
-		bUseParallelOpt = algs_parallel["UseOpt"].GetBool();
-		angle_threshold_parallel = algs_parallel["AngleThreshold"].GetFloat();
-		parallelWeight = algs_parallel["Weight"].GetFloat();
-		// accuracy
-		rapidjson::Value& algs_accuracy = algs["Accuracy"];
-		bUseAccuracyOpt = algs_accuracy["UseOpt"].GetBool();
-		accuracyWeight = algs_accuracy["Weight"].GetFloat();
-	}
-	if (bUseInter){
-		rapidjson::Value& algs = doc["InterOpt"];
-		// point snap
-		rapidjson::Value& algs_point = algs["PointSnap"];
-		bUsePointSnapOpt = algs_point["UseOpt"].GetBool();
-		pointDisThreshold = algs_point["DisThreshold"].GetFloat();
-		pointWeight = algs_point["Weight"].GetFloat();
-		// seg snap
-		rapidjson::Value& algs_seg = algs["SegSnap"];
-		bUseSegSnapOpt = algs_seg["UseOpt"].GetBool();
-		segDisThreshold = algs_seg["DisThreshold"].GetFloat();
-		segAngleThreshold = algs_seg["AngleThreshold"].GetFloat();
-		segWeight = algs_seg["Weight"].GetFloat();
-	}
-	file.close();
+	bool bUseIntra = config.bUseIntra;
+	float intraWeight = config.intraWeight;
+	bool bUseInter = config.bUseInter;
+	float interWeight = config.interWeight;
+	bool bUseRaOpt = config.bUseRaOpt;
+	float angle_threshold_RA = config.angle_threshold_RA;
+	float raWeight = config.raWeight;
+	bool bUseParallelOpt = config.bUseParallelOpt;
+	float angle_threshold_parallel = config.angle_threshold_parallel;
+	float parallelWeight = config.parallelWeight;
+	bool bUseSymmetryLineOpt = config.bUseSymmetryLineOpt;
+	float symmetryIouThreshold = config.symmetryIouThreshold;
+	std::vector<layer_polygons> layers_symmetry_lines;
+	float symmetryWeight = config.symmetryWeight;
+	bool bUseAccuracyOpt = config.bUseAccuracyOpt;
+	float accuracyWeight = config.accuracyWeight;
+	bool bUsePointSnapOpt = config.bUsePointSnapOpt;
+	float pointDisThreshold = config.pointDisThreshold;
+	float pointWeight = config.pointWeight;
+	bool bUseSegSnapOpt = config.bUseSegSnapOpt;
+	float segDisThreshold = config.segDisThreshold;
+	float segAngleThreshold = config.segAngleThreshold;
+	float segWeight = config.segWeight;
 	if (!bUseInter && !bUseIntra){
 		return;
 	}
@@ -143,48 +97,68 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 	float max_x = -std::numeric_limits<float>::max();
 	float max_y = -std::numeric_limits<float>::max();
 	for (int k = 0; k < layers.size(); k++){
-		for (int i = 0; i < layers[k].sparse_contours.size(); i++) {
-			for (int j = 0; j < layers[k].sparse_contours[i].size(); j++){
-				min_x = std::min(min_x, layers[k].sparse_contours[i][j].x);
-				min_y = std::min(min_y, layers[k].sparse_contours[i][j].y);
-				max_x = std::max(max_x, layers[k].sparse_contours[i][j].x);
-				max_y = std::max(max_y, layers[k].sparse_contours[i][j].y);
+		for (int i = 0; i < layers[k]->presentativeContours.size(); i++) {
+			for (int j = 0; j < layers[k]->presentativeContours[i].contour.size(); j++){
+				min_x = std::min(min_x, layers[k]->presentativeContours[i].contour[j].x);
+				min_y = std::min(min_y, layers[k]->presentativeContours[i].contour[j].y);
+				max_x = std::max(max_x, layers[k]->presentativeContours[i].contour[j].x);
+				max_y = std::max(max_y, layers[k]->presentativeContours[i].contour[j].y);
 			}
 		}
 	}
 	for (int k = 0; k < layers.size(); k++){
-		for (int i = 0; i < layers[k].contours.size(); i++) {
-			for (int j = 0; j < layers[k].contours[i].size(); j++){
-				min_x = std::min(min_x, layers[k].contours[i][j].x);
-				min_y = std::min(min_y, layers[k].contours[i][j].y);
-				max_x = std::max(max_x, layers[k].contours[i][j].x);
-				max_y = std::max(max_y, layers[k].contours[i][j].y);
+		for (int i = 0; i < layers[k]->footprints.size(); i++) {
+			for (int j = 0; j < layers[k]->footprints[i].contour.size(); j++){
+				min_x = std::min(min_x, layers[k]->footprints[i].contour[j].x);
+				min_y = std::min(min_y, layers[k]->footprints[i].contour[j].y);
+				max_x = std::max(max_x, layers[k]->footprints[i].contour[j].x);
+				max_y = std::max(max_y, layers[k]->footprints[i].contour[j].y);
 			}
 		}
 	}
 	if (bUseSymmetryLineOpt){
+		layers_symmetry_lines.resize(layers.size());
 		for (int k = 0; k < layers.size(); k++){
-			for (int i = 0; i < layers[k].symmetry_lines.size(); i++){
-				for (int j = 0; j < layers[k].symmetry_lines[i].size(); j++){
-					min_x = std::min(min_x, layers[k].symmetry_lines[i][j].x);
-					min_y = std::min(min_y, layers[k].symmetry_lines[i][j].y);
-					max_x = std::max(max_x, layers[k].symmetry_lines[i][j].x);
-					max_y = std::max(max_y, layers[k].symmetry_lines[i][j].y);
+			layers_symmetry_lines[k].resize(layers[k]->presentativeContours.size());
+			for (int i = 0; i < layers[k]->presentativeContours.size(); i++){
+				std::vector<cv::Point2f> computed_symmetry_line = SymmetryLineDetector::fitSymmetryLine(layers[k]->presentativeContours[i].contour.points);
+				std::vector<cv::Point2f> symmetry_polygon;
+				for (int j = 0; j < layers[k]->presentativeContours[i].contour.size(); j++) {
+					symmetry_polygon.push_back(util::mirrorPoint(computed_symmetry_line[0], computed_symmetry_line[1], layers[k]->presentativeContours[i].contour[j]));
+				}
+
+				// calculate IOU between mirror polygon and original polygon
+				float similarity_iou = util::calculateIOU(layers[k]->presentativeContours[i].contour.points, symmetry_polygon);
+				if (similarity_iou >= symmetryIouThreshold * 0.01){
+					layers_symmetry_lines[k][i] = computed_symmetry_line;
+				}
+				else{
+					layers_symmetry_lines[k][i].clear();
+				}
+			}
+		}
+
+		for (int k = 0; k < layers.size(); k++){
+			for (int i = 0; i < layers_symmetry_lines[k].size(); i++){
+				for (int j = 0; j < layers_symmetry_lines[k][i].size(); j++){
+					min_x = std::min(min_x, layers_symmetry_lines[k][i][j].x);
+					min_y = std::min(min_y, layers_symmetry_lines[k][i][j].y);
+					max_x = std::max(max_x, layers_symmetry_lines[k][i][j].x);
+					max_y = std::max(max_y, layers_symmetry_lines[k][i][j].y);
 				}
 			}
 		}
 	}
 	float max_unit = std::max(max_x - min_x + 1.0f, max_y - min_y + 1.0f);
-	Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold / max_unit, pointWeight, bUseSegSnapOpt, segDisThreshold / max_unit, segAngleThreshold, segWeight);
-	//Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold, pointWeight, bUseSegSnapOpt, segDisThreshold, segAngleThreshold, segWeight);
+	regularizer::Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryIouThreshold, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold / max_unit, pointWeight, bUseSegSnapOpt, segDisThreshold / max_unit, segAngleThreshold, segWeight);
 
 	std::vector<layer_polygons> normalized_polygons(layers.size());
 	for (int k = 0; k < layers.size(); k++){
-		normalized_polygons[k].resize(layers[k].sparse_contours.size());
-		for (int i = 0; i < layers[k].sparse_contours.size(); i++) {
-			normalized_polygons[k][i].resize(layers[k].sparse_contours[i].size());
-			for (int j = 0; j < layers[k].sparse_contours[i].size(); j++){
-				normalized_polygons[k][i][j] = cv::Point2f((layers[k].sparse_contours[i][j].x - min_x) / max_unit, (layers[k].sparse_contours[i][j].y - min_y) / max_unit);
+		normalized_polygons[k].resize(layers[k]->presentativeContours.size());
+		for (int i = 0; i < layers[k]->presentativeContours.size(); i++) {
+			normalized_polygons[k][i].resize(layers[k]->presentativeContours[i].contour.size());
+			for (int j = 0; j < layers[k]->presentativeContours[i].contour.size(); j++){
+				normalized_polygons[k][i][j] = cv::Point2f((layers[k]->presentativeContours[i].contour[j].x - min_x) / max_unit, (layers[k]->presentativeContours[i].contour[j].y - min_y) / max_unit);
 			}
 		}
 	}
@@ -194,11 +168,11 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 	if (bUseSymmetryLineOpt){
 		normalized_symmetry_lines.resize(layers.size());
 		for (int k = 0; k < layers.size(); k++){
-			normalized_symmetry_lines[k].resize(layers[k].symmetry_lines.size());
-			for (int i = 0; i < layers[k].symmetry_lines.size(); i++) {
-				normalized_symmetry_lines[k][i].resize(layers[k].symmetry_lines[i].size());
-				for (int j = 0; j < layers[k].symmetry_lines[i].size(); j++){
-					normalized_symmetry_lines[k][i][j] = cv::Point2f((layers[k].symmetry_lines[i][j].x - min_x) / max_unit, (layers[k].symmetry_lines[i][j].y - min_y) / max_unit);
+			normalized_symmetry_lines[k].resize(layers_symmetry_lines[k].size());
+			for (int i = 0; i < layers_symmetry_lines[k].size(); i++) {
+				normalized_symmetry_lines[k][i].resize(layers_symmetry_lines[k][i].size());
+				for (int j = 0; j < layers_symmetry_lines[k][i].size(); j++){
+					normalized_symmetry_lines[k][i][j] = cv::Point2f((layers_symmetry_lines[k][i][j].x - min_x) / max_unit, (layers_symmetry_lines[k][i][j].y - min_y) / max_unit);
 				}
 			}
 		}
@@ -206,26 +180,34 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 	int total_points = 0;
 	std::vector<layer_polygons> normalized_polygons_init(layers.size());
 	for (int k = 0; k < layers.size(); k++){
-		normalized_polygons_init[k].resize(layers[k].contours.size());
-		for (int i = 0; i < layers[k].contours.size(); i++) {
-			normalized_polygons_init[k][i].resize(layers[k].contours[i].size());
-			total_points += layers[k].contours[i].size();
-			for (int j = 0; j < layers[k].contours[i].size(); j++){
-				normalized_polygons_init[k][i][j] = cv::Point2f((layers[k].contours[i][j].x - min_x) / max_unit, (layers[k].contours[i][j].y - min_y) / max_unit);
+		normalized_polygons_init[k].resize(layers[k]->footprints.size());
+		for (int i = 0; i < layers[k]->footprints.size(); i++) {
+			normalized_polygons_init[k][i].resize(layers[k]->footprints[i].contour.size());
+			total_points += layers[k]->footprints[i].contour.size();
+			for (int j = 0; j < layers[k]->footprints[i].contour.size(); j++){
+				normalized_polygons_init[k][i][j] = cv::Point2f((layers[k]->footprints[i].contour[j].x - min_x) / max_unit, (layers[k]->footprints[i].contour[j].y - min_y) / max_unit);
 			}
 		}
 	}
 	std::vector<std::pair<float, float>> layers_height;
 	layers_height.resize(layers.size());
 	for (int k = 0; k < layers.size(); k++){
-		layers_height[k] = std::make_pair(layers[k].top_height, layers[k].bottom_height);
+		layers_height[k] = std::make_pair(layers[k]->top_height, layers[k]->bottom_height);
 	}
 	// tree info
 	std::vector<std::pair<std::vector<int>, std::vector<int>>> tree_info;
 	tree_info.resize(layers.size());
 	for (int k = 0; k < layers.size(); k++){
-		tree_info[k] = std::make_pair(layers[k].parents, layers[k].children);
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].first == k){
+				tree_info[k].second.push_back(layers_relationship[i].second);
+			}
+			if (layers_relationship[i].second == k){
+				tree_info[k].first.push_back(layers_relationship[i].first);
+			}
+		}
 	}
+
 	// initial
 	std::vector<std::vector<bool>> validity_layers;
 	validity_layers.resize(layers.size());
@@ -244,22 +226,20 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 		bool bValid = false;
 		for (int k = 0; k < layers.size(); k++){
 			bValid_per_layer = false;
-			for (int i = 0; i < layers[k].contours.size(); i++){
-				if (layers[k].contours[i].size() != 0){
-					if (validRA(layers[k].contours[i], bUseRaOpt, angle_threshold_RA)){
+			for (int i = 0; i < layers[k]->footprints.size(); i++){
+				if (layers[k]->footprints[i].contour.size() != 0){
+					if (validRA(layers[k]->footprints[i].contour.points, bUseRaOpt, angle_threshold_RA)){
 						bValid_per_layer = true;
 						break;
 					}
 				}
 			}
 			if (bValid_per_layer){
-				layers[k].bUseRaOptValid = true;
 				validity_layers[k][0] = true;
 				bValid = true;
 			}
 			else{
 				validity_layers[k][0] = false;
-				layers[k].bUseRaOptValid = false;
 			}
 		}
 		if (!bValid){
@@ -273,9 +253,9 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 		bool bValid = false;
 		for (int k = 0; k < layers.size(); k++){
 			bValid_per_layer = false;
-			for (int i = 0; i < layers[k].contours.size(); i++){
-				if (layers[k].contours[i].size() != 0){
-					if (validParallel(layers[k].contours[i], bUseParallelOpt, angle_threshold_parallel)){
+			for (int i = 0; i < layers[k]->footprints.size(); i++){
+				if (layers[k]->footprints[i].contour.size() != 0){
+					if (validParallel(layers[k]->footprints[i].contour.points, bUseParallelOpt, angle_threshold_parallel)){
 						bValid_per_layer = true;
 						break;
 					}
@@ -283,12 +263,10 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 			}
 			if (bValid_per_layer){
 				validity_layers[k][1] = true;
-				layers[k].bUseParallelOptValid = true;
 				bValid = true;
 			}
 			else{
 				validity_layers[k][1] = false;
-				layers[k].bUseParallelOptValid = false;
 			}
 		}
 		if (!bValid){
@@ -300,22 +278,20 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 	if (bUseSymmetryLineOpt){
 		bool bValid_per_layer = false;
 		bool bValid = false;
-		for (int k = 0; k < layers.size(); k++){
+		for (int k = 0; k < layers_symmetry_lines.size(); k++){
 			bValid_per_layer = false;
-			for (int i = 0; i < layers[k].symmetry_lines.size(); i++) {
-				if (layers[k].symmetry_lines[i].size() > 0){
+			for (int i = 0; i < layers_symmetry_lines[k].size(); i++) {
+				if (layers_symmetry_lines[k][i].size() > 0){
 					bValid_per_layer = true;
 					break;
 				}
 			}
 			if (bValid_per_layer){
 				validity_layers[k][2] = true;
-				layers[k].bUseSymmetryOptValid = true;
 				bValid = true;
 			}
 			else{
 				validity_layers[k][2] = false;
-				layers[k].bUseSymmetryOptValid = false;
 			}
 		}
 		if (!bValid){
@@ -327,7 +303,6 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 	if (bUseAccuracyOpt){
 		for (int k = 0; k < layers.size(); k++){
 			validity_layers[k][3] = true;
-			layers[k].bUseAccuracyOptValid = true;
 		}
 	}
 
@@ -337,15 +312,14 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 		bool bValid = false;
 		for (int k = 0; k < layers.size(); k++){
 			bValid_per_layer = false;
-			for (int i = 0; i < layers[k].contours.size(); i++){
-				if (layers[k].parents.size() == 0)
+			for (int i = 0; i < layers[k]->footprints.size(); i++){
+				if (tree_info[k].first.size() == 0)
 				{
 					bValid_per_layer = false;
 					break;
 				}
-				for (int j = 0; j < layers[k].parents.size(); j++){
-					if (validPointOpt(layers[k].contours[i], layers[layers[k].parents[j]].contours, pointDisThreshold)){
-						std::cout << "layer is " << k << std::endl;
+				for (int j = 0; j < tree_info[k].first.size(); j++){
+					if (validPointOpt(layers[k]->footprints[i], layers[tree_info[k].first[j]]->footprints, pointDisThreshold)){
 						bValid_per_layer = true;
 						break;
 					}
@@ -355,12 +329,10 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 			}
 			if (bValid_per_layer){
 				validity_layers[k][4] = true;
-				layers[k].bUsePointOptValid = true;
 				bValid = true;
 			}
 			else{
 				validity_layers[k][4] = false;
-				layers[k].bUsePointOptValid = false;
 			}
 		}
 		if (!bValid){
@@ -375,19 +347,14 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 		bool bValid = false;
 		for (int k = 0; k < layers.size(); k++){
 			bValid_per_layer = false;
-			for (int i = 0; i < layers[k].contours.size(); i++){
-				if (layers[k].parents.size() == 0)
+			for (int i = 0; i < layers[k]->footprints.size(); i++){
+				if (tree_info[k].first.size() == 0)
 				{
 					bValid_per_layer = false;
 					break;
 				}
-				for (int j = 0; j < layers[k].parents.size(); j++){
-					cv::Rect bbox = cv::boundingRect(layers[k].contours[i]);
-					std::cout << "segDisThreshold is " << segDisThreshold << std::endl;
-					float dis_threshold = segDisThreshold * 0.01 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-					std::cout << "bbox is " << bbox << std::endl;
-					std::cout << "dis_threshold is " << dis_threshold << std::endl;
-					if (validSegOpt(layers[k].contours[i], layers[layers[k].parents[j]].contours, dis_threshold, segAngleThreshold)){
+				for (int j = 0; j < tree_info[k].first.size(); j++){
+					if (validSegOpt(layers[k]->footprints[i], layers[tree_info[k].first[j]]->footprints, segDisThreshold, segAngleThreshold)){
 						bValid_per_layer = true;
 						break;
 					}
@@ -397,12 +364,10 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 			}
 			if (bValid_per_layer){
 				validity_layers[k][5] = true;
-				layers[k].bUseSegOptValid = true;
 				bValid = true;
 			}
 			else{
 				validity_layers[k][5] = false;
-				layers[k].bUseSegOptValid = false;
 			}
 		}
 		if (!bValid){
@@ -416,17 +381,6 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 		std::cout << "no need to do optimization!!!" << std::endl;
 		return;
 	}
-	// test validity vector
-	/*{
-		std::cout << "-------------------------" << std::endl;
-		for (int k = 0; k < layers.size(); k++){
-			for (int i = 0; i < validity_layers[k].size(); i++){
-				std::cout << validity_layers[k][i];
-			}
-			std::cout << std::endl;
-		}
-		std::cout << "-------------------------" << std::endl;
-	}*/
 	try {
 		std::cout << "total points is " << total_points << std::endl;
 		column_vector starting_point(total_points * 2);
@@ -449,19 +403,20 @@ void ShapeFitLayersAll::fit(std::vector<Layer>& layers, QString config_file)
 		std::vector<layer_polygons> new_layers_contours;
 		new_layers_contours.resize(layers.size());
 		for (int k = 0; k < layers.size(); k++){
-			new_layers_contours[k].resize(layers[k].contours.size());
-			for (int i = 0; i < layers[k].contours.size(); i++) {
-				new_layers_contours[k][i].resize(layers[k].contours[i].size());
-				for (int j = 0; j < layers[k].contours[i].size(); j++){
+			new_layers_contours[k].resize(layers[k]->footprints.size());
+			for (int i = 0; i < layers[k]->footprints.size(); i++) {
+				new_layers_contours[k][i].resize(layers[k]->footprints[i].contour.size());
+				for (int j = 0; j < layers[k]->footprints[i].contour.size(); j++){
 					new_layers_contours[k][i][j].x = starting_point((j + start_index) * 2) * max_unit + min_x;
 					new_layers_contours[k][i][j].y = starting_point((j + start_index) * 2 + 1) * max_unit + min_y;
 				}
-				start_index += layers[k].contours[i].size();
+				start_index += layers[k]->footprints[i].contour.size();
 			}
 		}
 		// reset contours
 		for (int k = 0; k < layers.size(); k++){
-			layers[k].contours = new_layers_contours[k];
+			for (int i = 0; i < layers[k]->footprints.size(); i++)
+				layers[k]->footprints[i].contour = new_layers_contours[k][i];
 		}
 	}
 	catch (char* ex) {
@@ -530,10 +485,6 @@ bool ShapeFitLayersAll::validParallel(const std::vector<cv::Point2f>& polygon, b
 }
 
 bool ShapeFitLayersAll::validPointOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, float threshold){
-	//cv::Rect bbox = cv::boundingRect(src_polygon);
-	//float dis_threshold = threshold * 0.01 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-	//std::cout << "bbox is " << bbox << std::endl;
-	//std::cout << "dis_threshold is " << dis_threshold << std::endl;
 	for (int k = 0; k < src_polygon.size(); k++){// current source polygon
 		for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
 			cv::Rect bbox = cv::boundingRect(des_layer_polygons[i]);
@@ -570,6 +521,45 @@ bool ShapeFitLayersAll::validSegOpt(const std::vector<cv::Point2f>& src_polygon,
 				cv::Point2f src_end = src_polygon[(k + 1) % total_seg_src];
 				cv::Point2f des_start = des_layer_polygons[i][j];
 				cv::Point2f des_end = des_layer_polygons[i][(j + 1) % total_seg_des];
+				float angle = util::lineLineAngle(src_start, src_end, des_start, des_end);
+				float dis = util::distance(src_start, src_end, des_start, des_end);
+				angle = std::min(abs(angle), abs(180 - angle));
+				if (angle <= angle_threshold && dis <= dis_threshold)
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool ShapeFitLayersAll::validPointOpt(const util::Polygon& src_polygon, const std::vector<util::Polygon>& des_layer_polygons, float dis_threshold){
+	for (int k = 0; k < src_polygon.contour.size(); k++){// current source polygon
+		for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
+			for (int j = 0; j < des_layer_polygons[i].contour.size(); j++){// one polygon in the destination layer
+				cv::Point2f src_p = src_polygon.contour[k];
+				cv::Point2f des_p = des_layer_polygons[i].contour[j];
+				float dis = cv::norm(src_p - des_p);
+				if (dis <= dis_threshold)
+					return true;
+				//std::cout << "dis_init from " << k << " to " << j << " is " << dis << std::endl;
+			}
+		}
+	}
+	return false;
+}
+
+bool ShapeFitLayersAll::validSegOpt(const util::Polygon& src_polygon, const std::vector<util::Polygon>& des_layer_polygons, float dis_threshold, float angle_threshold){
+	int total_seg_src = src_polygon.contour.size();
+	for (int k = 0; k < total_seg_src; k++){// current source polygon
+		for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
+			int total_seg_des = des_layer_polygons[i].contour.size();
+
+			for (int j = 0; j < total_seg_des; j++){// one polygon in the destination layer
+				// angle score
+				cv::Point2f src_start = src_polygon.contour[k];
+				cv::Point2f src_end = src_polygon.contour[(k + 1) % total_seg_src];
+				cv::Point2f des_start = des_layer_polygons[i].contour[j];
+				cv::Point2f des_end = des_layer_polygons[i].contour[(j + 1) % total_seg_des];
 				float angle = util::lineLineAngle(src_start, src_end, des_start, des_end);
 				float dis = util::distance(src_start, src_end, des_start, des_end);
 				angle = std::min(abs(angle), abs(180 - angle));
