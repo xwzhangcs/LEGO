@@ -90,7 +90,7 @@ class ShapeFitLayer {
 									iou = util::calculateIOUbyImage(polygons[i], polygon_symmetry, 1000);
 								}
 								else{
-									iou = util::calculateIOU(polygons[i], polygon_symmetry);
+									iou = util::calculateIOUbyCGAL(polygons[i], polygon_symmetry);
 									//std::cout << "cgal method" << std::endl;
 								}
 								//std::cout << "During OPT, IOU is " << iou << std::endl;
@@ -102,14 +102,16 @@ class ShapeFitLayer {
 						}
 						if (bUseAccuracy)
 						{
+							//std::cout << "use Accuracy opt" << std::endl;
 							if (!util::isSimple(polygons[i]) || !util::isSimple(target_polygons[i])){
 								//std::cout << "image method" << std::endl;
 								score += util::calculateIOUbyImage(polygons[i], target_polygons[i], 1000) * accuracyWeight;
 							}
 							else{
 								//std::cout << "cgal method" << std::endl;
-								score += util::calculateIOU(polygons[i], target_polygons[i]) * accuracyWeight;
+								score += util::calculateIOUbyCGAL(polygons[i], target_polygons[i]) * accuracyWeight;
 							}
+							//std::cout << "During OPT, IOU is " << score << std::endl;
 						}
 						if (bUseSymmetryLineOpt && !bUseRaOpt && !bUseParallelOpt && !bUseAccuracy){
 							if (symmetry_lines[i].size() != 0)

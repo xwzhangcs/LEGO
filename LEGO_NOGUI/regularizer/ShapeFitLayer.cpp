@@ -27,15 +27,14 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 	/*{
 		std::cout << "bUseRa " << bUseRaOpt << " ra angle is " << angle_threshold_RA << " ra weight is " << raWeight << std::endl;
 		std::cout << "bUseParallel " << bUseParallelOpt << " Parallel angle is " << angle_threshold_parallel << " Parallel weight is " << parallelWeight << std::endl;
-		std::cout << "bUseSymmetry " << bUseSymmetryLineOpt << " Symmetry weight is " << symmetryWeight << std::endl;
+		std::cout << "bUseSymmetry " << bUseSymmetryLineOpt << " Symmetry threshold is " << symmetryIouThreshold << " Symmetry weight is " << symmetryWeight << std::endl;
 		std::cout << "bUseAccuracy " << bUseAccuracyOpt << " Accuracy weight is " << accuracyWeight << std::endl;
 	}*/
 	float min_x = std::numeric_limits<float>::max();
 	float min_y = std::numeric_limits<float>::max();
 	float max_x = -std::numeric_limits<float>::max();
 	float max_y = -std::numeric_limits<float>::max();
-	std::cout << "polygons size is " << polygons.size() << std::endl;
-	std::cout << "ini_points size is " << ini_points.size() << std::endl;
+
 	for (int i = 0; i < polygons.size(); i++) {
 		for (int j = 0; j < polygons[i].contour.size(); j++){
 			min_x = std::min(min_x, polygons[i].contour[j].x);
@@ -65,9 +64,11 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 			// calculate IOU between mirror polygon and original polygon
 			float similarity_iou = util::calculateIOU(polygons[i].contour.points, symmetry_polygon);
 			if (similarity_iou >= symmetryIouThreshold * 0.01){
+				std::cout << "Find symmetry line" << std::endl;
 				symmetry_lines[i] = computed_symmetry_line;
 			}
 			else{
+				std::cout << "Can't find symmetry line" << std::endl;
 				symmetry_lines[i].clear();
 			}
 		}
@@ -126,17 +127,17 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 			}
 		}
 		if (!bValid && !bUseSymmetryLineOpt && !bUseAccuracyOpt){
-			std::cout << "no need to do optimizaiton for RA and parallel" << std::endl;
+			std::cout << "No need to do optimizaiton for RA and parallel" << std::endl;
 			return ini_points;
 		}
 	}
 	if (bUseSymmetryLineOpt && !bUseParallelOpt && !bUseAccuracyOpt && !bUseRaOpt && valid_symmetry_lines == 0){
-		std::cout << "no need to do optimizaiton for symmetry" << std::endl;
+		std::cout << "No need to do optimizaiton for symmetry" << std::endl;
 		return ini_points;
 	}
 
 	try {
-		std::cout << "total points is " << total_points << std::endl;
+		//std::cout << "total points is " << total_points << std::endl;
 		column_vector starting_point(total_points * 2);
 		int start_index = 0;
 		for (int i = 0; i < normalized_polygons_init.size(); i++){
@@ -148,7 +149,7 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 		}
 
 		BFGSSolver solver(normalized_polygons, normalized_polygons_init, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, normalized_symmetry_lines, symmetryWeight, bUseAccuracyOpt, accuracyWeight);
-		find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.0001);
+		find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.00001);
 		std::vector<std::vector<cv::Point2f>> ans(ini_points.size());
 		std::vector<util::Polygon> ans_polygons(ini_points.size());
 		start_index = 0;
@@ -194,7 +195,13 @@ bool ShapeFitLayer::validRAorParallel(const std::vector<cv::Point2f>& polygon, b
 			float angle_init = util::lineLineAngle(a_init, b_init, c_init, d_init);
 			//std::cout << i << " angle is " << angle_init << std::endl;
 			// check
-			if (abs(angle_init - 45) <= ra_angle_threshold || abs(angle_init - 90) <= ra_angle_threshold || abs(angle_init - 135) <= ra_angle_threshold){
+			if (abs(angle_init - 45) >= 0.001 && abs(angle_init - 45) <= ra_angle_threshold){
+				return true;
+			}
+			if (abs(angle_init - 90) >= 0.001 && abs(angle_init - 90) <= ra_angle_threshold){
+				return true;
+			}
+			if (abs(angle_init - 135) >= 0.001 && abs(angle_init - 135) <= ra_angle_threshold){
 				return true;
 			}
 		}
@@ -216,8 +223,12 @@ bool ShapeFitLayer::validRAorParallel(const std::vector<cv::Point2f>& polygon, b
 				float angle_init = util::lineLineAngle(a_init, b_init, c_init, d_init);
 				//std::cout << i <<" to "<<j <<" angle is " << angle_init << std::endl;
 				// check
-				if (abs(angle_init) <= parallel_angle_threshold || abs(angle_init - 180) <= parallel_angle_threshold)
+				if (abs(angle_init) <= parallel_angle_threshold && abs(angle_init) >= 0.001){
 					return true;
+				}
+				if (abs(angle_init - 180) <= parallel_angle_threshold && abs(angle_init - 180) >= 0.001){
+					return true;
+				}
 			}
 		}
 		return false;

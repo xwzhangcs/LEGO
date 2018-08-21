@@ -40,6 +40,16 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 	if (!bUseInter && !bUseIntra){
 		return;
 	}
+	/*{
+		std::cout << "bUseRa " << bUseRaOpt << " ra angle is " << angle_threshold_RA << " ra weight is " << raWeight << std::endl;
+		std::cout << "bUseParallel " << bUseParallelOpt << " Parallel angle is " << angle_threshold_parallel << " Parallel weight is " << parallelWeight << std::endl;
+		std::cout << "bUseSymmetry " << bUseSymmetryLineOpt << " Symmetry weight is " << symmetryWeight << std::endl;
+		std::cout << "bUseAccuracy " << bUseAccuracyOpt << " Accuracy weight is " << accuracyWeight << std::endl;
+	}
+	{
+		std::cout << "bUsePoint " << bUsePointSnapOpt << " Point threshold is " << pointDisThreshold << " Point weight is " << pointWeight << std::endl;
+		std::cout << "bUseSeg " << bUseSegSnapOpt << " seg angle is " << segAngleThreshold << " seg weight is " << segWeight << std::endl;
+	}*/
 	//check weights
 	if (bUseInter || bUseIntra){
 		float weight = 0.0f;
@@ -209,17 +219,19 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 	}
 
 	// initial
-	std::vector<std::vector<bool>> validity_layers;
-	validity_layers.resize(layers.size());
-	for (int i = 0; i < layers.size(); i++){
-		validity_layers[i].push_back(false);// RA
-		validity_layers[i].push_back(false);// Parallel
-		validity_layers[i].push_back(false);// Symmetry
-		validity_layers[i].push_back(false);// Accuracy
-		validity_layers[i].push_back(false);// Point
-		validity_layers[i].push_back(false);// Seg
+	std::vector<std::vector<std::vector<bool>>> validity_layer_polygons;
+	validity_layer_polygons.resize(layers.size());
+	for (int k = 0; k < layers.size(); k++){
+		validity_layer_polygons[k].resize(layers[k]->footprints.size());
+		for (int i = 0; i < layers[k]->footprints.size(); i++){
+			validity_layer_polygons[k][i].push_back(false);// RA
+			validity_layer_polygons[k][i].push_back(false);// Parallel
+			validity_layer_polygons[k][i].push_back(false);// Symmetry
+			validity_layer_polygons[k][i].push_back(false);// Accuracy
+			validity_layer_polygons[k][i].push_back(false);// Point
+			validity_layer_polygons[k][i].push_back(false);// Seg
+		}
 	}
-
 	// check validity of RA
 	if (bUseRaOpt){
 		bool bValid_per_layer = false;
@@ -230,16 +242,12 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 				if (layers[k]->footprints[i].contour.size() != 0){
 					if (validRA(layers[k]->footprints[i].contour.points, bUseRaOpt, angle_threshold_RA)){
 						bValid_per_layer = true;
-						break;
+						validity_layer_polygons[k][i][0] = true;
 					}
 				}
 			}
 			if (bValid_per_layer){
-				validity_layers[k][0] = true;
 				bValid = true;
-			}
-			else{
-				validity_layers[k][0] = false;
 			}
 		}
 		if (!bValid){
@@ -257,16 +265,12 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 				if (layers[k]->footprints[i].contour.size() != 0){
 					if (validParallel(layers[k]->footprints[i].contour.points, bUseParallelOpt, angle_threshold_parallel)){
 						bValid_per_layer = true;
-						break;
+						validity_layer_polygons[k][i][1] = true;
 					}
 				}
 			}
 			if (bValid_per_layer){
-				validity_layers[k][1] = true;
 				bValid = true;
-			}
-			else{
-				validity_layers[k][1] = false;
 			}
 		}
 		if (!bValid){
@@ -283,15 +287,11 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 			for (int i = 0; i < layers_symmetry_lines[k].size(); i++) {
 				if (layers_symmetry_lines[k][i].size() > 0){
 					bValid_per_layer = true;
-					break;
+					validity_layer_polygons[k][i][2] = true;
 				}
 			}
 			if (bValid_per_layer){
-				validity_layers[k][2] = true;
 				bValid = true;
-			}
-			else{
-				validity_layers[k][2] = false;
 			}
 		}
 		if (!bValid){
@@ -302,7 +302,9 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 	// check validity of accuracy
 	if (bUseAccuracyOpt){
 		for (int k = 0; k < layers.size(); k++){
-			validity_layers[k][3] = true;
+			for (int i = 0; i < layers[k]->footprints.size(); i++) {
+				validity_layer_polygons[k][i][3] = true;
+			}
 		}
 	}
 
@@ -321,18 +323,13 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 				for (int j = 0; j < tree_info[k].first.size(); j++){
 					if (validPointOpt(layers[k]->footprints[i], layers[tree_info[k].first[j]]->footprints, pointDisThreshold)){
 						bValid_per_layer = true;
+						validity_layer_polygons[k][i][4] = true;
 						break;
 					}
 				}
-				if (bValid_per_layer)
-					break;
 			}
 			if (bValid_per_layer){
-				validity_layers[k][4] = true;
 				bValid = true;
-			}
-			else{
-				validity_layers[k][4] = false;
 			}
 		}
 		if (!bValid){
@@ -356,23 +353,27 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 				for (int j = 0; j < tree_info[k].first.size(); j++){
 					if (validSegOpt(layers[k]->footprints[i], layers[tree_info[k].first[j]]->footprints, segDisThreshold, segAngleThreshold)){
 						bValid_per_layer = true;
+						validity_layer_polygons[k][i][5] = true;
 						break;
 					}
 				}
-				if (bValid_per_layer)
-					break;
 			}
 			if (bValid_per_layer){
-				validity_layers[k][5] = true;
 				bValid = true;
-			}
-			else{
-				validity_layers[k][5] = false;
 			}
 		}
 		if (!bValid){
 			config.bUseSegSnapOpt = false;
-			std::cout << "PointSnap invalid" << std::endl;
+			std::cout << "SegSnap invalid" << std::endl;
+		}
+	}
+	//
+	for (int k = 0; k < layers.size(); k++){
+		for (int i = 0; i < layers[k]->footprints.size(); i++){
+			std::cout << "layer " << k << " polygon " << i << ": ";
+			for (int j = 0; j < 6; j++)
+				std::cout << validity_layer_polygons[k][i][j] << ", ";
+			std::cout << std::endl;
 		}
 	}
 	// 
@@ -394,7 +395,7 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 				start_index += normalized_polygons_init[k][i].size();
 			}
 		}
-		BFGSSolver solver(normalized_polygons, normalized_polygons_init, normalized_symmetry_lines, layers_height, tree_info, validity_layers, config);
+		BFGSSolver solver(normalized_polygons, normalized_polygons_init, normalized_symmetry_lines, layers_height, tree_info, validity_layer_polygons, config);
 		if (true)
 			find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.0001);
 		else
@@ -484,13 +485,9 @@ bool ShapeFitLayersAll::validParallel(const std::vector<cv::Point2f>& polygon, b
 	return false;
 }
 
-bool ShapeFitLayersAll::validPointOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, float threshold){
+bool ShapeFitLayersAll::validPointOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, float dis_threshold){
 	for (int k = 0; k < src_polygon.size(); k++){// current source polygon
 		for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
-			cv::Rect bbox = cv::boundingRect(des_layer_polygons[i]);
-			float dis_threshold = threshold * 0.015 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-			std::cout << "bbox is " << bbox << std::endl;
-			std::cout << "dis_threshold is " << dis_threshold << std::endl;
 			for (int j = 0; j < des_layer_polygons[i].size(); j++){// one polygon in the destination layer
 				cv::Point2f src_p = src_polygon[k];
 				cv::Point2f des_p = des_layer_polygons[i][j];
@@ -504,17 +501,11 @@ bool ShapeFitLayersAll::validPointOpt(const std::vector<cv::Point2f>& src_polygo
 	return false;
 }
 
-bool ShapeFitLayersAll::validSegOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, float threshold, float angle_threshold){
+bool ShapeFitLayersAll::validSegOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, float dis_threshold, float angle_threshold){
 	int total_seg_src = src_polygon.size();
 	for (int k = 0; k < total_seg_src; k++){// current source polygon
 		for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
 			int total_seg_des = des_layer_polygons[i].size();
-
-			cv::Rect bbox = cv::boundingRect(des_layer_polygons[i]);
-			float dis_threshold = threshold * 0.015 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-			std::cout << "bbox is " << bbox << std::endl;
-			std::cout << "dis_threshold is " << dis_threshold << std::endl;
-
 			for (int j = 0; j < total_seg_des; j++){// one polygon in the destination layer
 				// angle score
 				cv::Point2f src_start = src_polygon[k];
@@ -563,6 +554,7 @@ bool ShapeFitLayersAll::validSegOpt(const util::Polygon& src_polygon, const std:
 				float angle = util::lineLineAngle(src_start, src_end, des_start, des_end);
 				float dis = util::distance(src_start, src_end, des_start, des_end);
 				angle = std::min(abs(angle), abs(180 - angle));
+				std::cout << "angle is " << angle <<", dis is "<< dis << std::endl;
 				if (angle <= angle_threshold && dis <= dis_threshold)
 					return true;
 			}

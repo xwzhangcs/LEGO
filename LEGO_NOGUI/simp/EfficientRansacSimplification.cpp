@@ -80,7 +80,7 @@ namespace simp {
 		bool bValid = false;
 		if (polygon.contour.size() >= 100) {
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
-			std::cout << "shapes is " << shapes.size() << std::endl;
+			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
 				std::sort(shapes.begin(), shapes.end());
 				ContourGenerator::generate(polygon, shapes, contour, contour_max_error, contour_angle_threshold);
@@ -88,8 +88,8 @@ namespace simp {
 					bValid = true;
 			}
 		}
-		std::cout << "bValid is " << bValid << std::endl;
-		std::cout << "contour size is " << contour.size() << std::endl;
+		//std::cout << "bValid is " << bValid << std::endl;
+		//std::cout << "contour size is " << contour.size() << std::endl;
 		if (!bValid){
 			float epsilon = 4.0f;
 			util::approxPolyDP(polygon.contour.points, contour, epsilon, true);

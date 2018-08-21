@@ -34,10 +34,12 @@ class SymmetryLineDetector {
 				//return distance;
 
 				float iou = 0.0f;
-				if (util::isSimple(polygon) && util::isSimple(target_polygon))
-					iou = util::calculateIOU(polygon, target_polygon);
-				else
+				if (util::isSimple(polygon) && util::isSimple(target_polygon)){
+					iou = util::calculateIOUbyCGAL(polygon, target_polygon);
+				}
+				else{
 					iou = util::calculateIOUbyImage(polygon, target_polygon, 1000);
+				}
 				//std::cout << "IOU is " << iou << std::endl;
 				return iou;
 			}

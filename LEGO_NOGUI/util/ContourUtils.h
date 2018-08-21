@@ -175,10 +175,13 @@ namespace util {
 	double calculateIOU(const cv::Mat_<uchar>& img1, const cv::Mat_<uchar>& img2, const cv::Rect& rect);
 	double calculateIOU(const Polygon& polygon1, const Polygon& polygon2);
 	double calculateIOU(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2);
+	double calculateIOUbyCGAL(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2);
 	double calculateIOUbyImage(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2, int image_size);
 	double calculateIOU(const std::vector<Polygon>& polygons1, const std::vector<Polygon>& polygons2);
 	double calculateArea(const Polygon& polygon);
 	double calculateArea(const cv::Mat_<uchar>& img);
+	double area(const CGAL::Polygon_with_holes_2<Kernel>& pwh);
+	double area(const std::vector<cv::Point2f>& polygon);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& img, bool add_right_corner);
 	std::vector<Polygon> findContours(const cv::Mat_<uchar>& image, int threshold, bool simplify, bool allow_diagonal, bool dilate);
 	Ring addCornerToOpenCVContour(const std::vector<cv::Point>& polygon, const cv::Mat_<uchar>& img);
@@ -221,7 +224,7 @@ namespace util {
 	float calculateScoreRaOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold);
 	float calculateScoreParallelOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold);
 	float lineLineAngle(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d);
-
+	float scoreFun(float angle, float threshold);
 	// compute mirror point
 	cv::Point2f mirrorPoint(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c);
 

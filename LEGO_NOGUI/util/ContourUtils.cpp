@@ -753,6 +753,46 @@ namespace util {
 		return (double)inter_cnt / union_cnt;
 	}
 
+	double calculateIOUbyCGAL(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2) {
+		if (polygon1.size() == 0 || polygon2.size() == 0) return 0;
+
+		CGAL::Polygon_2<Kernel> pol1;
+		for (auto& pt : polygon1) {
+			pol1.push_back(Kernel::Point_2(pt.x, pt.y));
+		}
+		if (!pol1.is_simple()) {
+			throw "calculateIOU: polygon1 is not simple.";
+		}
+		if (pol1.is_clockwise_oriented()) pol1.reverse_orientation();
+
+		CGAL::Polygon_2<Kernel> pol2;
+		for (auto& pt : polygon2) {
+			pol2.push_back(Kernel::Point_2(pt.x, pt.y));
+		}
+		if (!pol2.is_simple()) {
+			throw "calculateIOU: polygon2 is not simple.";
+		}
+		if (pol2.is_clockwise_oriented()) pol2.reverse_orientation();
+
+		if (CGAL::do_intersect(pol1, pol2)) {
+			std::list<CGAL::Polygon_with_holes_2<Kernel>> inter;
+			CGAL::intersection(pol1, pol2, std::back_inserter(inter));
+
+			CGAL::Polygon_with_holes_2<Kernel> uni;
+			CGAL::join(pol1, pol2, uni);
+
+			float inter_area = 0;
+			for (auto it = inter.begin(); it != inter.end(); it++) {
+				inter_area += area(*it);
+			}
+
+			return (double)inter_area / area(uni);
+		}
+		else {
+			return 0;
+		}
+	}
+
 	double calculateIOUbyImage(const std::vector<cv::Point2f>& polygon1, const std::vector<cv::Point2f>& polygon2, int image_size) {
 		int min_x = INT_MAX;
 		int min_y = INT_MAX;
@@ -889,6 +929,25 @@ namespace util {
 
 	double calculateArea(const cv::Mat_<uchar>& img) {
 		return cv::sum(img)[0] / 255;
+	}
+
+	double area(const CGAL::Polygon_with_holes_2<Kernel>& pwh) {
+		double ans = 0;
+
+		ans += CGAL::to_double(pwh.outer_boundary().area());
+		for (auto it = pwh.holes_begin(); it != pwh.holes_end(); it++) {
+			ans -= CGAL::to_double(it->area());
+		}
+
+		return ans;
+	}
+
+	double area(const std::vector<cv::Point2f>& polygon) {
+		CGAL::Polygon_2<Kernel> pgn;
+		for (int i = 0; i < polygon.size(); i++) {
+			pgn.push_back(Kernel::Point_2(polygon[i].x, polygon[i].y));
+		}
+		return std::abs(CGAL::to_double(pgn.area()));
 	}
 
 	/**
@@ -1974,7 +2033,6 @@ namespace util {
 	*/
 	float calculateScoreRaOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold){
 		float score = 0.0f;
-		//std::cout << "size of polygon is " << polygon.size() << std::endl;
 		int total_segments = polygon.size();
 		int valid_segments = 0;
 		for (int i = 0; i < total_segments; i++){
@@ -1995,8 +2053,16 @@ namespace util {
 			cv::Point2f c = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
 			cv::Point2f d = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
 			float angle = lineLineAngle(a, b, c, d);
+			//std::cout << i << " " << angle <<std::endl;
+
+			if (abs(angle - angle_init) > 2 * angle_threshold)
+				return 0;
 
 			if (abs(angle_init - 45) <= angle_threshold){
+
+				if (abs(angle - angle_init) > angle_threshold)
+					return 0;
+
 				valid_segments++;
 				// 45 - threshold ~ 45
 				if (angle > 45 - angle_threshold && angle <= 45){
@@ -2018,6 +2084,10 @@ namespace util {
 					score += 0;
 			}
 			else if (abs(angle_init - 90) <= angle_threshold){
+
+				if (abs(angle - angle_init) > angle_threshold)
+					return 0;
+
 				valid_segments++;
 				// 90 - threshold ~ 90
 				if (angle > 90 - angle_threshold && angle <= 90){
@@ -2031,6 +2101,10 @@ namespace util {
 					score += 0;
 			}
 			else if (abs(angle_init - 135) <= angle_threshold){
+
+				if (abs(angle - angle_init) > angle_threshold)
+					return 0;
+
 				valid_segments++;
 				// 45 - threshold ~ 45
 				if (angle > 45 - angle_threshold && angle <= 45){
@@ -2066,7 +2140,6 @@ namespace util {
 	*/
 	float calculateScoreParallelOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold){
 		float score = 0.0f;
-		//std::cout << "size of polygon is " << polygon.size() << std::endl;
 		int total_segments = polygon.size();
 		int valid_segments = 0;
 		int angle_index = 0;
@@ -2083,11 +2156,6 @@ namespace util {
 				cv::Point2f c_init = cv::Point2f(init_polygon[second_start].x, init_polygon[second_start].y);;
 				cv::Point2f d_init = cv::Point2f(init_polygon[second_end].x, init_polygon[second_end].y);
 				float angle_init = lineLineAngle(a_init, b_init, c_init, d_init);
-				// check
-				bool valid = false;
-				// consider only parallel 
-				if (abs(angle_init) <= angle_threshold  || abs(angle_init - 180) <= angle_threshold)
-					valid = true;
 
 				cv::Point2f a = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
 				cv::Point2f b = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
@@ -2095,7 +2163,13 @@ namespace util {
 				cv::Point2f d = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
 				float angle = lineLineAngle(a, b, c, d);
 
+				if (abs(angle - angle_init) > 2 * angle_threshold)
+					return 0;
+
 				if (abs(angle_init) <= angle_threshold){
+					if (abs(angle - angle_init) > angle_threshold)
+						return 0;
+
 					valid_segments++;
 					// 0 ~ threshold
 					if (angle >= 0 && angle <= angle_threshold){
@@ -2105,6 +2179,9 @@ namespace util {
 						score += 0;
 				}
 				else if (abs(angle_init - 180) <= angle_threshold){
+					if (abs(angle - angle_init) > angle_threshold)
+						return 0;
+
 					valid_segments++;
 					// 180 - threshold ~ 180
 					if (angle > 180 - angle_threshold && angle <= 180){
@@ -2138,6 +2215,61 @@ namespace util {
 		return ans / CV_PI * 180;
 	}
 
+	// define a score function based on the input angle of two lines
+	float scoreFun(float angle, float threshold){
+		float score = 0.0f;
+		// 0 ~ threshold
+		if (angle >= 0 && angle <= threshold)
+			score = (threshold - angle) / threshold;
+		// threshold ~ 45 - threshold
+		else if (angle > threshold && angle <= 45 - threshold){
+			score = 0;
+		}
+		// 45 - threshold ~ 45
+		else if (angle > 45 - threshold && angle <= 45){
+			score = (angle - 45 + threshold) / threshold;
+		}
+		// 45 ~ 45 + threshold
+		else if (angle > 45 && angle <= 45 + threshold){
+			score = (45 + threshold - angle) / threshold;
+		}
+		// 45 + threshold ~ 90 - threshold
+		else if (angle > 45 + threshold && angle <= 90 - threshold){
+			score = 0;
+		}
+		// 90 - threshold ~ 90
+		else if (angle > 90 - threshold && angle <= 90){
+			score = (angle - 90 + threshold) / threshold;
+		}
+		// 90 ~ 90 + threshold
+		else if (angle > 90 && angle <= 90 + threshold){
+			score = (90 + threshold - angle) / threshold;
+		}
+		// 90 + threshold ~ 135 - threshold
+		else if (angle > 90 + threshold && angle <= 135 - threshold){
+			score = 0;
+		}
+		//135 - threshold ~ 135
+		else if (angle > 135 - threshold && angle <= 135){
+			score = (angle - 135 + threshold) / threshold;
+		}
+		// 135 ~ 135 + threshold
+		else if (angle > 135 && angle <= 135 + threshold){
+			score = (135 + threshold - angle) / threshold;
+		}
+		// 135 + threshold ~ 180 - threshold
+		else if (angle > 135 + threshold && angle <= 180 - threshold){
+			score = 0;
+		}
+		// 180 - threshold ~ 180
+		else if (angle > 180 - threshold && angle <= 180){
+			score = (angle - 180 + threshold) / threshold;
+		}
+		else
+			score = 0;
+		return score;
+	}
+
 	cv::Point2f mirrorPoint(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c){
 		cv::Point2f v = b - a;
 		cv::Point2f n = cv::Point2f(v.y, -v.x);
@@ -2147,13 +2279,11 @@ namespace util {
 		return mirror_point;
 	}
 
-	float calculateScorePointOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<cv::Point2f>& init_src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, const std::vector<std::vector<cv::Point2f>>& des_ini_layer_polygons, float threshold){
+	float calculateScorePointOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<cv::Point2f>& init_src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, const std::vector<std::vector<cv::Point2f>>& des_ini_layer_polygons, float dis_threshold){
 		int valid_points = 0;
 		float score = 0.0f;
 		for (int k = 0; k < src_polygon.size(); k++){// current source polygon
 			for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
-				cv::Rect bbox = cv::boundingRect(des_layer_polygons[i]);
-				float dis_threshold = threshold * 0.01 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
 				for (int j = 0; j < des_layer_polygons[i].size(); j++){// one polygon in the destination layer
 					bool bValid = false;
 					cv::Point2f src_init_p = init_src_polygon[k];
@@ -2162,8 +2292,9 @@ namespace util {
 					//std::cout << "dis_init from " << k << " to " << j << " is " << dis_init << std::endl;
 					cv::Point2f src_p = src_polygon[k];
 					cv::Point2f des_p = des_layer_polygons[i][j];
-					if (dis_init <= dis_threshold)
+					if (dis_init <= dis_threshold){
 						bValid = true;
+					}
 					if (bValid){
 						float dis = cv::norm(src_p - des_p);
 						if (dis >= dis_threshold)
@@ -2176,23 +2307,18 @@ namespace util {
 			}
 		}
 		if (valid_points == 0){
-			std::cout << "hello1" << std::endl;
 			return score;
 		}
 		return score / valid_points;
 	}
 
-	float calculateScoreSegOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<cv::Point2f>& init_src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, const std::vector<std::vector<cv::Point2f>>& des_ini_layer_polygons, float threshold, float angle_threshold){
+	float calculateScoreSegOpt(const std::vector<cv::Point2f>& src_polygon, const std::vector<cv::Point2f>& init_src_polygon, const std::vector<std::vector<cv::Point2f>>& des_layer_polygons, const std::vector<std::vector<cv::Point2f>>& des_ini_layer_polygons, float dis_threshold, float angle_threshold){
 		float score = 0.0f;
 		int valid_segments = 0;
 		int total_seg_src = src_polygon.size();
 		for (int k = 0; k < total_seg_src; k++){// current source polygon
 			for (int i = 0; i < des_layer_polygons.size(); i++){// all polygons in the destination layer
 				int total_seg_des = des_layer_polygons[i].size();
-
-				cv::Rect bbox = cv::boundingRect(des_layer_polygons[i]);
-				float dis_threshold = threshold * 0.01 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-
 				for (int j = 0; j < total_seg_des; j++){// one polygon in the destination layer
 					bool bValid = false;
 					cv::Point2f src_init_start = init_src_polygon[k];

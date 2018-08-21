@@ -19,17 +19,17 @@ class ShapeFitLayersAll {
 		std::vector<layer_polygons> layers_symmetry_lines;
 		std::vector<std::pair<float, float>> layers_height;
 		std::vector<std::pair<std::vector<int>, std::vector<int>>> tree_info;
-		std::vector<std::vector<bool>> validity_layers;
+		std::vector<std::vector<std::vector<bool>>> validity_layer_polygons;
 		regularizer::Config config;
 
 	public:
-		BFGSSolver(const std::vector<layer_polygons>& target_layers_polygons, const std::vector<layer_polygons>& init_layers_polygons, const std::vector<layer_polygons>& layers_symmetry_lines, const std::vector<std::pair<float, float>>& layers_height, const std::vector<std::pair<std::vector<int>, std::vector<int>>>& tree_info, const std::vector<std::vector<bool>>& validity_layers, regularizer::Config& config) {
+		BFGSSolver(const std::vector<layer_polygons>& target_layers_polygons, const std::vector<layer_polygons>& init_layers_polygons, const std::vector<layer_polygons>& layers_symmetry_lines, const std::vector<std::pair<float, float>>& layers_height, const std::vector<std::pair<std::vector<int>, std::vector<int>>>& tree_info, const std::vector<std::vector<std::vector<bool>>>& validity_layer_polygons, regularizer::Config& config) {
 			this->target_layers_polygons = target_layers_polygons;
 			this->init_layers_polygons = init_layers_polygons;
 			this->layers_symmetry_lines = layers_symmetry_lines;
 			this->tree_info = tree_info;
 			this->config = config;
-			this->validity_layers = validity_layers;
+			this->validity_layer_polygons = validity_layer_polygons;
 		}
 
 		double operator() (const column_vector& arg) const {
@@ -57,14 +57,14 @@ class ShapeFitLayersAll {
 					for (int i = 0; i < init_layers_polygons[k].size(); i++){
 						polygon_score = 0.0f;
 						if (init_layers_polygons[k][i].size() != 0){
-							if (config.bUseRaOpt && validity_layers[k][0]){
+							if (config.bUseRaOpt && validity_layer_polygons[k][i][0]){
 								//std::cout << "use RA opt" << std::endl;
 								float ra_score = util::calculateScoreRaOpt(polygons[k][i], init_layers_polygons[k][i], config.angle_threshold_RA);
 								//std::cout << "During RA OPT,  socore is " << ra_score << std::endl;
 								polygon_score += ra_score * config.raWeight * config.intraWeight;
 							}
 							// parallel opt function
-							if (config.bUseParallelOpt && validity_layers[k][1]){
+							if (config.bUseParallelOpt && validity_layer_polygons[k][i][1]){
 								//std::cout << "use Parallel opt" << std::endl;
 								float parallel_score = util::calculateScoreParallelOpt(polygons[k][i], init_layers_polygons[k][i], config.angle_threshold_parallel);
 								//std::cout << "During Parallel OPT,  socore is " << parallel_score << std::endl;
@@ -72,7 +72,7 @@ class ShapeFitLayersAll {
 							}
 
 							// symmetry opt function
-							if (config.bUseSymmetryLineOpt && validity_layers[k][2]){
+							if (config.bUseSymmetryLineOpt && validity_layer_polygons[k][i][2]){
 								if (layers_symmetry_lines[k][i].size() != 0){
 									//std::cout << "use Symmetry opt"<< std::endl;
 									std::vector<cv::Point2f> polygon_symmetry;
@@ -87,7 +87,7 @@ class ShapeFitLayersAll {
 										iou = util::calculateIOUbyImage(polygons[k][i], polygon_symmetry, 1000);
 									}
 									else{
-										iou = util::calculateIOU(polygons[k][i], polygon_symmetry);
+										iou = util::calculateIOUbyCGAL(polygons[k][i], polygon_symmetry);
 										//std::cout << "cgal method" << std::endl;
 									}
 									//std::cout << "During OPT, symmetry score is " << iou << std::endl;
@@ -107,13 +107,13 @@ class ShapeFitLayersAll {
 								}
 								else{
 									std::cout << "cgal method" << std::endl;
-									accuracy_score += util::calculateIOU(polygons[k][i], target_layers_polygons[k][i]);
+									accuracy_score += util::calculateIOUbyCGAL(polygons[k][i], target_layers_polygons[k][i]);
 								}
 								//std::cout << "During Accuracy OPT,  score is " << accuracy_score << std::endl;
 								polygon_score += accuracy_score * config.accuracyWeight * config.intraWeight;
 							}
 							// optimization score for one polygon
-							if (config.bUsePointSnapOpt && validity_layers[k][4]){
+							if (config.bUsePointSnapOpt && validity_layer_polygons[k][i][4]){
 								float score_point = 0.0f;
 								int valid_num = 0;
 								//std::cout << "Point Snap Opt" << std::endl;
@@ -131,7 +131,7 @@ class ShapeFitLayersAll {
 								}
 								polygon_score += score_point * config.pointWeight * config.interWeight;
 							}
-							if (config.bUseSegSnapOpt && validity_layers[k][5]){
+							if (config.bUseSegSnapOpt && validity_layer_polygons[k][i][5]){
 								float score_seg = 0.0f;
 								int valid_num = 0;
 								//std::cout << "Seg Snap Opt" << std::endl;
@@ -149,8 +149,11 @@ class ShapeFitLayersAll {
 								polygon_score += score_seg * config.segWeight * config.interWeight;
 							}
 						}
-						if (abs(polygon_score) > 0.1){
-							valid_layer_polygons++;
+						for (int p = 0; p < 6; p++){
+							if (validity_layer_polygons[k][i][p]){
+								valid_layer_polygons++;
+								break;
+							}
 						}
 						layer_score += polygon_score;
 					}
@@ -162,7 +165,7 @@ class ShapeFitLayersAll {
 						valid_layers++;
 						layer_score = layer_score / valid_layer_polygons;
 					}
-					//std::cout << "layer " << k << " score is " << layer_score << std::endl;
+					std::cout << "layer " << k << " score is " << layer_score << std::endl;
 					score += layer_score;
 				}
 				if (valid_layers == 0)

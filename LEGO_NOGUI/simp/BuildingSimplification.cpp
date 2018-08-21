@@ -49,41 +49,22 @@ namespace simp {
 
 					std::shared_ptr<util::BuildingLayer> building;
 					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
-
-					{
-						// before regularizer
-						generateImagesForAllLayers(building, 0);
-					}
 					// regularizer
-					if (regularizer_configs.size() >= 0)
+					if (regularizer_configs.size() > 0)
 					{
-						
+						{
+							// before regularizer
+							generateImagesForAllLayers(building, 0, "../data/befor_regularizer_");
+						}
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
 						generateVectorForAllLayers(building, 0, layers, layers_relationship);
-						//{
-						//	// test layers
-						//	for (int l = 0; l < layers.size(); l++){
-						//		cv::Rect bbox = util::boundingBox(layers[l]->footprints[0].contour.points);
-						//		cv::Mat_<uchar> img;
-						//		util::createImageFromPolygon(bbox.width, bbox.height, layers[l]->footprints[0], cv::Point2f(-bbox.x, -bbox.y), img);
-						//		std::vector<util::Polygon> polygons = util::findContours(img, 40, false, true, false);
-						//		if (polygons.size() == 0) throw "No building is found.";
-						//		{
-						//			std::string img_name = "../data/" + std::to_string(l) + ".png";
-						//			cv::imwrite(img_name, img);
-						//		}
-						//	}
-						//	// test layer_relationship
-						//	for (int l = 0; l < layers_relationship.size(); l++)
-						//		std::cout << "(" << layers_relationship[l].first << ", " << layers_relationship[l].second << ")" << std::endl;
-						//}
 						building = regularizerBuilding(layers, layers_relationship, regularizer_configs);
+						{
+							// after regularizer
+							generateImagesForAllLayers(building, 0, "../data/after_regularizer_");
+						}
 						
-					}
-					{
-						// after regularizer
-						generateImagesForAllLayers(building, 100);
 					}
 
 					buildings.push_back(building);
@@ -407,7 +388,7 @@ namespace simp {
 		if (best_simplified_polygons.size() == 0) throw "No valid contour.";
 
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygons, layer->bottom_height, layer->top_height));
-
+		building->presentativeContours = layer->presentativeContours;
 		for (auto child_layer : layer->children) {
 			try {
 				float contour_area = 0;
@@ -461,28 +442,30 @@ namespace simp {
 	* @param		config files
 	*/
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs){
-		//int num_runs = regularizer_configs.size();
-		//for (int i = 0; i < num_runs; i++){
-		//	bool bUseIntra = regularizer_configs[i].bUseIntra;
-		//	bool bUseInter = regularizer_configs[i].bUseInter;
-		//	std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
-		//	if (bUseIntra && !bUseInter){
-		//		for (int j = 0; j < layers.size(); j++){
-		//			layers[j]->footprints = ShapeFitLayer::fit(layers[j]->footprints, layers[j]->footprints, regularizer_configs[i]);
-		//			post_processing(layers[j], 10);
+		int num_runs = regularizer_configs.size();
+		for (int i = 0; i < num_runs; i++){
+			bool bUseIntra = regularizer_configs[i].bUseIntra;
+			bool bUseInter = regularizer_configs[i].bUseInter;
+			std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+			if (bUseIntra && !bUseInter){
+				for (int j = 0; j < layers.size(); j++){
+					std::cout << " layer "<< i << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
+					post_processing(layers[j], 10);
+					std::cout << " layer " << i << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 
-		//		}
-		//	}
-		//	else if (bUseInter){
-		//		ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
-		//		for (int j = 0; j < layers.size(); j++){
-		//			post_processing(layers[j], 10);
-		//		}
-		//	}
-		//	else{
-		//		// do nothing
-		//	}
-		//}
+				}
+			}
+			else if (bUseInter){
+				ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
+				for (int j = 0; j < layers.size(); j++){
+					post_processing(layers[j], 10);
+				}
+			}
+			else{
+				// do nothing
+			}
+		}
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];
@@ -528,6 +511,7 @@ namespace simp {
 	*/
 	int BuildingSimplification::generateVectorForAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship){
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(root->building_id, root->footprints, root->bottom_height, root->top_height));
+		building->presentativeContours = root->presentativeContours;
 		layers.push_back(building);
 		int current_layer_id = layer_id;
 		for (auto child_layer : root->children){
@@ -561,14 +545,15 @@ namespace simp {
 	* @param		root
 	* @param		image index
 	*/
-	void BuildingSimplification::generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index){
+	void BuildingSimplification::generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index, std::string prefix){
 		cv::Rect bbox = util::boundingBox(building->footprints[0].contour.points);
+		//cv::Rect bbox = util::boundingBox(building->presentativeContours[0].contour.points);
 		cv::Mat_<uchar> img;
 		util::createImageFromPolygon(bbox.width, bbox.height, building->footprints[0], cv::Point2f(-bbox.x, -bbox.y), img);
-		std::string img_name = "../data/regularizer_" + std::to_string(index) + ".png";
+		std::string img_name = prefix + std::to_string(index) + ".png";
 		cv::imwrite(img_name, img);
 		index++;
 		for (auto child_layer : building->children)
-			generateImagesForAllLayers(child_layer, index);
+			generateImagesForAllLayers(child_layer, index, prefix);
 	}
 }
