@@ -59,7 +59,7 @@ namespace simp {
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
 						generateVectorForAllLayers(building, 0, layers, layers_relationship);
-						building = regularizerBuilding(layers, layers_relationship, regularizer_configs);
+						building = regularizerBuilding(layers, layers_relationship, regularizer_configs, snapping_threshold);
 						{
 							// after regularizer
 							generateImagesForAllLayers(building, 0, "../data/after_regularizer_");
@@ -340,18 +340,18 @@ namespace simp {
 			}
 
 			// snap the edges
-			/*if (parent_contours.size() > 0 && snapping_threshold > 0) {
-				if (best_algorithm == ALG_RIGHTANGLE) {
-					util::snapPolygon(parent_contours, best_simplified_polygon, snapping_threshold);
-				}
-				else {
-					util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
-				}
-			}*/
+			//if (parent_contours.size() > 0 && snapping_threshold > 0) {
+			//	if (best_algorithm == ALG_RIGHTANGLE) {
+			//		util::snapPolygon(parent_contours, best_simplified_polygon, snapping_threshold);
+			//	}
+			//	else {
+			//		util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
+			//	}
+			//}
 
 			// crop the contour such that it is completely inside the parent contours,
 			// and add the cropped contours to the results.
-			if (/*parent_contours.size() > 0 && !allow_overhang*/false) {
+			if (parent_contours.size() > 0 && !allow_overhang) {
 				try {
 					for (int j = 0; j < parent_contours.size(); j++) {
 						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(best_simplified_polygon, parent_contours[j]);
@@ -441,7 +441,7 @@ namespace simp {
 	* @param		input root building
 	* @param		config files
 	*/
-	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs){
+	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs, float snapping_threshold){
 		int num_runs = regularizer_configs.size();
 		for (int i = 0; i < num_runs; i++){
 			bool bUseIntra = regularizer_configs[i].bUseIntra;
@@ -451,7 +451,7 @@ namespace simp {
 				for (int j = 0; j < layers.size(); j++){
 					std::cout << " layer "<< i << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 					layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
-					post_processing(layers[j], 10);
+					post_processing(layers[j], 10, 5);
 					std::cout << " layer " << i << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 
 				}
@@ -459,19 +459,25 @@ namespace simp {
 			else if (bUseInter){
 				ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
 				for (int j = 0; j < layers.size(); j++){
-					post_processing(layers[j], 10);
+					post_processing(layers[j], 10, 5);
+					std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
+						std::cout << "----point " << p << " after processing size is " << layers[j]->footprints[0].contour[p] << std::endl;
+					}
 				}
 			}
 			else{
 				// do nothing
 			}
 		}
+		// post snapping
+		postSnapping(0, layers, layers_relationship, snapping_threshold);
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];
 	}
 
-	void BuildingSimplification::post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold){
+	void BuildingSimplification::post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold, float dis_threshold){
 		std::vector<std::vector<cv::Point2f>> new_contours;
 		new_contours.resize(layer->footprints.size());
 		for (int i = 0; i < layer->footprints.size(); i++){
@@ -500,7 +506,25 @@ namespace simp {
 			}
 			layer->footprints[i].contour.points.clear();
 			layer->footprints[i].contour.points = new_contours[i];
+			new_contours[i].clear();
+
+			// merge two very close points
+			total_segments = layer->footprints[i].contour.size();
+			for (int j = 0; j < layer->footprints[i].contour.size(); j++){
+				int point_index = j;
+				int next_point_index = (j + 1) % total_segments;
+				float dis = cv::norm(layer->footprints[i].contour[point_index] - layer->footprints[i].contour[next_point_index]);
+				if (dis <= dis_threshold){
+					continue;
+				}
+				else{
+					new_contours[i].push_back(layer->footprints[i].contour[point_index]);
+				}
+			}
+			layer->footprints[i].contour.points.clear();
+			layer->footprints[i].contour.points = new_contours[i];
 		}
+
 	}
 
 	/**
@@ -538,6 +562,34 @@ namespace simp {
 		}
 	}
 
+	/**
+	* post snapping for all layers/
+	*
+	* @param		root
+	* @param		image index
+	*/
+	void BuildingSimplification::postSnapping(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, float snapping_threshold){
+		int parent_node = -1;
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].second == layer_id){
+				parent_node = layers_relationship[i].first;
+			}
+		}
+		if (parent_node != -1 && layers[parent_node]->footprints.size() > 0 && snapping_threshold > 0) {
+			for (int i = 0; i < layers[layer_id]->footprints.size(); i++){
+				//util::Polygon simplified_polygon = layers[layer_id]->footprints[i];
+				util::snapPolygon(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
+				//layers[layer_id]->footprints[i].contour.clear();
+				//layers[layer_id]->footprints[i] = simplified_polygon;
+			}
+		}
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].first == layer_id){
+				int child_layer_id = layers_relationship[i].second;
+				postSnapping(child_layer_id, layers, layers_relationship, snapping_threshold);
+			}
+		}
+	}
 
 	/**
 	* Generate images for all layers/

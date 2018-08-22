@@ -397,7 +397,7 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 		}
 		BFGSSolver solver(normalized_polygons, normalized_polygons_init, normalized_symmetry_lines, layers_height, tree_info, validity_layer_polygons, config);
 		if (true)
-			find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.0001);
+			find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-8), solver, starting_point, 1, 0.001);
 		else
 			find_min_using_approximate_derivatives(dlib::lbfgs_search_strategy(total_points), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 0, 0.00001);
 		start_index = 0;

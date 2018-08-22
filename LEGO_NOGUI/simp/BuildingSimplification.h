@@ -25,8 +25,9 @@ namespace simp {
 		static int generateVectorForAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship);
 		static void generateBuildingFromAllLayers(std::shared_ptr<util::BuildingLayer> root, int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship);
 		static void generateImagesForAllLayers(std::shared_ptr<util::BuildingLayer> building, int index, std::string prefix);
-		static std::shared_ptr<util::BuildingLayer> regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs);
-		static void post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold);
+		static std::shared_ptr<util::BuildingLayer> regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs, float snapping_threshold);
+		static void post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold, float dis_threshold);
+		static void postSnapping(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, float snapping_threshold);
 	};
 
 }
