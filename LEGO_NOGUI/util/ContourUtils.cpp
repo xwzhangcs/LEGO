@@ -125,6 +125,7 @@ namespace util {
 	Ring::Ring(const Ring& ring) {
 		this->mat = ring.mat.clone();
 		this->points = ring.points;
+		this->pointsType = ring.pointsType;
 	}
 
 	Ring::Ring(const std::vector<cv::Point2f>& points) {
@@ -135,6 +136,7 @@ namespace util {
 	Ring& Ring::operator=(const Ring& ring) {
 		this->mat = ring.mat.clone();
 		this->points = ring.points;
+		this->pointsType = ring.pointsType;
 		return *this;
 	}
 

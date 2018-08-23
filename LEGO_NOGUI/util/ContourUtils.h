@@ -102,6 +102,7 @@ namespace util {
 	public:
 		cv::Mat_<float> mat;
 		std::vector<cv::Point2f> points;
+		std::vector<int> pointsType;
 
 	public:
 		Ring();

@@ -8,24 +8,29 @@ ContourGenerator::ContourGenerator() {
 ContourGenerator::~ContourGenerator() {
 }
 
-void ContourGenerator::generate(const util::Polygon& polygon, const std::vector<std::pair<int, std::shared_ptr<efficient_ransac::PrimitiveShape>>>& shapes, std::vector<cv::Point2f>& contour, float max_error, float angle_threshold) {
+void ContourGenerator::generate(const util::Polygon& polygon, const std::vector<std::pair<int, std::shared_ptr<efficient_ransac::PrimitiveShape>>>& shapes, std::vector<cv::Point2f>& contour, std::vector<int>& contourPointsType, float max_error, float angle_threshold) {
 	for (int j = 0; j < shapes.size(); j++) {
 		if (efficient_ransac::Circle* circle = dynamic_cast<efficient_ransac::Circle*>(shapes[j].second.get())) {
 			int num = circle->angleRange() / CV_PI * 180 / 10;
 			contour.push_back(circle->startPoint());
+			contourPointsType.push_back(1);
 			for (int k = 1; k < num; k++) {
 				float angle = circle->startAngle() + circle->signedAngleRange() / num * k;
 				contour.push_back(circle->center() + circle->radius() * cv::Point2f(std::cos(angle), std::sin(angle)));
+				contourPointsType.push_back(1);
 			}
 			contour.push_back(circle->endPoint());
-
+			contourPointsType.push_back(1);
 			int j2 = (j + 1) % shapes.size();
+			// we assume the next shape is Line Segment
 			contour.push_back(shapes[j2].second->startPoint());
+			contourPointsType.push_back(0);
 		}
 		else if (efficient_ransac::Line* line = dynamic_cast<efficient_ransac::Line*>(shapes[j].second.get())) {
 			int j2 = (j + 1) % shapes.size();
 			if (efficient_ransac::Circle* circle2 = dynamic_cast<efficient_ransac::Circle*>(shapes[j2].second.get())) {
 				contour.push_back(line->endPoint());
+				contourPointsType.push_back(0);
 				continue;
 			}
 			else if (efficient_ransac::Line* line2 = dynamic_cast<efficient_ransac::Line*>(shapes[j2].second.get())) {
@@ -39,7 +44,9 @@ void ContourGenerator::generate(const util::Polygon& polygon, const std::vector<
 					else {
 						// simpliy connect two shapes
 						contour.push_back(line->endPoint());
+						contourPointsType.push_back(0);
 						contour.push_back(line2->startPoint());
+						contourPointsType.push_back(0);
 						continue;
 					}
 				}
@@ -90,13 +97,16 @@ void ContourGenerator::generate(const util::Polygon& polygon, const std::vector<
 					}
 					if (valid) {
 						contour.push_back(int_pt);
+						contourPointsType.push_back(0);
 						continue;
 					}
 				}
 				
 				// simpliy connect two shapes
 				contour.push_back(line->endPoint());
+				contourPointsType.push_back(0);
 				contour.push_back(line2->startPoint());
+				contourPointsType.push_back(0);
 				
 				//contour.push_back(line->startPoint());
 				//contour.push_back(line->endPoint());
@@ -104,43 +114,4 @@ void ContourGenerator::generate(const util::Polygon& polygon, const std::vector<
 		}
 	}
 
-}
-
-void ContourGenerator::applyHeuristics(const std::vector<cv::Point2f>& polygon, std::vector<cv::Point2f>& contour, float max_error, float angle_threshold){
-	int total_segs = polygon.size() / 2;
-	for (int j = 0; j < total_segs; j++){
-		int j2 = (j + 1) % total_segs;
-		// check if two adjacent shapes are almost collinear
-		cv::Point2f dir1 = polygon[j * 2 + 1] - polygon[j * 2];
-		cv::Point2f dir2 = polygon[j2 * 2 + 1] - polygon[j2 * 2];
-		if (std::abs(dir1.dot(dir2) / cv::norm(dir1) / cv::norm(dir2)) >= std::cos(angle_threshold)) {
-		// if two shapes are close enough, merge them
-			if (util::distance(polygon[j * 2 + 1], polygon[j * 2], polygon[j2 * 2], false) < max_error) 
-				continue;
-			else
-			{
-				// simpliy connect two shapes
-				contour.push_back(polygon[j * 2 + 1]);
-				contour.push_back(polygon[j2 * 2]);
-			}
-		}
-		/*
-		// calculate the intersection between the current shape and the next one
-		cv::Point2f int_pt;
-		double tab, tcd;
-		if (util::lineLineIntersection(polygon[j * 2], polygon[j * 2 + 1], polygon[j2 * 2], polygon[j2 * 2 + 1], &tab, &tcd, false, int_pt)) 
-		{
-			bool valid = true;
-			if (valid) 
-			{
-				contour.push_back(int_pt);
-				continue;
-			}
-		}
-		*/
-		// simpliy connect two shapes
-		contour.push_back(polygon[j * 2 + 1]);
-		contour.push_back(polygon[j2 * 2]);
-
-	}
 }

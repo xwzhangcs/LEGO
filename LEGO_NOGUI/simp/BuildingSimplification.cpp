@@ -56,6 +56,7 @@ namespace simp {
 							// before regularizer
 							generateImagesForAllLayers(building, 0, "../data/befor_regularizer_");
 						}
+						//std::cout << "!!check size is " << building->footprints[0].contour.pointsType.size() << std::endl;
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
 						generateVectorForAllLayers(building, 0, layers, layers_relationship);
@@ -275,7 +276,6 @@ namespace simp {
 				try {
 					util::Polygon simplified_polygon = EfficientRansacSimplification::simplify(contours[i], algorithms[ALG_EFFICIENT_RANSAC], orientation, min_hole_ratio);
 					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
-
 					// check if the shape is a triangle
 					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
 
@@ -293,7 +293,6 @@ namespace simp {
 						right_angle_for_all_contours = false;
 						best_cost = cost;
 						best_simplified_polygon = simplified_polygon;
-
 						best_error = costs[0] / costs[1];
 						best_num_primitive_shapes = costs[2];
 					}
@@ -351,7 +350,7 @@ namespace simp {
 
 			// crop the contour such that it is completely inside the parent contours,
 			// and add the cropped contours to the results.
-			if (parent_contours.size() > 0 && !allow_overhang) {
+			if (/*parent_contours.size() > 0 && !allow_overhang*/false) {
 				try {
 					for (int j = 0; j < parent_contours.size(); j++) {
 						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(best_simplified_polygon, parent_contours[j]);
@@ -369,7 +368,9 @@ namespace simp {
 				}
 			}
 			else {
+				std::cout << "!check size is " << best_simplified_polygon.contour.pointsType.size() << std::endl;
 				best_simplified_polygons.push_back(best_simplified_polygon);
+				std::cout << "!!!check size is " << best_simplified_polygons[0].contour.pointsType.size() << std::endl;
 			}
 
 			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
@@ -384,9 +385,8 @@ namespace simp {
 				}
 			}
 		}
-
+		
 		if (best_simplified_polygons.size() == 0) throw "No valid contour.";
-
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygons, layer->bottom_height, layer->top_height));
 		building->presentativeContours = layer->presentativeContours;
 		for (auto child_layer : layer->children) {
@@ -442,36 +442,45 @@ namespace simp {
 	* @param		config files
 	*/
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs, float snapping_threshold){
-		int num_runs = regularizer_configs.size();
-		for (int i = 0; i < num_runs; i++){
-			bool bUseIntra = regularizer_configs[i].bUseIntra;
-			bool bUseInter = regularizer_configs[i].bUseInter;
-			std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
-			if (bUseIntra && !bUseInter){
-				for (int j = 0; j < layers.size(); j++){
-					std::cout << " layer "<< i << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-					layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
-					post_processing(layers[j], 10, 5);
-					std::cout << " layer " << i << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-
-				}
-			}
-			else if (bUseInter){
-				ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
-				for (int j = 0; j < layers.size(); j++){
-					post_processing(layers[j], 10, 5);
-					std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-					for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
-						std::cout << "----point " << p << " after processing size is " << layers[j]->footprints[0].contour[p] << std::endl;
-					}
-				}
-			}
-			else{
-				// do nothing
+		for (int i = 0; i < layers.size(); i++){
+			for (int j = 0; j < layers[i]->footprints.size(); j++){
+				std::cout << " contour size is " << layers[i]->footprints[j].contour.size() << std::endl;
+				std::cout << " contourPointsType size is " << layers[i]->footprints[j].contour.pointsType.size() << std::endl;
+				for (int k = 0; k < layers[i]->footprints[j].contour.pointsType.size(); k++)
+					std::cout << layers[i]->footprints[j].contour.pointsType[k] << ", ";
+				std::cout << std::endl;
 			}
 		}
-		// post snapping
-		postSnapping(0, layers, layers_relationship, snapping_threshold);
+		//int num_runs = regularizer_configs.size();
+		//for (int i = 0; i < num_runs; i++){
+		//	bool bUseIntra = regularizer_configs[i].bUseIntra;
+		//	bool bUseInter = regularizer_configs[i].bUseInter;
+		//	std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+		//	if (bUseIntra && !bUseInter){
+		//		for (int j = 0; j < layers.size(); j++){
+		//			std::cout << " layer "<< j << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+		//			layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
+		//			post_processing(layers[j], 10, 5);
+		//			std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+
+		//		}
+		//	}
+		//	else if (bUseInter){
+		//		ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
+		//		for (int j = 0; j < layers.size(); j++){
+		//			post_processing(layers[j], 10, 5);
+		//			std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+		//			for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
+		//				std::cout << "----point " << p << " after processing size is " << layers[j]->footprints[0].contour[p] << std::endl;
+		//			}
+		//		}
+		//	}
+		//	else{
+		//		// do nothing
+		//	}
+		//}
+		//// post snapping
+		//postSnapping(0, layers, layers_relationship, snapping_threshold);
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];

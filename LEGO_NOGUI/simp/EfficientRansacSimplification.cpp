@@ -77,13 +77,22 @@ namespace simp {
 		efficient_ransac::EfficientRANSAC er;
 		std::vector<std::pair<int, std::shared_ptr<efficient_ransac::PrimitiveShape>>> shapes;
 		std::vector<cv::Point2f> contour;
+		std::vector<int> contourPointsType;
 		bool bValid = false;
+		bool bContainCurve = false;
 		if (polygon.contour.size() >= 100) {
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
 			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
+				// check whether there are curvers detected
+				for (int j = 0; j < shapes.size(); j++) {
+					if (efficient_ransac::Circle* circle = dynamic_cast<efficient_ransac::Circle*>(shapes[j].second.get())) {
+						bContainCurve = true;
+						break;
+					}
+				}
 				std::sort(shapes.begin(), shapes.end());
-				ContourGenerator::generate(polygon, shapes, contour, contour_max_error, contour_angle_threshold);
+				ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
 				if (contour.size() > 0)
 					bValid = true;
 			}
@@ -91,6 +100,8 @@ namespace simp {
 		//std::cout << "bValid is " << bValid << std::endl;
 		//std::cout << "contour size is " << contour.size() << std::endl;
 		if (!bValid){
+			contour.clear();
+			contourPointsType.clear();
 			float epsilon = 4.0f;
 			util::approxPolyDP(polygon.contour.points, contour, epsilon, true);
 			if (contour.size() < 3) {
@@ -105,9 +116,13 @@ namespace simp {
 				if (contour.size() < 3) {
 					contour = polygon.contour.points;
 				}
-			}	
+			}
+			for (int j = 0; j < contour.size(); j++){
+				contourPointsType.push_back(0);
+			}
 		}
 		ans.contour.points = contour;
+		ans.contour.pointsType = contourPointsType;
 		ans.mat = ans.contour.mat;
 		std::vector<std::vector<cv::Point2f>> contours;
 		contours = util::tessellate(ans.contour);
