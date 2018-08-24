@@ -123,7 +123,7 @@ class ShapeFitLayer {
 				}
 				if (valid_polygons > 0)
 					score = score / valid_polygons;
-				std::cout << " score is " << score << std::endl;
+				//std::cout << " score is " << score << std::endl;
 				//std::cout << "---------------- " << std::endl;
 				return score;
 			}

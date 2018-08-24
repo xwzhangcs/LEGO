@@ -368,9 +368,7 @@ namespace simp {
 				}
 			}
 			else {
-				std::cout << "!check size is " << best_simplified_polygon.contour.pointsType.size() << std::endl;
 				best_simplified_polygons.push_back(best_simplified_polygon);
-				std::cout << "!!!check size is " << best_simplified_polygons[0].contour.pointsType.size() << std::endl;
 			}
 
 			records.push_back(std::make_tuple(best_error, best_num_primitive_shapes, best_algorithm));
@@ -442,45 +440,70 @@ namespace simp {
 	* @param		config files
 	*/
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs, float snapping_threshold){
-		for (int i = 0; i < layers.size(); i++){
-			for (int j = 0; j < layers[i]->footprints.size(); j++){
-				std::cout << " contour size is " << layers[i]->footprints[j].contour.size() << std::endl;
-				std::cout << " contourPointsType size is " << layers[i]->footprints[j].contour.pointsType.size() << std::endl;
-				for (int k = 0; k < layers[i]->footprints[j].contour.pointsType.size(); k++)
-					std::cout << layers[i]->footprints[j].contour.pointsType[k] << ", ";
-				std::cout << std::endl;
+		int num_runs = regularizer_configs.size();
+		for (int i = 0; i < num_runs; i++){
+			bool bUseIntra = regularizer_configs[i].bUseIntra;
+			bool bUseInter = regularizer_configs[i].bUseInter;
+			std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+			if (bUseIntra && !bUseInter){
+				for (int j = 0; j < layers.size(); j++){
+					bool bContainCurve = false;
+					std::cout << " layer "<< j << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					std::vector<util::Polygon> current_polygons = layers[j]->footprints;
+					layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
+					// check whether the layer contains curve part and replace these points using orginal curve points
+					for (int p = 0; p < layers[j]->footprints.size(); p++){
+						for (int k = 0; k < layers[j]->footprints[p].contour.pointsType.size(); k++) // one polygon
+						{
+							if (layers[j]->footprints[p].contour.pointsType[k] == 1)// Curve point
+							{
+								bContainCurve = true;
+								layers[j]->footprints[p].contour[k] = current_polygons[p].contour[k];
+							}
+						}
+					}
+					if (!bContainCurve)
+						post_processing(layers[j], 10, 5);
+					std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+
+				}
+			}
+			else if (bUseInter){
+				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
+				for (int j = 0; j < layers.size(); j++){
+					std::shared_ptr<util::BuildingLayer> layer_tmp = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(layers[j]->building_id, layers[j]->footprints, layers[j]->bottom_height, layers[j]->top_height));
+					current_layers.push_back(layer_tmp);
+				}
+				ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
+				for (int j = 0; j < layers.size(); j++){
+					bool bContainCurve = false;
+					// check whether the layer contains curve part and replace these points using orginal curve points
+					for (int p = 0; p < layers[j]->footprints.size(); p++){
+						for (int k = 0; k < layers[j]->footprints[p].contour.pointsType.size(); k++) // one polygon
+						{
+							std::cout << layers[j]->footprints[p].contour.pointsType[k] << ", ";
+							if (layers[j]->footprints[p].contour.pointsType[k] == 1)// Curve point
+							{
+								bContainCurve = true;
+								layers[j]->footprints[p].contour[k] = current_layers[j]->footprints[p].contour[k];
+							}
+						}
+						std::cout << std::endl;
+					}
+					if (!bContainCurve)
+						post_processing(layers[j], 10, 5);
+					std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
+						std::cout << "----point " << p << " OPT after  is " << layers[j]->footprints[0].contour[p] << std::endl;
+					}
+				}
+			}
+			else{
+				// do nothing
 			}
 		}
-		//int num_runs = regularizer_configs.size();
-		//for (int i = 0; i < num_runs; i++){
-		//	bool bUseIntra = regularizer_configs[i].bUseIntra;
-		//	bool bUseInter = regularizer_configs[i].bUseInter;
-		//	std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
-		//	if (bUseIntra && !bUseInter){
-		//		for (int j = 0; j < layers.size(); j++){
-		//			std::cout << " layer "<< j << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-		//			layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
-		//			post_processing(layers[j], 10, 5);
-		//			std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-
-		//		}
-		//	}
-		//	else if (bUseInter){
-		//		ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
-		//		for (int j = 0; j < layers.size(); j++){
-		//			post_processing(layers[j], 10, 5);
-		//			std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-		//			for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
-		//				std::cout << "----point " << p << " after processing size is " << layers[j]->footprints[0].contour[p] << std::endl;
-		//			}
-		//		}
-		//	}
-		//	else{
-		//		// do nothing
-		//	}
-		//}
-		//// post snapping
-		//postSnapping(0, layers, layers_relationship, snapping_threshold);
+		// post snapping
+		postSnapping(0, layers, layers_relationship, snapping_threshold);
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];
