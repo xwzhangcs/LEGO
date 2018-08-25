@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -19,11 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="efficient_ransac\ContourGenerator.cpp" />
+    <ClCompile Include="efficient_ransac\CurveDetector.cpp" />
+    <ClCompile Include="efficient_ransac\EfficientRANSAC.cpp" />
+    <ClCompile Include="efficient_ransac\EfficientRANSACUtil.cpp" />
+    <ClCompile Include="efficient_ransac\LineDetector.cpp" />
+    <ClCompile Include="efficient_ransac\PrimitiveShape.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="regularizer\Config.cpp" />
+    <ClCompile Include="regularizer\ShapeFitLayer.cpp" />
+    <ClCompile Include="regularizer\ShapeFitLayersAll.cpp" />
+    <ClCompile Include="regularizer\SymmetryLineDetector.cpp" />
     <ClCompile Include="simp\BuildingSimplification.cpp" />
     <ClCompile Include="simp\CurveRightAngleSimplification.cpp" />
     <ClCompile Include="simp\CurveSimplification.cpp" />
     <ClCompile Include="simp\DPSimplification.cpp" />
+    <ClCompile Include="simp\EfficientRansacSimplification.cpp" />
     <ClCompile Include="simp\RightAngleSimplification.cpp" />
     <ClCompile Include="util\BuildingLayer.cpp" />
     <ClCompile Include="util\ContourUtils.cpp" />
@@ -37,10 +48,21 @@
     <ClCompile Include="voxel_model.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="efficient_ransac\ContourGenerator.h" />
+    <ClInclude Include="efficient_ransac\CurveDetector.h" />
+    <ClInclude Include="efficient_ransac\EfficientRANSAC.h" />
+    <ClInclude Include="efficient_ransac\EfficientRANSACUtil.h" />
+    <ClInclude Include="efficient_ransac\LineDetector.h" />
+    <ClInclude Include="efficient_ransac\PrimitiveShape.h" />
+    <ClInclude Include="regularizer\Config.h" />
+    <ClInclude Include="regularizer\ShapeFitLayer.h" />
+    <ClInclude Include="regularizer\ShapeFitLayersAll.h" />
+    <ClInclude Include="regularizer\SymmetryLineDetector.h" />
     <ClInclude Include="simp\BuildingSimplification.h" />
     <ClInclude Include="simp\CurveRightAngleSimplification.h" />
     <ClInclude Include="simp\CurveSimplification.h" />
     <ClInclude Include="simp\DPSimplification.h" />
+    <ClInclude Include="simp\EfficientRansacSimplification.h" />
     <ClInclude Include="simp\RightAngleSimplification.h" />
     <ClInclude Include="util\BuildingLayer.h" />
     <ClInclude Include="util\ContourUtils.h" />
@@ -62,26 +84,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>

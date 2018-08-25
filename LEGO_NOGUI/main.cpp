@@ -13,6 +13,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "regularizer/Config.h"
 
 #include "voxel_model.h"
 
@@ -85,10 +86,172 @@ std::vector<double> readAlgorithmParams(rapidjson::Value& node, const QString& a
 				double angle_threshold = readNumber(alg, "angle_threshold", 10) / 180.0 * CV_PI;
 				return{ epsilon, curve_threshold, angle_threshold };
 			}
+			else if (algorithm_name == "efficient_ransac") {
+				//curve
+				rapidjson::Value& algs_curve = alg["Curve"];
+				double curve_num_iterations = readNumber(algs_curve, "iterations", 200000);
+				double curve_min_points = readNumber(algs_curve, "min_points", 200);
+				double curve_max_error_ratio_to_radius = readNumber(algs_curve, "max_error_ratio_to_radius", 0.02);
+				double curve_cluster_epsilon = readNumber(algs_curve, "cluster_epsilon", 30);
+				double curve_min_angle = readNumber(algs_curve, "min_angle", 90) / 180.0 * CV_PI;
+				double curve_min_radius = readNumber(algs_curve, "min_radius", 80); 
+				double curve_max_radius = readNumber(algs_curve, "max_radius", 400);
+				//line
+				rapidjson::Value& algs_line = alg["Line"];
+				double line_num_iterations = readNumber(algs_line, "iterations", 20000);
+				double line_min_points = readNumber(algs_line, "min_points", 50);
+				double line_max_error = readNumber(algs_line, "max_error", 5);
+				double line_cluster_epsilon = readNumber(algs_line, "cluster_epsilon", 20);
+				double line_min_length = readNumber(algs_line, "min_length", 50); 
+				double line_angle_threshold = readNumber(algs_line, "angle_threshold", 15) / 180.0 * CV_PI;
+				//contour
+				rapidjson::Value& algs_contour = alg["Contour"];
+				double contour_max_error = readNumber(algs_contour, "max_error", 20);
+				double contour_angle_threshold = readNumber(algs_contour, "angle_threshold", 10) / 180.0 * CV_PI;
+				
+				return{ curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, contour_max_error, contour_angle_threshold };
+			}
 		}
 	}
 
 	throw "Invalid or unselected algorithm.";
+}
+
+std::vector<regularizer::Config> readRegularizerParams(rapidjson::Value& node) {
+	std::vector<regularizer::Config> regularizer_configs;
+	int num_runs = node["num_runs"].GetInt();
+	regularizer_configs.resize(num_runs);
+	for (int i = 0; i < num_runs; i++){
+		bool bUseIntra = false;
+		float intraWeight = 0.0f;
+		bool bUseInter = false;
+		float interWeight = 0.0f;
+		bool bUseRaOpt = false;
+		float angle_threshold_RA = 0.0f;
+		float raWeight = 0.0f;
+		bool bUseParallelOpt = false;
+		float angle_threshold_parallel = 0.0f;
+		float parallelWeight = 0.0f;
+		bool bUseSymmetryLineOpt = false;
+		float symmetryIouThreshold = 0.0f;
+		float symmetryWeight = 0.0f;
+		bool bUseAccuracyOpt = false;
+		float accuracyWeight = 0.0f;
+		bool bUsePointSnapOpt = false;
+		float pointDisThreshold = 0.0f;
+		float pointWeight = 0.0f;
+		bool bUseSegSnapOpt = false;
+		float segDisThreshold = 0.0f;
+		float segAngleThreshold = 0.0f;
+		float segWeight = 0.0f;
+
+		// get parameters for each run
+		QString run_name = "Opt" + QString::number(i + 1);
+		rapidjson::Value& algs_run = node[run_name.toUtf8().constData()];
+
+		bUseIntra = readBoolValue(algs_run, "UseIntra", false);
+		bUseInter = readBoolValue(algs_run, "UseInter", false);
+		intraWeight = readNumber(algs_run, "Intra_Weight", 0.5);
+		interWeight = readNumber(algs_run, "Inter_Weight", 0.5);
+
+		if (bUseIntra){
+			rapidjson::Value& algs = algs_run["IntraOpt"];
+			//ra
+			rapidjson::Value& algs_ra = algs["RA"];
+			bUseRaOpt = readBoolValue(algs_ra, "UseOpt", false);
+			angle_threshold_RA = readNumber(algs_ra, "AngleThreshold", 10.0); 
+			raWeight = readNumber(algs_ra, "Weight", 1.0);
+			//symmetry
+			rapidjson::Value& algs_symmetry = algs["Symmetry"];
+			bUseSymmetryLineOpt = readBoolValue(algs_symmetry, "UseOpt", false);
+			symmetryIouThreshold = readNumber(algs_symmetry, "IouThreshold", 90.0);
+			symmetryWeight = readNumber(algs_symmetry, "Weight", 1.0);
+			// parallel
+			rapidjson::Value& algs_parallel = algs["Parallel"];
+			bUseParallelOpt = readBoolValue(algs_parallel, "UseOpt", false);
+			angle_threshold_parallel = readNumber(algs_parallel, "AngleThreshold", 10.0);
+			parallelWeight = readNumber(algs_parallel, "Weight", 1.0);
+			// accuracy
+			rapidjson::Value& algs_accuracy = algs["Accuracy"];
+			bUseAccuracyOpt = readBoolValue(algs_accuracy, "UseOpt", false);
+			accuracyWeight = readNumber(algs_accuracy, "Weight", 1.0);
+		}
+		if (bUseInter){
+			rapidjson::Value& algs = algs_run["InterOpt"];
+			// point snap
+			rapidjson::Value& algs_point = algs["PointSnap"];
+			bUsePointSnapOpt = readBoolValue(algs_point, "UseOpt", false);
+			pointDisThreshold = readNumber(algs_point, "DisThreshold", 10); 
+			pointWeight = readNumber(algs_point, "Weight", 1.0);
+			// seg snap
+			rapidjson::Value& algs_seg = algs["SegSnap"];
+			bUseSegSnapOpt = readBoolValue(algs_seg, "UseOpt", false);
+			segDisThreshold = readNumber(algs_seg, "DisThreshold", 10);
+			segAngleThreshold = readNumber(algs_seg, "AngleThreshold", 5);
+			segWeight = readNumber(algs_seg, "Weight", 1.0);
+		}
+		//check weights
+		if (bUseInter || bUseIntra){
+			float weight = 0.0f;
+			if (bUseInter)
+				weight += interWeight;
+			if (bUseIntra)
+				weight += intraWeight;
+			if (abs(weight - 1.0f) < 0.0001)
+			{
+				// do nothing
+			}
+			else{
+				throw "Please invalid Intra and Inter weight assignment";
+			}
+		}
+		if (bUseIntra){
+			//check the sum weight equals 1
+			float weight = 0.0f;
+			if (bUseRaOpt)
+				weight += raWeight;
+			if (bUseParallelOpt)
+				weight += parallelWeight;
+			if (bUseSymmetryLineOpt)
+				weight += symmetryWeight;
+			if (bUseAccuracyOpt)
+				weight += accuracyWeight;
+			if (abs(weight - 1.0f) < 0.0001)
+			{
+				// do nothing
+			}
+			else{
+				throw "Please invalid Intra weight assignment";
+			}
+		}
+		if (bUseInter){
+			float weight = 0.0f;
+			if (bUsePointSnapOpt)
+				weight += pointWeight;
+			if (bUseSegSnapOpt)
+				weight += segWeight;
+			if (abs(weight - 1.0f) < 0.0001)
+			{
+				// do nothing
+			}
+			else{
+				throw "Please invalid Inter weight assignment";
+			}
+		}
+		regularizer::Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryIouThreshold, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold, pointWeight, bUseSegSnapOpt, segDisThreshold, segAngleThreshold, segWeight);
+		regularizer_configs[i] = config;
+		/*{
+		std::cout << "bUseRa " << config.bUseRaOpt << " ra angle is " << config.angle_threshold_RA << " ra weight is " << config.raWeight << std::endl;
+		std::cout << "bUseParallel " << config.bUseParallelOpt << " Parallel angle is " << config.angle_threshold_parallel << " Parallel weight is " << config.parallelWeight << std::endl;
+		std::cout << "bUseSymmetry " << config.bUseSymmetryLineOpt << " Symmetry weight is " << config.symmetryWeight << std::endl;
+		std::cout << "bUseAccuracy " << config.bUseAccuracyOpt << " Accuracy weight is " << config.accuracyWeight << std::endl;
+		}
+		{
+		std::cout << "bUsePoint " << config.bUsePointSnapOpt << " Point threshold is " << config.pointDisThreshold << " Point weight is " << config.pointWeight << std::endl;
+		std::cout << "bUseSeg " << config.bUseSegSnapOpt << " seg angle is " << config.segAngleThreshold << " seg weight is " << config.segWeight << std::endl;
+		}*/
+	}
+	return regularizer_configs;
 }
 
 int main(int argc, const char* argv[]) {
@@ -229,11 +392,19 @@ int main(int argc, const char* argv[]) {
 		}
 		catch (...) {
 		}
+		try {
+			algorithms[simp::BuildingSimplification::ALG_EFFICIENT_RANSAC] = readAlgorithmParams(algs, "efficient_ransac");
+		}
+		catch (...) {
+		}
+
+		// read regularizer
+		std::vector<regularizer::Config> regularizer_configs = readRegularizerParams(doc["regularizer"]);
 
 		std::vector<util::VoxelBuilding> voxel_buildings = util::DisjointVoxelData::disjoint(voxel_data);
 
 		std::vector<std::shared_ptr<util::BuildingLayer>> buildings;
-		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_layer_height, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+		buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, min_layer_height, contour_simplification_weight, layering_threshold, contour_snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, regularizer_configs);
 
 		util::obj::OBJWriter::write(output_mesh.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);
 		util::topface::TopFaceWriter::write(output_top_face.toUtf8().constData(), voxel_data[0].cols, voxel_data[0].rows, offset_x, offset_y, offset_z, scale, buildings);

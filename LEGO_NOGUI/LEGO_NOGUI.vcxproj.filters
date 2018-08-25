@@ -63,6 +63,39 @@
     <ClCompile Include="util\PointSetShapeDetection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="simp\EfficientRansacSimplification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="efficient_ransac\ContourGenerator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="efficient_ransac\CurveDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="efficient_ransac\EfficientRANSAC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="efficient_ransac\EfficientRANSACUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="efficient_ransac\LineDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="efficient_ransac\PrimitiveShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regularizer\Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regularizer\ShapeFitLayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regularizer\ShapeFitLayersAll.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regularizer\SymmetryLineDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="simp\BuildingSimplification.h">
@@ -111,6 +144,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="util\VerticalPlane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="simp\EfficientRansacSimplification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efficient_ransac\ContourGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efficient_ransac\CurveDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efficient_ransac\EfficientRANSAC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efficient_ransac\EfficientRANSACUtil.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efficient_ransac\LineDetector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="efficient_ransac\PrimitiveShape.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regularizer\Config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regularizer\ShapeFitLayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regularizer\ShapeFitLayersAll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regularizer\SymmetryLineDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
