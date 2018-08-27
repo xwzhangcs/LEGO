@@ -337,7 +337,6 @@ namespace simp {
 					util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
 				}
 			}
-
 			// crop the contour such that it is completely inside the parent contours,
 			// and add the cropped contours to the results.
 			if (parent_contours.size() > 0 && !allow_overhang && best_algorithm != ALG_EFFICIENT_RANSAC) {
