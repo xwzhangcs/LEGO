@@ -64,11 +64,11 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 			// calculate IOU between mirror polygon and original polygon
 			float similarity_iou = util::calculateIOU(polygons[i].contour.points, symmetry_polygon);
 			if (similarity_iou >= symmetryIouThreshold * 0.01){
-				std::cout << "Find symmetry line" << std::endl;
+				//std::cout << "Find symmetry line" << std::endl;
 				symmetry_lines[i] = computed_symmetry_line;
 			}
 			else{
-				std::cout << "Can't find symmetry line" << std::endl;
+				//std::cout << "Can't find symmetry line" << std::endl;
 				symmetry_lines[i].clear();
 			}
 		}

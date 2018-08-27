@@ -444,11 +444,11 @@ namespace simp {
 		for (int i = 0; i < num_runs; i++){
 			bool bUseIntra = regularizer_configs[i].bUseIntra;
 			bool bUseInter = regularizer_configs[i].bUseInter;
-			std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+			//std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
 			if (bUseIntra && !bUseInter){
 				for (int j = 0; j < layers.size(); j++){
 					bool bContainCurve = false;
-					std::cout << " layer "<< j << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					//std::cout << " layer "<< j << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 					std::vector<util::Polygon> current_polygons = layers[j]->footprints;
 					layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
 					// check whether the layer contains curve part and replace these points using orginal curve points
@@ -464,7 +464,7 @@ namespace simp {
 					}
 					if (!bContainCurve)
 						post_processing(layers[j], 10, 5);
-					std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					//std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 
 				}
 			}
@@ -481,20 +481,20 @@ namespace simp {
 					for (int p = 0; p < layers[j]->footprints.size(); p++){
 						for (int k = 0; k < layers[j]->footprints[p].contour.pointsType.size(); k++) // one polygon
 						{
-							std::cout << layers[j]->footprints[p].contour.pointsType[k] << ", ";
+							//std::cout << layers[j]->footprints[p].contour.pointsType[k] << ", ";
 							if (layers[j]->footprints[p].contour.pointsType[k] == 1)// Curve point
 							{
 								bContainCurve = true;
 								layers[j]->footprints[p].contour[k] = current_layers[j]->footprints[p].contour[k];
 							}
 						}
-						std::cout << std::endl;
+						//std::cout << std::endl;
 					}
 					if (!bContainCurve)
 						post_processing(layers[j], 10, 5);
-					std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
+					//std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 					for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
-						std::cout << "----point " << p << " OPT after  is " << layers[j]->footprints[0].contour[p] << std::endl;
+						//std::cout << "----point " << p << " OPT after  is " << layers[j]->footprints[0].contour[p] << std::endl;
 					}
 				}
 			}

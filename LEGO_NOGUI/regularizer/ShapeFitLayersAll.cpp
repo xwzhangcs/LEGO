@@ -1,7 +1,4 @@
 #include "ShapeFitLayersAll.h"
-#include "../rapidjson/document.h"
-#include "../rapidjson/writer.h"
-#include "../rapidjson/stringbuffer.h"
 #include "SymmetryLineDetector.h"
 
 ShapeFitLayersAll::ShapeFitLayersAll() {
@@ -381,7 +378,7 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 		return;
 	}
 	try {
-		std::cout << "total points is " << total_points << std::endl;
+		//std::cout << "total points is " << total_points << std::endl;
 		column_vector starting_point(total_points * 2);
 		int start_index = 0;
 		for (int k = 0; k < normalized_polygons_init.size(); k++){
@@ -552,7 +549,7 @@ bool ShapeFitLayersAll::validSegOpt(const util::Polygon& src_polygon, const std:
 				float angle = util::lineLineAngle(src_start, src_end, des_start, des_end);
 				float dis = util::distance(src_start, src_end, des_start, des_end);
 				angle = std::min(abs(angle), abs(180 - angle));
-				std::cout << "angle is " << angle <<", dis is "<< dis << std::endl;
+				//std::cout << "angle is " << angle <<", dis is "<< dis << std::endl;
 				if (angle <= angle_threshold && dis <= dis_threshold)
 					return true;
 			}

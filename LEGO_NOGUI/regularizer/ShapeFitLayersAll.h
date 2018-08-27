@@ -102,11 +102,11 @@ class ShapeFitLayersAll {
 								//std::cout << "use Accuracy opt" << std::endl;
 								float accuracy_score = 0.0f;
 								if (!util::isSimple(polygons[k][i]) || !util::isSimple(target_layers_polygons[k][i])){
-									std::cout << "image method" << std::endl;
+									//std::cout << "image method" << std::endl;
 									accuracy_score += util::calculateIOUbyImage(polygons[k][i], target_layers_polygons[k][i], 1000);
 								}
 								else{
-									std::cout << "cgal method" << std::endl;
+									//std::cout << "cgal method" << std::endl;
 									accuracy_score += util::calculateIOUbyCGAL(polygons[k][i], target_layers_polygons[k][i]);
 								}
 								//std::cout << "During Accuracy OPT,  score is " << accuracy_score << std::endl;
