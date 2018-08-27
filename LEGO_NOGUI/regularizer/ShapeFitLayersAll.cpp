@@ -7,31 +7,31 @@ ShapeFitLayersAll::ShapeFitLayersAll() {
 ShapeFitLayersAll::~ShapeFitLayersAll() {
 }
 
-void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, regularizer::Config config)
+void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, regularizer::Config configuration)
 {
-	bool bUseIntra = config.bUseIntra;
-	float intraWeight = config.intraWeight;
-	bool bUseInter = config.bUseInter;
-	float interWeight = config.interWeight;
-	bool bUseRaOpt = config.bUseRaOpt;
-	float angle_threshold_RA = config.angle_threshold_RA;
-	float raWeight = config.raWeight;
-	bool bUseParallelOpt = config.bUseParallelOpt;
-	float angle_threshold_parallel = config.angle_threshold_parallel;
-	float parallelWeight = config.parallelWeight;
-	bool bUseSymmetryLineOpt = config.bUseSymmetryLineOpt;
-	float symmetryIouThreshold = config.symmetryIouThreshold;
+	bool bUseIntra = configuration.bUseIntra;
+	float intraWeight = configuration.intraWeight;
+	bool bUseInter = configuration.bUseInter;
+	float interWeight = configuration.interWeight;
+	bool bUseRaOpt = configuration.bUseRaOpt;
+	float angle_threshold_RA = configuration.angle_threshold_RA;
+	float raWeight = configuration.raWeight;
+	bool bUseParallelOpt = configuration.bUseParallelOpt;
+	float angle_threshold_parallel = configuration.angle_threshold_parallel;
+	float parallelWeight = configuration.parallelWeight;
+	bool bUseSymmetryLineOpt = configuration.bUseSymmetryLineOpt;
+	float symmetryIouThreshold = configuration.symmetryIouThreshold;
 	std::vector<layer_polygons> layers_symmetry_lines;
-	float symmetryWeight = config.symmetryWeight;
-	bool bUseAccuracyOpt = config.bUseAccuracyOpt;
-	float accuracyWeight = config.accuracyWeight;
-	bool bUsePointSnapOpt = config.bUsePointSnapOpt;
-	float pointDisThreshold = config.pointDisThreshold;
-	float pointWeight = config.pointWeight;
-	bool bUseSegSnapOpt = config.bUseSegSnapOpt;
-	float segDisThreshold = config.segDisThreshold;
-	float segAngleThreshold = config.segAngleThreshold;
-	float segWeight = config.segWeight;
+	float symmetryWeight = configuration.symmetryWeight;
+	bool bUseAccuracyOpt = configuration.bUseAccuracyOpt;
+	float accuracyWeight = configuration.accuracyWeight;
+	bool bUsePointSnapOpt = configuration.bUsePointSnapOpt;
+	float pointDisThreshold = configuration.pointDisThreshold;
+	float pointWeight = configuration.pointWeight;
+	bool bUseSegSnapOpt = configuration.bUseSegSnapOpt;
+	float segDisThreshold = configuration.segDisThreshold;
+	float segAngleThreshold = configuration.segAngleThreshold;
+	float segWeight = configuration.segWeight;
 	if (!bUseInter && !bUseIntra){
 		return;
 	}
