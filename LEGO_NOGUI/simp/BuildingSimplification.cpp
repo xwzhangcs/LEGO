@@ -52,20 +52,10 @@ namespace simp {
 					// regularizer
 					if (regularizer_configs.size() > 0)
 					{
-						{
-							// before regularizer
-							generateImagesForAllLayers(building, 0, "../data/befor_regularizer_");
-						}
-						//std::cout << "!!check size is " << building->footprints[0].contour.pointsType.size() << std::endl;
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
 						generateVectorForAllLayers(building, 0, layers, layers_relationship);
-						building = regularizerBuilding(layers, layers_relationship, regularizer_configs, snapping_threshold);
-						{
-							// after regularizer
-							generateImagesForAllLayers(building, 0, "../data/after_regularizer_");
-						}
-						
+						building = regularizerBuilding(layers, layers_relationship, regularizer_configs, snapping_threshold);		
 					}
 
 					buildings.push_back(building);
@@ -339,18 +329,18 @@ namespace simp {
 			}
 
 			// snap the edges
-			//if (parent_contours.size() > 0 && snapping_threshold > 0) {
-			//	if (best_algorithm == ALG_RIGHTANGLE) {
-			//		util::snapPolygon(parent_contours, best_simplified_polygon, snapping_threshold);
-			//	}
-			//	else {
-			//		util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
-			//	}
-			//}
+			if (parent_contours.size() > 0 && snapping_threshold > 0 && best_algorithm != ALG_EFFICIENT_RANSAC) {
+				if (best_algorithm == ALG_RIGHTANGLE) {
+					util::snapPolygon(parent_contours, best_simplified_polygon, snapping_threshold);
+				}
+				else {
+					util::snapPolygon2(parent_contours, best_simplified_polygon, snapping_threshold);
+				}
+			}
 
 			// crop the contour such that it is completely inside the parent contours,
 			// and add the cropped contours to the results.
-			if (/*parent_contours.size() > 0 && !allow_overhang*/false) {
+			if (parent_contours.size() > 0 && !allow_overhang && best_algorithm != ALG_EFFICIENT_RANSAC) {
 				try {
 					for (int j = 0; j < parent_contours.size(); j++) {
 						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(best_simplified_polygon, parent_contours[j]);
@@ -444,11 +434,10 @@ namespace simp {
 		for (int i = 0; i < num_runs; i++){
 			bool bUseIntra = regularizer_configs[i].bUseIntra;
 			bool bUseInter = regularizer_configs[i].bUseInter;
-			//std::cout << "intra is " << bUseIntra << ", inter is " << bUseInter << std::endl;
+
 			if (bUseIntra && !bUseInter){
 				for (int j = 0; j < layers.size(); j++){
 					bool bContainCurve = false;
-					//std::cout << " layer "<< j << " before processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 					std::vector<util::Polygon> current_polygons = layers[j]->footprints;
 					layers[j]->footprints = ShapeFitLayer::fit(layers[j]->presentativeContours, layers[j]->footprints, regularizer_configs[i]);
 					// check whether the layer contains curve part and replace these points using orginal curve points
@@ -464,7 +453,6 @@ namespace simp {
 					}
 					if (!bContainCurve)
 						post_processing(layers[j], 10, 5);
-					//std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
 
 				}
 			}
@@ -481,21 +469,15 @@ namespace simp {
 					for (int p = 0; p < layers[j]->footprints.size(); p++){
 						for (int k = 0; k < layers[j]->footprints[p].contour.pointsType.size(); k++) // one polygon
 						{
-							//std::cout << layers[j]->footprints[p].contour.pointsType[k] << ", ";
 							if (layers[j]->footprints[p].contour.pointsType[k] == 1)// Curve point
 							{
 								bContainCurve = true;
 								layers[j]->footprints[p].contour[k] = current_layers[j]->footprints[p].contour[k];
 							}
 						}
-						//std::cout << std::endl;
 					}
 					if (!bContainCurve)
 						post_processing(layers[j], 10, 5);
-					//std::cout << " layer " << j << " after processing size is " << layers[j]->footprints[0].contour.size() << std::endl;
-					for (int p = 0; p < layers[j]->footprints[0].contour.size(); p++){
-						//std::cout << "----point " << p << " OPT after  is " << layers[j]->footprints[0].contour[p] << std::endl;
-					}
 				}
 			}
 			else{

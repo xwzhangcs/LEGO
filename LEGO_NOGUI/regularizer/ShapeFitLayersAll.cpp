@@ -362,15 +362,15 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 			std::cout << "SegSnap invalid" << std::endl;
 		}
 	}
-	//
-	for (int k = 0; k < layers.size(); k++){
-		for (int i = 0; i < layers[k]->footprints.size(); i++){
-			std::cout << "layer " << k << " polygon " << i << ": ";
-			for (int j = 0; j < 6; j++)
-				std::cout << validity_layer_polygons[k][i][j] << ", ";
-			std::cout << std::endl;
-		}
-	}
+	// debug
+	//for (int k = 0; k < layers.size(); k++){
+	//	for (int i = 0; i < layers[k]->footprints.size(); i++){
+	//		std::cout << "layer " << k << " polygon " << i << ": ";
+	//		for (int j = 0; j < 6; j++)
+	//			std::cout << validity_layer_polygons[k][i][j] << ", ";
+	//		std::cout << std::endl;
+	//	}
+	//}
 	// 
 	if (!config.bUseRaOpt && !config.bUseParallelOpt && !config.bUseSymmetryLineOpt && !config.bUseAccuracyOpt && !config.bUsePointSnapOpt && !config.bUseSegSnapOpt)
 	{

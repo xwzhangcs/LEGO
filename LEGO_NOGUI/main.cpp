@@ -240,16 +240,6 @@ std::vector<regularizer::Config> readRegularizerParams(rapidjson::Value& node) {
 		}
 		regularizer::Config config(bUseIntra, intraWeight, bUseInter, interWeight, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, symmetryIouThreshold, symmetryWeight, bUseAccuracyOpt, accuracyWeight, bUsePointSnapOpt, pointDisThreshold, pointWeight, bUseSegSnapOpt, segDisThreshold, segAngleThreshold, segWeight);
 		regularizer_configs[i] = config;
-		/*{
-		std::cout << "bUseRa " << config.bUseRaOpt << " ra angle is " << config.angle_threshold_RA << " ra weight is " << config.raWeight << std::endl;
-		std::cout << "bUseParallel " << config.bUseParallelOpt << " Parallel angle is " << config.angle_threshold_parallel << " Parallel weight is " << config.parallelWeight << std::endl;
-		std::cout << "bUseSymmetry " << config.bUseSymmetryLineOpt << " Symmetry weight is " << config.symmetryWeight << std::endl;
-		std::cout << "bUseAccuracy " << config.bUseAccuracyOpt << " Accuracy weight is " << config.accuracyWeight << std::endl;
-		}
-		{
-		std::cout << "bUsePoint " << config.bUsePointSnapOpt << " Point threshold is " << config.pointDisThreshold << " Point weight is " << config.pointWeight << std::endl;
-		std::cout << "bUseSeg " << config.bUseSegSnapOpt << " seg angle is " << config.segAngleThreshold << " seg weight is " << config.segWeight << std::endl;
-		}*/
 	}
 	return regularizer_configs;
 }
