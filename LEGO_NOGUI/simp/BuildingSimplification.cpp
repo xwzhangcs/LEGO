@@ -372,8 +372,9 @@ namespace simp {
 				}
 			}
 		}
-		
+
 		if (best_simplified_polygons.size() == 0) throw "No valid contour.";
+
 		std::shared_ptr<util::BuildingLayer> building = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(building_id, best_simplified_polygons, layer->bottom_height, layer->top_height));
 		building->presentativeContours = layer->presentativeContours;
 		for (auto child_layer : layer->children) {
