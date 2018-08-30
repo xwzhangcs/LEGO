@@ -50,7 +50,7 @@ namespace simp {
 					std::shared_ptr<util::BuildingLayer> building;
 					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 					// regularizer
-					if (regularizer_configs.size() > 0)
+					if (regularizer_configs.size() >= 0)
 					{
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;

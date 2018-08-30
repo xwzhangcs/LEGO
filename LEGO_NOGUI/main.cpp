@@ -99,10 +99,10 @@ std::vector<double> readAlgorithmParams(rapidjson::Value& node, const QString& a
 				//line
 				rapidjson::Value& algs_line = alg["Line"];
 				double line_num_iterations = readNumber(algs_line, "iterations", 20000);
-				double line_min_points = readNumber(algs_line, "min_points", 50);
+				double line_min_points = readNumber(algs_line, "min_points", 3) * 0.01;
 				double line_max_error = readNumber(algs_line, "max_error", 5);
-				double line_cluster_epsilon = readNumber(algs_line, "cluster_epsilon", 20);
-				double line_min_length = readNumber(algs_line, "min_length", 50); 
+				double line_cluster_epsilon = readNumber(algs_line, "cluster_epsilon", 2) * 0.01;
+				double line_min_length = readNumber(algs_line, "min_length", 3) * 0.01; 
 				double line_angle_threshold = readNumber(algs_line, "angle_threshold", 15) / 180.0 * CV_PI;
 				//contour
 				rapidjson::Value& algs_contour = alg["Contour"];

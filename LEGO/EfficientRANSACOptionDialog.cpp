@@ -75,8 +75,8 @@ int EfficientRANSACOptionDialog::getLineNumIterations() {
 	return ui.lineEditLineNumIterations->text().toInt();
 }
 
-int EfficientRANSACOptionDialog::getLineMinPoints() {
-	return ui.lineEditLineMinPoints->text().toInt();
+double EfficientRANSACOptionDialog::getLineMinPoints() {
+	return ui.lineEditLineMinPoints->text().toDouble();
 }
 
 double EfficientRANSACOptionDialog::getLineMaxError() {

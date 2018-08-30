@@ -42,7 +42,7 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 	spot_light_pos = glm::vec3(20, 25, 30);
 
 	offset = glm::dvec3(0, 0, 0);
-	scale = 0.3;
+	scale = 0.5;
 	min_hole_ratio = 0.02;
 
 	color_mode = COLOR;
@@ -366,7 +366,7 @@ void GLWidget3D::simplifyByAll(double alpha) {
 	else if (alpha < 0.9) threshold = 0.7;
 	else threshold = 0.99;
 
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_ALL, false, 2.5 / scale, alpha, threshold, 0, 0, 0, 0, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, simp::BuildingSimplification::ALG_ALL, false, 1.0 / scale, alpha, threshold, 0, 0, 0, 0, min_hole_ratio);
 
 	show_mode = SHOW_ALL;
 	update3DGeometry();
@@ -385,7 +385,7 @@ void GLWidget3D::simplifyByAll(double alpha) {
 void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_DP] = { epsilon };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 1.0 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 	show_mode = SHOW_DP;
 	update3DGeometry();
@@ -404,7 +404,7 @@ void GLWidget3D::simplifyByDP(double epsilon, double layering_threshold, double 
 void GLWidget3D::simplifyByRightAngle(int resolution, bool optimization, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_RIGHTANGLE] = { (double)resolution, optimization ? 1.0 : 0.0 };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 1.0 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 	show_mode = SHOW_RIGHTANGLE;
 	update3DGeometry();
@@ -424,7 +424,7 @@ void GLWidget3D::simplifyByRightAngle(int resolution, bool optimization, double 
 void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_CURVE] = { epsilon, curve_threshold };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 1.0 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
@@ -445,7 +445,7 @@ void GLWidget3D::simplifyByCurve(double epsilon, double curve_threshold, double 
 void GLWidget3D::simplifyByCurveRightAngle(double epsilon, double curve_threshold, double angle_threshold, double layering_threshold, double snapping_threshold, double orientation, double min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang) {
 	std::map<int, std::vector<double>> algorithms;
 	algorithms[simp::BuildingSimplification::ALG_CURVE_RIGHTANGLE] = { epsilon, curve_threshold, angle_threshold };
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 1.0 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio);
 
 	show_mode = SHOW_CURVE;
 	update3DGeometry();
@@ -620,7 +620,7 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 			file.close();
 		}
 	}
-	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 2.5 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, regularizer_configs);
+	buildings = simp::BuildingSimplification::simplifyBuildings(voxel_buildings, algorithms, false, 1.0 / scale, 0.5, layering_threshold, snapping_threshold / scale, orientation, min_contour_area / scale / scale, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, regularizer_configs);
 
 	show_mode = SHOW_EFFICIENT_RANSAC;
 	update3DGeometry();

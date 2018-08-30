@@ -29,11 +29,11 @@ namespace simp {
 		std::vector<util::Polygon> polygons = util::findContours(img, 40, false, true, false);
 		if (polygons.size() == 0) throw "No building is found.";
 		// debug
-		/*{
+		{
 			std::string img_name = "../data/" + std::to_string(rand() % 500) + ".png";
 			cv::imwrite(img_name, img);
 			std::cout << "img file name is " << img_name << std::endl;
-		}*/
+		}
 		// tranlsate (bbox.x, bbox.y)
 		polygons[0].translate(bbox.x, bbox.y);
 
@@ -65,7 +65,7 @@ namespace simp {
 		float curve_max_radius = parameters[6];
 
 		int line_num_iterations = parameters[7];
-		int line_min_points = parameters[8];
+		float line_min_points = parameters[8];
 		float line_max_error = parameters[9];
 		float line_cluster_epsilon = parameters[10];
 		float line_min_length = parameters[11];
@@ -84,10 +84,10 @@ namespace simp {
 		if (polygon.contour.size() >= 100) {
 			// relative parameters
 			cv::Rect bbox = cv::boundingRect(polygon.contour.points);
-			line_min_points = line_min_points * 0.01 * polygon.contour.size();
-			line_cluster_epsilon = line_cluster_epsilon * 0.01 * polygon.contour.size();
-			line_min_length = line_min_length * 0.01 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-
+			line_min_points = line_min_points * polygon.contour.size();
+			line_cluster_epsilon = line_cluster_epsilon * polygon.contour.size();
+			line_min_length = line_min_length * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
+			//std::cout << "line_min_points is " << line_min_points << std::endl;
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
 			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){

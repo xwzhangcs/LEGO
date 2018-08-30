@@ -21,7 +21,7 @@ public:
 	double getCurveMaxRadius();
 
 	int getLineNumIterations();
-	int getLineMinPoints();
+	double getLineMinPoints();
 	double getLineMaxError();
 	double getLineClusterEpsilon();
 	double getLineMinLength();
