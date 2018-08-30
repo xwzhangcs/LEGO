@@ -38,7 +38,7 @@ std::vector<cv::Point2f> SymmetryLineDetector::fitSymmetryLine(const std::vector
 		starting_point(2) = 0.5 * CV_PI;
 		
 		BFGSSolver solver(normalized_polygon);
-		find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-7), solver, starting_point, 1, 0.0001);
+		find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.0001);
 		//find_min_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-7), solver, starting_point, 0, 0.00001);
 		std::vector<cv::Point2f> ans(2);
 		//ans[0].x = starting_point(0) * max_unit + min_x;

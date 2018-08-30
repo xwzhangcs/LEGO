@@ -436,6 +436,7 @@ namespace simp {
 			bool bUseInter = regularizer_configs[i].bUseInter;
 
 			if (bUseIntra && !bUseInter){
+				std::cout << "Regularizer one layer!!!" << std::endl;
 				for (int j = 0; j < layers.size(); j++){
 					bool bContainCurve = false;
 					std::vector<util::Polygon> current_polygons = layers[j]->footprints;
@@ -457,6 +458,7 @@ namespace simp {
 				}
 			}
 			else if (bUseInter){
+				std::cout << "Regularizer all layers!!!" << std::endl;
 				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
 				for (int j = 0; j < layers.size(); j++){
 					std::shared_ptr<util::BuildingLayer> layer_tmp = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(layers[j]->building_id, layers[j]->footprints, layers[j]->bottom_height, layers[j]->top_height));
@@ -603,6 +605,16 @@ namespace simp {
 				postSnapping(child_layer_id, layers, layers_relationship, snapping_threshold);
 			}
 		}
+	}
+
+	/**
+	* post overhang for all layers/
+	*
+	* @param		root
+	* @param		image index
+	*/
+	void BuildingSimplification::postOverhang(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship){
+		// do nothing
 	}
 
 	/**

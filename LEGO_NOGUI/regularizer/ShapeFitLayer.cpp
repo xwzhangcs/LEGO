@@ -149,7 +149,7 @@ std::vector<util::Polygon> ShapeFitLayer::fit(const std::vector<util::Polygon>& 
 		}
 
 		BFGSSolver solver(normalized_polygons, normalized_polygons_init, bUseRaOpt, angle_threshold_RA, raWeight, bUseParallelOpt, angle_threshold_parallel, parallelWeight, bUseSymmetryLineOpt, normalized_symmetry_lines, symmetryWeight, bUseAccuracyOpt, accuracyWeight);
-		find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.00001);
+		find_max_using_approximate_derivatives(dlib::bfgs_search_strategy(), dlib::objective_delta_stop_strategy(1e-6), solver, starting_point, 1, 0.0001);
 		std::vector<std::vector<cv::Point2f>> ans(ini_points.size());
 		std::vector<util::Polygon> ans_polygons(ini_points.size());
 		start_index = 0;

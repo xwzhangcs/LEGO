@@ -82,6 +82,12 @@ namespace simp {
 		bool bValid = false;
 		bool bContainCurve = false;
 		if (polygon.contour.size() >= 100) {
+			// relative parameters
+			cv::Rect bbox = cv::boundingRect(polygon.contour.points);
+			line_min_points = line_min_points * 0.01 * polygon.contour.size();
+			line_cluster_epsilon = line_cluster_epsilon * 0.01 * polygon.contour.size();
+			line_min_length = line_min_length * 0.01 * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
+
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
 			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
