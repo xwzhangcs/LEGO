@@ -55,7 +55,7 @@ namespace simp {
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
 						generateVectorForAllLayers(building, 0, layers, layers_relationship);
-						building = regularizerBuilding(layers, layers_relationship, regularizer_configs, snapping_threshold);		
+						building = regularizerBuilding(layers, layers_relationship, regularizer_configs, snapping_threshold);
 					}
 
 					buildings.push_back(building);
@@ -453,7 +453,7 @@ namespace simp {
 						}
 					}
 					if (!bContainCurve)
-						post_processing(layers[j], 5, 5);
+						post_processing(layers[j], 3, 3);
 
 				}
 			}
@@ -467,6 +467,7 @@ namespace simp {
 				ShapeFitLayersAll::fit(layers, layers_relationship, regularizer_configs[i]);
 				for (int j = 0; j < layers.size(); j++){
 					bool bContainCurve = false;
+					bool bSmallControur = false;
 					// check whether the layer contains curve part and replace these points using orginal curve points
 					for (int p = 0; p < layers[j]->footprints.size(); p++){
 						for (int k = 0; k < layers[j]->footprints[p].contour.pointsType.size(); k++) // one polygon
@@ -478,8 +479,27 @@ namespace simp {
 							}
 						}
 					}
-					if (!bContainCurve)
-						post_processing(layers[j], 5, 5);
+					// add small contour back
+					for (int p = 0; p < layers[j]->footprints.size(); p++){
+						cv::Rect bbox = cv::boundingRect(layers[j]->footprints[p].contour.points);
+						if (regularizer_configs[i].bUsePointSnapOpt){
+							if (bbox.width < 2 * regularizer_configs[i].pointDisThreshold || bbox.height < 2  * regularizer_configs[i].pointDisThreshold){
+								layers[j]->footprints[p] = current_layers[j]->footprints[p];
+								bSmallControur = true;
+								continue;
+							}
+						}
+						if (regularizer_configs[i].bUseSegSnapOpt){
+							if (bbox.width < 2 * regularizer_configs[i].segDisThreshold || bbox.height < 2 * regularizer_configs[i].segDisThreshold){
+								layers[j]->footprints[p] = current_layers[j]->footprints[p];
+								bSmallControur = true;
+								continue;
+							}
+						}
+					}
+
+					if (!bContainCurve && !bSmallControur)
+						post_processing(layers[j], 3, 3);
 				}
 			}
 			else{
