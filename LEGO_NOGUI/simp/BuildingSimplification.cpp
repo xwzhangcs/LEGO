@@ -50,7 +50,7 @@ namespace simp {
 					std::shared_ptr<util::BuildingLayer> building;
 					building = simplifyBuildingByAll(i, component, {}, algorithms, alpha, snapping_threshold, orientation, min_contour_area, max_obb_ratio, allow_triangle_contour, allow_overhang, min_hole_ratio, curve_preferred, records);
 					// regularizer
-					if (regularizer_configs.size() >= 0)
+					if (regularizer_configs.size() >= 0 && algorithms.find(ALG_EFFICIENT_RANSAC) != algorithms.end())
 					{
 						std::vector<std::shared_ptr<util::BuildingLayer>>layers;
 						std::vector<std::pair<int, int>>layers_relationship;
@@ -487,7 +487,10 @@ namespace simp {
 			}
 		}
 		// post snapping
-		postSnapping(0, layers, layers_relationship, snapping_threshold);
+		if (num_runs > 0 )
+			postSnapping(0, layers, layers_relationship, snapping_threshold);
+		// post Overhang
+		postOverhang(0, layers, layers_relationship);
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];
@@ -594,7 +597,7 @@ namespace simp {
 		if (parent_node != -1 && layers[parent_node]->footprints.size() > 0 && snapping_threshold > 0) {
 			for (int i = 0; i < layers[layer_id]->footprints.size(); i++){
 				//util::Polygon simplified_polygon = layers[layer_id]->footprints[i];
-				util::snapPolygon(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
+				util::snapPolygon2(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
 				//layers[layer_id]->footprints[i].contour.clear();
 				//layers[layer_id]->footprints[i] = simplified_polygon;
 			}
@@ -615,6 +618,41 @@ namespace simp {
 	*/
 	void BuildingSimplification::postOverhang(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship){
 		// do nothing
+		int parent_node = -1;
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].second == layer_id){
+				parent_node = layers_relationship[i].first;
+			}
+		}
+		if (parent_node != -1 && layers[parent_node]->footprints.size() > 0) {
+			std::vector<util::Polygon> simplified_polygons;
+			for (int i = 0; i < layers[layer_id]->footprints.size(); i++){
+				try {
+					for (int j = 0; j < layers[parent_node]->footprints.size(); j++) {
+						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(layers[layer_id]->footprints[i], layers[parent_node]->footprints[j]);
+						for (int k = 0; k < cropped_simplified_polygons.size(); k++) {
+							if (isSimple(cropped_simplified_polygons[k])) {
+								simplified_polygons.push_back(cropped_simplified_polygons[k]);
+							}
+						}
+					}
+				}
+				catch (...) {
+					if (isSimple(layers[layer_id]->footprints[i])) {
+						simplified_polygons.push_back(layers[layer_id]->footprints[i]);
+					}
+				}
+			}
+			layers[layer_id]->footprints.clear();
+			layers[layer_id]->footprints = simplified_polygons;
+		}
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].first == layer_id){
+				int child_layer_id = layers_relationship[i].second;
+				postOverhang(child_layer_id, layers, layers_relationship);
+			}
+		}
+
 	}
 
 	/**

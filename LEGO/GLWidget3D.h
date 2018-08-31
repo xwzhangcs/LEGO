@@ -39,6 +39,7 @@ public:
 	glm::dvec3 offset;
 	double scale;
 	double min_hole_ratio;
+	double min_height;
 
 	// rendering engine
 	RenderManager renderManager;
