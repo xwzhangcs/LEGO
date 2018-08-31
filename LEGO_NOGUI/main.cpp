@@ -303,8 +303,8 @@ int main(int argc, const char* argv[]) {
 		// scan all the files in the directory to get a voxel data
 		QStringList files = dir.entryList(QDir::NoDotAndDotDot | QDir::Files, QDir::DirsFirst);
 		voxel_data.resize(files.size());
-		for (int i = 0; i < files.size(); i++) {
-			voxel_data[i] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
+		for (int i = 1; i < files.size(); i++) {
+			voxel_data[i - 1] = cv::imread((dir.absolutePath() + "/" + files[i]).toUtf8().constData(), cv::IMREAD_GRAYSCALE);
 		}
 		
 		// the following 4 parameters are necessary, we should throw an error if they are not provided, so removing defautl values.
