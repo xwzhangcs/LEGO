@@ -453,7 +453,7 @@ namespace simp {
 						}
 					}
 					if (!bContainCurve)
-						post_processing(layers[j], 10, 5);
+						post_processing(layers[j], 5, 5);
 
 				}
 			}
@@ -479,7 +479,7 @@ namespace simp {
 						}
 					}
 					if (!bContainCurve)
-						post_processing(layers[j], 10, 5);
+						post_processing(layers[j], 5, 5);
 				}
 			}
 			else{
@@ -537,7 +537,7 @@ namespace simp {
 					continue;
 				}
 				else{
-					new_contours[i].push_back(layer->footprints[i].contour[point_index]);
+					new_contours[i].push_back(layer->footprints[i].contour[next_point_index]);
 				}
 			}
 			layer->footprints[i].contour.points.clear();
