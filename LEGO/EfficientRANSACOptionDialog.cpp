@@ -9,7 +9,7 @@ EfficientRANSACOptionDialog::EfficientRANSACOptionDialog(QWidget *parent)
 	ui.lineEditCurveMinPoints->setText("200");
 	ui.lineEditCurveMaxErrorRatioToRadius->setText("0.02");
 	ui.lineEditCurveClusterEpsilon->setText("30");
-	ui.lineEditCurveMinAngle->setText("90");
+	ui.lineEditCurveMinAngle->setText("80");
 	ui.lineEditCurveMinRadius->setText("80");
 	ui.lineEditCurveMaxRadius->setText("400");
 
@@ -27,7 +27,7 @@ EfficientRANSACOptionDialog::EfficientRANSACOptionDialog(QWidget *parent)
 	ui.doubleSpinBoxLayeringThreshold->setMinimum(0.0);
 	ui.doubleSpinBoxLayeringThreshold->setMaximum(1.0);
 
-	ui.doubleSpinBoxSnappingThreshold->setValue(3.0);
+	ui.doubleSpinBoxSnappingThreshold->setValue(2.0);
 	ui.lineEditOrientation->setText("0");
 	ui.lineEditMinContourArea->setText("2");
 	ui.lineEditMaxOBBRatio->setText("10");

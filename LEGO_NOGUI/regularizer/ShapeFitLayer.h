@@ -60,7 +60,7 @@ class ShapeFitLayer {
 					if (init_polygons[i].size() != 0){
 						// RA opt function
 						if (bUseRaOpt){
-							//std::cout << "use RA opt" << std::endl;
+							//::cout << "use RA opt" << std::endl;
 							float ra_score = util::calculateScoreRaOpt(polygons[i], init_polygons[i], angle_threshold_RA);
 							//std::cout << "During OPT, ra_score is " << ra_score << std::endl;
 							score += ra_score * raWeight;
@@ -103,15 +103,17 @@ class ShapeFitLayer {
 						if (bUseAccuracy)
 						{
 							//std::cout << "use Accuracy opt" << std::endl;
+							float accuracy_score = 0.0f;
 							if (!util::isSimple(polygons[i]) || !util::isSimple(target_polygons[i])){
 								//std::cout << "image method" << std::endl;
-								score += util::calculateIOUbyImage(polygons[i], target_polygons[i], 1000) * accuracyWeight;
+								accuracy_score = util::calculateIOUbyImage(polygons[i], target_polygons[i], 1000);
 							}
 							else{
 								//std::cout << "cgal method" << std::endl;
-								score += util::calculateIOUbyCGAL(polygons[i], target_polygons[i]) * accuracyWeight;
+								accuracy_score = util::calculateIOUbyCGAL(polygons[i], target_polygons[i]);
 							}
-							//std::cout << "During OPT, IOU is " << score << std::endl;
+							//std::cout << "During OPT, IOU is " << accuracy_score << std::endl;
+							score += accuracy_score * accuracyWeight;
 						}
 						if (bUseSymmetryLineOpt && !bUseRaOpt && !bUseParallelOpt && !bUseAccuracy){
 							if (symmetry_lines[i].size() != 0)

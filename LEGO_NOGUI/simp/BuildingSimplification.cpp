@@ -431,12 +431,15 @@ namespace simp {
 	*/
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::regularizerBuilding(std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, const std::vector<regularizer::Config>& regularizer_configs, float snapping_threshold){
 		int num_runs = regularizer_configs.size();
+		bool bAllContainCurve = false;
 		for (int i = 0; i < num_runs; i++){
 			bool bUseIntra = regularizer_configs[i].bUseIntra;
 			bool bUseInter = regularizer_configs[i].bUseInter;
 
 			if (bUseIntra && !bUseInter){
 				std::cout << "Regularizer one layer!!!" << std::endl;
+				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
+					continue;
 				for (int j = 0; j < layers.size(); j++){
 					bool bContainCurve = false;
 					std::vector<util::Polygon> current_polygons = layers[j]->footprints;
@@ -448,17 +451,24 @@ namespace simp {
 							if (layers[j]->footprints[p].contour.pointsType[k] == 1)// Curve point
 							{
 								bContainCurve = true;
+								bAllContainCurve = true;
 								layers[j]->footprints[p].contour[k] = current_polygons[p].contour[k];
 							}
 						}
 					}
 					if (!bContainCurve)
-						post_processing(layers[j], 3, 3);
+						post_processing(layers[j], 3, 3, bContainCurve);
+					else
+						post_processing(layers[j], 3, 8, bContainCurve);
 
 				}
 			}
 			else if (bUseInter){
 				std::cout << "Regularizer all layers!!!" << std::endl;
+				if (layers.size() <= 1)
+					continue;
+				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
+					continue;
 				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
 				for (int j = 0; j < layers.size(); j++){
 					std::shared_ptr<util::BuildingLayer> layer_tmp = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(layers[j]->building_id, layers[j]->footprints, layers[j]->bottom_height, layers[j]->top_height));
@@ -475,6 +485,7 @@ namespace simp {
 							if (layers[j]->footprints[p].contour.pointsType[k] == 1)// Curve point
 							{
 								bContainCurve = true;
+								bAllContainCurve = true;
 								layers[j]->footprints[p].contour[k] = current_layers[j]->footprints[p].contour[k];
 							}
 						}
@@ -497,57 +508,84 @@ namespace simp {
 							}
 						}
 					}
-
-					if (!bContainCurve && !bSmallControur)
-						post_processing(layers[j], 3, 3);
+	
+					if (!bSmallControur)
+						if (!bContainCurve)
+							post_processing(layers[j], 3, 3, bContainCurve);
+						else
+							post_processing(layers[j], 3, 8, bContainCurve);
 				}
 			}
 			else{
 				// do nothing
 			}
 		}
+		// debug
+		/*for (int i = 0; i < layers.size(); i++){
+			std::cout << "layer " << i << std::endl;
+			for (int p = 0; p < layers[i]->footprints.size(); p++){
+				std::cout << "polygon " << p << " size is " << layers[i]->footprints[p].contour.size() << std::endl;
+			}
+		}*/
 		// post snapping
-		if (num_runs > 0 )
-			postSnapping(0, layers, layers_relationship, snapping_threshold);
+		if (num_runs > 0){
+			postSegSnapping(0, layers, layers_relationship, snapping_threshold);
+			postPointSnapping(0, layers, layers_relationship, snapping_threshold * 0.5);
+		}
+		for (int i = 0; i < layers.size(); i++){
+			post_processing(layers[i], 2, 2, bAllContainCurve);
+		}
 		// post Overhang
 		postOverhang(0, layers, layers_relationship);
+		// debug
+		/*for (int i = 0; i < layers.size(); i++){
+			std::cout << "after layer " << i << std::endl;
+			for (int p = 0; p < layers[i]->footprints.size(); p++){
+				std::cout << "polygon " << p << " size is " << layers[i]->footprints[p].contour.size() << std::endl;
+				for (int k = 0; k < layers[i]->footprints[p].contour.size(); k++)
+					std::cout << "point " << layers[i]->footprints[p].contour[k] << ", ";
+				std::cout << std::endl;
+			}
+		}*/
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];
 	}
 
-	void BuildingSimplification::post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold, float dis_threshold){
+	void BuildingSimplification::post_processing(std::shared_ptr<util::BuildingLayer>& layer, float angle_threshold, float dis_threshold, bool bCurve){
 		std::vector<std::vector<cv::Point2f>> new_contours;
 		new_contours.resize(layer->footprints.size());
 		for (int i = 0; i < layer->footprints.size(); i++){
-			if (layer->footprints[i].contour.size() < 4){
+			if (layer->footprints[i].contour.size() <= 4){
 				new_contours[i] = layer->footprints[i].contour.points;
 				continue;
 			}
 			int total_segments = layer->footprints[i].contour.size();
 			// note: start from -1
-			for (int j = 0; j < layer->footprints[i].contour.size(); j++){
-				int first_start = (j - 1 + total_segments) % total_segments;
-				int first_end = (j) % total_segments;
-				int second_start = (j) % total_segments;
-				int second_end = (j + 1) % total_segments;
-				cv::Point2f a = layer->footprints[i].contour[first_start];
-				cv::Point2f b = layer->footprints[i].contour[first_end];
-				cv::Point2f c = layer->footprints[i].contour[second_start];
-				cv::Point2f d = layer->footprints[i].contour[second_end];
-				float angle = util::lineLineAngle(a, b, c, d);
-				if (abs(angle) <= angle_threshold || abs(angle - 180) <= angle_threshold){
-					continue;
+			if (!bCurve){
+				for (int j = 0; j < layer->footprints[i].contour.size(); j++){
+					int first_start = (j - 1 + total_segments) % total_segments;
+					int first_end = (j) % total_segments;
+					int second_start = (j) % total_segments;
+					int second_end = (j + 1) % total_segments;
+					cv::Point2f a = layer->footprints[i].contour[first_start];
+					cv::Point2f b = layer->footprints[i].contour[first_end];
+					cv::Point2f c = layer->footprints[i].contour[second_start];
+					cv::Point2f d = layer->footprints[i].contour[second_end];
+					float angle = util::lineLineAngle(a, b, c, d);
+					if (abs(angle) <= angle_threshold || abs(angle - 180) <= angle_threshold){
+						continue;
+					}
+					else{
+						new_contours[i].push_back(b);
+					}
 				}
-				else{
-					new_contours[i].push_back(b);
-				}
+				layer->footprints[i].contour.points.clear();
+				layer->footprints[i].contour.points = new_contours[i];
+				new_contours[i].clear();
 			}
-			layer->footprints[i].contour.points.clear();
-			layer->footprints[i].contour.points = new_contours[i];
-			new_contours[i].clear();
 
-			// merge two very close points
+			// merge two very close adjacent points
 			total_segments = layer->footprints[i].contour.size();
 			for (int j = 0; j < layer->footprints[i].contour.size(); j++){
 				int point_index = j;
@@ -560,6 +598,7 @@ namespace simp {
 					new_contours[i].push_back(layer->footprints[i].contour[next_point_index]);
 				}
 			}
+
 			layer->footprints[i].contour.points.clear();
 			layer->footprints[i].contour.points = new_contours[i];
 		}
@@ -607,7 +646,7 @@ namespace simp {
 	* @param		root
 	* @param		image index
 	*/
-	void BuildingSimplification::postSnapping(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, float snapping_threshold){
+	void BuildingSimplification::postSegSnapping(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, float snapping_threshold){
 		int parent_node = -1;
 		for (int i = 0; i < layers_relationship.size(); i++){
 			if (layers_relationship[i].second == layer_id){
@@ -625,7 +664,36 @@ namespace simp {
 		for (int i = 0; i < layers_relationship.size(); i++){
 			if (layers_relationship[i].first == layer_id){
 				int child_layer_id = layers_relationship[i].second;
-				postSnapping(child_layer_id, layers, layers_relationship, snapping_threshold);
+				postSegSnapping(child_layer_id, layers, layers_relationship, snapping_threshold);
+			}
+		}
+	}
+
+	/**
+	* post snapping for all layers/
+	*
+	* @param		root
+	* @param		image index
+	*/
+	void BuildingSimplification::postPointSnapping(int layer_id, std::vector<std::shared_ptr<util::BuildingLayer>> & layers, std::vector<std::pair<int, int>>& layers_relationship, float snapping_threshold){
+		int parent_node = -1;
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].second == layer_id){
+				parent_node = layers_relationship[i].first;
+			}
+		}
+		if (parent_node != -1 && layers[parent_node]->footprints.size() > 0 && snapping_threshold > 0) {
+			for (int i = 0; i < layers[layer_id]->footprints.size(); i++){
+				//util::Polygon simplified_polygon = layers[layer_id]->footprints[i];
+				util::snapPolygon3(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
+				//layers[layer_id]->footprints[i].contour.clear();
+				//layers[layer_id]->footprints[i] = simplified_polygon;
+			}
+		}
+		for (int i = 0; i < layers_relationship.size(); i++){
+			if (layers_relationship[i].first == layer_id){
+				int child_layer_id = layers_relationship[i].second;
+				postPointSnapping(child_layer_id, layers, layers_relationship, snapping_threshold);
 			}
 		}
 	}
@@ -651,7 +719,7 @@ namespace simp {
 					for (int j = 0; j < layers[parent_node]->footprints.size(); j++) {
 						std::vector<util::Polygon> cropped_simplified_polygons = util::intersection(layers[layer_id]->footprints[i], layers[parent_node]->footprints[j]);
 						for (int k = 0; k < cropped_simplified_polygons.size(); k++) {
-							if (isSimple(cropped_simplified_polygons[k])) {
+							if (isSimple(cropped_simplified_polygons[k]) && cv::contourArea(cropped_simplified_polygons[k].contour.points) > 5.0) {
 								simplified_polygons.push_back(cropped_simplified_polygons[k]);
 							}
 						}

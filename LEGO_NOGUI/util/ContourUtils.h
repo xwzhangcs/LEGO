@@ -198,6 +198,8 @@ namespace util {
 	bool snapEdge(const cv::Point2f& p1, const cv::Point2f& p2, std::vector<cv::Point2f>& polygon, int i, int i2);
 	void snapPolygon2(const std::vector<util::Polygon>& ref_polygons, util::Polygon& polygon, float snapping_threshold);
 	void snapPolygon2(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold);
+	void snapPolygon3(const std::vector<util::Polygon>& ref_polygons, util::Polygon& polygon, float snapping_threshold);
+	void snapPolygon3(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold);
 	bool snapEdge2(const cv::Point2f& p1, const cv::Point2f& p2, std::vector<cv::Point2f>& polygon, int i, int i2);
 	float length(const cv::Point2f& pt);
 	float length(const cv::Point3f& pt);

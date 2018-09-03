@@ -1630,7 +1630,7 @@ namespace util {
 					int k2 = (k + 1) % contour.size();
 
 					float dot_product = std::abs(dotProduct(contour[k2] - contour[k], polygon[i2] - polygon[i]) / length(contour[k2] - contour[k]) / length(polygon[i2] - polygon[i]));
-					if (dot_product < 0.95) continue;
+					if (dot_product < 0.98) continue;
 
 					float ref_len = length(contour[k] - contour[k2]);
 					float len_ratio = ref_len / len;
@@ -1658,7 +1658,7 @@ namespace util {
 						int l2 = (l + 1) % hole.size();
 
 						float dot_product = std::abs(dotProduct(hole[l2] - hole[l], polygon[i2] - polygon[i]) / length(hole[l2] - hole[l]) / length(polygon[i2] - polygon[i]));
-						if (dot_product < 0.95) continue;
+						if (dot_product < 0.98) continue;
 
 						float ref_len = length(hole[l] - hole[l2]);
 						float len_ratio = ref_len / len;
@@ -1699,6 +1699,57 @@ namespace util {
 		polygon = orig_polygon;
 		}
 		*/
+	}
+
+	void snapPolygon3(const std::vector<util::Polygon>& ref_polygons, util::Polygon& polygon, float snapping_threshold) {
+		util::Polygon ans;
+
+		std::vector<cv::Point2f> contour = polygon.contour.getActualPoints().points;
+		util::snapPolygon3(ref_polygons, contour, snapping_threshold);
+		ans.contour.points = contour;
+		if (!isSimple(ans.contour)) return;
+
+		for (int j = 0; j < polygon.holes.size(); j++) {
+			std::vector<cv::Point2f> hole = polygon.holes[j].getActualPoints().points;
+			util::snapPolygon3(ref_polygons, hole, snapping_threshold);
+			ans.holes.push_back(hole);
+		}
+
+		if (isSimple(ans)) {
+			polygon = ans;
+		}
+	}
+
+	void snapPolygon3(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold) {
+		std::vector<cv::Point2f> orig_polygon = polygon;
+		for (int i = 0; i < polygon.size(); i++) {
+			float min_length = std::numeric_limits<float>::max();
+			// find the closest point from the reference polygons
+			cv::Point2f pt1;
+
+			for (int j = 0; j < ref_polygons.size(); j++) {
+				std::vector<cv::Point2f> contour = ref_polygons[j].contour.getActualPoints().points;
+
+				for (int k = 0; k < contour.size(); k++) {
+					float ref_len = length(contour[k] - polygon[i]);
+					if (min_length > ref_len){
+						pt1 = contour[k];
+						min_length = ref_len;
+					}
+
+				}
+			}
+			// snap the edge to the closest one
+			if (min_length < snapping_threshold) {
+				polygon[i] = pt1;
+			}
+		}
+
+		// remove the degenrated points
+		for (int i = polygon.size() - 1; i >= 0; i--) {
+			int prev = (i - 1 + polygon.size()) % polygon.size();
+			if (length(polygon[i] - polygon[prev]) < 0.001) polygon.erase(polygon.begin() + i);
+		}
 	}
 
 	bool snapEdge2(const cv::Point2f& p1, const cv::Point2f& p2, std::vector<cv::Point2f>& polygon, int i, int i2) {
@@ -2140,64 +2191,129 @@ namespace util {
 	/**
 	* calculate score for the polygon (average or sum) for any pair of line segments.
 	*/
+	//float calculateScoreParallelOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold){
+	//	float score = 0.0f;
+	//	int total_segments = polygon.size();
+	//	int valid_segments = 0;
+	//	int angle_index = 0;
+	//	for (int i = 0; i < total_segments - 1; i++){
+	//		for (int j = i + 1; j < total_segments; j++){
+	//			int first_start = i;
+	//			int first_end = (i + 1) % total_segments;
+	//			int second_start = j;
+	//			int second_end = (j + 1) % total_segments;
+
+	//			// init angles
+	//			cv::Point2f a_init = cv::Point2f(init_polygon[first_start].x, init_polygon[first_start].y);
+	//			cv::Point2f b_init = cv::Point2f(init_polygon[first_end].x, init_polygon[first_end].y);
+	//			cv::Point2f c_init = cv::Point2f(init_polygon[second_start].x, init_polygon[second_start].y);;
+	//			cv::Point2f d_init = cv::Point2f(init_polygon[second_end].x, init_polygon[second_end].y);
+	//			float angle_init = lineLineAngle(a_init, b_init, c_init, d_init);
+
+	//			cv::Point2f a = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
+	//			cv::Point2f b = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
+	//			cv::Point2f c = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
+	//			cv::Point2f d = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
+	//			float angle = lineLineAngle(a, b, c, d);
+
+	//			if (abs(angle - angle_init) > 2 * angle_threshold)
+	//				return 0;
+
+	//			if (abs(angle_init) <= angle_threshold){
+	//				if (abs(angle - angle_init) > angle_threshold)
+	//					return 0;
+
+	//				valid_segments++;
+	//				// 0 ~ threshold
+	//				if (angle >= 0 && angle <= angle_threshold){
+	//					score += (angle_threshold - angle) / angle_threshold;
+	//				}
+	//				else
+	//					score += 0;
+	//			}
+	//			else if (abs(angle_init - 180) <= angle_threshold){
+	//				if (abs(angle - angle_init) > angle_threshold)
+	//					return 0;
+
+	//				valid_segments++;
+	//				// 180 - threshold ~ 180
+	//				if (angle > 180 - angle_threshold && angle <= 180){
+	//					score += (angle - 180 + angle_threshold) / angle_threshold;
+	//				}
+	//				else
+	//					score += 0;
+	//			}
+	//			else{
+
+	//			}
+	//			std::cout << angle_index++ << " angle is " << angle << std::endl;
+	//		}
+	//	}
+	//	if (valid_segments == 0)
+	//		return score;
+	//	return score / valid_segments;
+	//}
+
+	/**
+	* calculate score for the polygon (average or sum) for only adjacent line segments.
+	*/
 	float calculateScoreParallelOpt(const std::vector<cv::Point2f>& polygon, const std::vector<cv::Point2f>& init_polygon, int angle_threshold){
 		float score = 0.0f;
 		int total_segments = polygon.size();
 		int valid_segments = 0;
-		int angle_index = 0;
-		for (int i = 0; i < total_segments - 1; i++){
-			for (int j = i + 1; j < total_segments; j++){
-				int first_start = i;
-				int first_end = (i + 1) % total_segments;
-				int second_start = j;
-				int second_end = (j + 1) % total_segments;
+		for (int i = 0; i < total_segments; i++){
+			int first_start = i;
+			int first_end = (i + 1) % total_segments;
+			int second_start = (i + 1) % total_segments;
+			int second_end = (i + 2) % total_segments;
 
-				// init angles
-				cv::Point2f a_init = cv::Point2f(init_polygon[first_start].x, init_polygon[first_start].y);
-				cv::Point2f b_init = cv::Point2f(init_polygon[first_end].x, init_polygon[first_end].y);
-				cv::Point2f c_init = cv::Point2f(init_polygon[second_start].x, init_polygon[second_start].y);;
-				cv::Point2f d_init = cv::Point2f(init_polygon[second_end].x, init_polygon[second_end].y);
-				float angle_init = lineLineAngle(a_init, b_init, c_init, d_init);
+			// init angles
+			cv::Point2f a_init = cv::Point2f(init_polygon[first_start].x, init_polygon[first_start].y);
+			cv::Point2f b_init = cv::Point2f(init_polygon[first_end].x, init_polygon[first_end].y);
+			cv::Point2f c_init = cv::Point2f(init_polygon[second_start].x, init_polygon[second_start].y);;
+			cv::Point2f d_init = cv::Point2f(init_polygon[second_end].x, init_polygon[second_end].y);
+			float angle_init = lineLineAngle(a_init, b_init, c_init, d_init);
+			// check
+			cv::Point2f a = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
+			cv::Point2f b = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
+			cv::Point2f c = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
+			cv::Point2f d = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
+			float angle = lineLineAngle(a, b, c, d);
+			//std::cout << i << " " << angle <<std::endl;
 
-				cv::Point2f a = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
-				cv::Point2f b = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
-				cv::Point2f c = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
-				cv::Point2f d = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
-				float angle = lineLineAngle(a, b, c, d);
+			if (abs(angle - angle_init) > 2 * angle_threshold)
+				return 0;
 
-				if (abs(angle - angle_init) > 2 * angle_threshold)
+			if (abs(angle_init) <= angle_threshold){
+				if (abs(angle - angle_init) > angle_threshold)
 					return 0;
 
-				if (abs(angle_init) <= angle_threshold){
-					if (abs(angle - angle_init) > angle_threshold)
-						return 0;
-
-					valid_segments++;
-					// 0 ~ threshold
-					if (angle >= 0 && angle <= angle_threshold){
-						score += (angle_threshold - angle) / angle_threshold;
-					}
-					else
-						score += 0;
+				valid_segments++;
+				// 0 ~ threshold
+				if (angle >= 0 && angle <= angle_threshold){
+					score += (angle_threshold - angle) / angle_threshold;
 				}
-				else if (abs(angle_init - 180) <= angle_threshold){
-					if (abs(angle - angle_init) > angle_threshold)
-						return 0;
+				else
+					score += 0;
+			}
+			else if (abs(angle_init - 180) <= angle_threshold){
+				if (abs(angle - angle_init) > angle_threshold)
+					return 0;
 
-					valid_segments++;
-					// 180 - threshold ~ 180
-					if (angle > 180 - angle_threshold && angle <= 180){
-						score += (angle - 180 + angle_threshold) / angle_threshold;
-					}
-					else
-						score += 0;
+				valid_segments++;
+				// 180 - threshold ~ 180
+				if (angle > 180 - angle_threshold && angle <= 180){
+					score += (angle - 180 + angle_threshold) / angle_threshold;
 				}
-				else{
+				else
+					score += 0;
+			}
+			else{
 
-				}
-				//std::cout << angle_index++ << " angle is " << angle << std::endl;
 			}
 		}
+		//std::cout << "score of polygon is " << score << std::endl;
+		//std::cout << "-----------------" << std::endl;
 		if (valid_segments == 0)
 			return score;
 		return score / valid_segments;
