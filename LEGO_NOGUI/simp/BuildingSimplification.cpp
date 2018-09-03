@@ -537,7 +537,7 @@ namespace simp {
 		// post Overhang
 		postOverhang(0, layers, layers_relationship);
 		// debug
-		/*for (int i = 0; i < layers.size(); i++){
+		for (int i = 0; i < layers.size(); i++){
 			std::cout << "after layer " << i << std::endl;
 			for (int p = 0; p < layers[i]->footprints.size(); p++){
 				std::cout << "polygon " << p << " size is " << layers[i]->footprints[p].contour.size() << std::endl;
@@ -545,7 +545,7 @@ namespace simp {
 					std::cout << "point " << layers[i]->footprints[p].contour[k] << ", ";
 				std::cout << std::endl;
 			}
-		}*/
+		}
 		// create output building 
 		generateBuildingFromAllLayers(layers[0], 0, layers, layers_relationship);
 		return layers[0];

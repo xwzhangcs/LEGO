@@ -140,12 +140,7 @@ namespace simp {
 		ans.mat = ans.contour.mat;
 		std::vector<std::vector<cv::Point2f>> contours;
 		contours = util::tessellate(ans.contour);
-		std::cout << "---Begin" << std::endl;
-		for (int i = 0; i < ans.contour.points.size(); i++){
-			std::cout << ans.contour.points[i] << ", ";
-		}
-		std::cout << std::endl;
-		std::cout << "---End" << std::endl;
+
 		for (int i = 0; i < contours.size(); i++) {
 			util::clockwise(contours[i]);
 
