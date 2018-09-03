@@ -16,7 +16,7 @@ namespace efficient_ransac {
 
 	void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& circles) {
 		circles.clear();
-		srand(0);
+		srand(1);
 		int N = polygon.size();
 		if (N < min_points) return;
 

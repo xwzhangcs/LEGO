@@ -17,7 +17,7 @@ namespace efficient_ransac {
 
 	void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& lines) {
 		lines.clear();
-		srand(0);
+		srand(1);
 		int N = polygon.size();
 		if (N < min_points) return;
 

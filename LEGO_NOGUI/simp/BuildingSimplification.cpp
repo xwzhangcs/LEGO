@@ -435,7 +435,6 @@ namespace simp {
 		for (int i = 0; i < num_runs; i++){
 			bool bUseIntra = regularizer_configs[i].bUseIntra;
 			bool bUseInter = regularizer_configs[i].bUseInter;
-
 			if (bUseIntra && !bUseInter){
 				std::cout << "Regularizer one layer!!!" << std::endl;
 				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
