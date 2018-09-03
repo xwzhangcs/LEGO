@@ -60,7 +60,7 @@ class ShapeFitLayer {
 					if (init_polygons[i].size() != 0){
 						// RA opt function
 						if (bUseRaOpt){
-							//::cout << "use RA opt" << std::endl;
+							//std::cout << "use RA opt" << std::endl;
 							float ra_score = util::calculateScoreRaOpt(polygons[i], init_polygons[i], angle_threshold_RA);
 							//std::cout << "During OPT, ra_score is " << ra_score << std::endl;
 							score += ra_score * raWeight;
