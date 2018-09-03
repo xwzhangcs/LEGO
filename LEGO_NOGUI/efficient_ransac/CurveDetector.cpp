@@ -16,7 +16,10 @@ namespace efficient_ransac {
 
 	void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& circles) {
 		circles.clear();
-		srand(1);
+		//srand(1);
+		boost::random::mt19937 gen;
+		// generate a random number from 0 ~ 1000000
+		boost::random::uniform_int_distribution<> dist(0, 1000000);
 		int N = polygon.size();
 		if (N < min_points) return;
 
@@ -40,11 +43,17 @@ namespace efficient_ransac {
 				int index2 = -1;
 				int index3 = -1;
 				for (int iter2 = 0; iter2 < num_iter; iter2++) {
-					index1 = unused_list[rand() % unused_list.size()];
+					/*index1 = unused_list[rand() % unused_list.size()];
 					index2 = (int)(index1 + rand() % (int)(cluster_epsilon * 2 + 1) - cluster_epsilon + N2) % N;
 					if (polygon[index2].used) continue;
 					index3 = (int)(index1 + rand() % (int)(cluster_epsilon * 2 + 1) - cluster_epsilon + N2) % N;
-					if (polygon[index3].used) continue;
+					if (polygon[index3].used) continue;*/
+					index1 = unused_list[dist(gen) % unused_list.size()];
+					index2 = (int)(index1 + dist(gen) % (int)(cluster_epsilon * 2 + 1) - cluster_epsilon + N2) % N;
+					if (polygon[index2].used) continue;
+					index3 = (int)(index1 + dist(gen) % (int)(cluster_epsilon * 2 + 1) - cluster_epsilon + N2) % N;
+					if (polygon[index3].used) continue; 
+
 					break;
 				}
 

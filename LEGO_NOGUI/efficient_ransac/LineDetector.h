@@ -64,7 +64,6 @@ namespace efficient_ransac {
 
 	public:
 		static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& lines);
-		static void detectWithRA(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, const std::vector<cv::Point2f>& ra_polygon, float ra_max_error, float ra_cluster_epsilon, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& lines);
 	};
 
 }

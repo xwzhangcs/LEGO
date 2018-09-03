@@ -6,6 +6,8 @@
 #include <boost/polygon/polygon.hpp>
 #include <boost/geometry.hpp>
 #include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 
 namespace simp {
 
@@ -74,6 +76,13 @@ namespace simp {
 		float contour_max_error = parameters[13];
 		float contour_angle_threshold = parameters[14];
 
+		{
+			boost::random::mt19937 gen;
+			boost::random::uniform_int_distribution<> dist(1, 100);
+			for (int i = 0; i < 10; i++){
+				std::cout << "rand numbers is " << dist(gen) << std::endl;
+			}
+		}
 		// detect circles and lines
 		efficient_ransac::EfficientRANSAC er;
 		std::vector<std::pair<int, std::shared_ptr<efficient_ransac::PrimitiveShape>>> shapes;
@@ -82,27 +91,12 @@ namespace simp {
 		bool bValid = false;
 		bool bContainCurve = false;
 		if (polygon.contour.size() >= 100) {
-			std::cout << "---Ori Begin" << std::endl;
-			for (int i = 0; i < 10; i++){
-				std::cout << polygon.contour.points[i] << ", ";
-			}
-			std::cout << "Ori ---End" << std::endl;
 			// relative parameters
 			cv::Rect bbox = cv::boundingRect(polygon.contour.points);
-			std::cout << "principal_orientation is " << principal_orientation << std::endl;
-			std::cout << "bbox is " << bbox << std::endl;
-			std::cout << "polygon.contour.size() is " << polygon.contour.size() << std::endl;
-			std::cout << "before line_min_points is " << line_min_points << std::endl;
 			line_min_points = line_min_points * polygon.contour.size();
-			std::cout << "after line_min_points is " << line_min_points << std::endl;
-			std::cout << "before line_cluster_epsilon is " << line_cluster_epsilon << std::endl;
 			line_cluster_epsilon = line_cluster_epsilon * polygon.contour.size();
-			std::cout << "after line_cluster_epsilon is " << line_cluster_epsilon << std::endl;
-			std::cout << "before line_min_length is " << line_min_length << std::endl;
 			line_min_length = line_min_length * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
-			std::cout << "after line_min_length is " << line_min_length << std::endl;
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
-			std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
 				// check whether there are curvers detected
 				for (int j = 0; j < shapes.size(); j++) {

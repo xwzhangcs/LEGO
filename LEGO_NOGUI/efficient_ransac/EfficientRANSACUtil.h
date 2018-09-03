@@ -3,6 +3,8 @@
 #include <vector>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int_distribution.hpp>
 
 namespace efficient_ransac {
 
