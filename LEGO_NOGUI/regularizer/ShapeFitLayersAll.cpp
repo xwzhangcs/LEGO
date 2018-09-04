@@ -363,14 +363,14 @@ void ShapeFitLayersAll::fit(std::vector<std::shared_ptr<util::BuildingLayer>> & 
 		}
 	}
 	// debug
-	//for (int k = 0; k < layers.size(); k++){
-	//	for (int i = 0; i < layers[k]->footprints.size(); i++){
-	//		std::cout << "layer " << k << " polygon " << i << ": ";
-	//		for (int j = 0; j < 6; j++)
-	//			std::cout << validity_layer_polygons[k][i][j] << ", ";
-	//		std::cout << std::endl;
-	//	}
-	//}
+	/*for (int k = 0; k < layers.size(); k++){
+		for (int i = 0; i < layers[k]->footprints.size(); i++){
+			std::cout << "layer " << k << " polygon " << i << ": ";
+			for (int j = 0; j < 6; j++)
+				std::cout << validity_layer_polygons[k][i][j] << ", ";
+			std::cout << std::endl;
+		}
+	}*/
 	// 
 	if (!config.bUseRaOpt && !config.bUseParallelOpt && !config.bUseSymmetryLineOpt && !config.bUseAccuracyOpt && !config.bUsePointSnapOpt && !config.bUseSegSnapOpt)
 	{
@@ -456,23 +456,39 @@ bool ShapeFitLayersAll::validRA(const std::vector<cv::Point2f>& polygon, bool bU
 bool ShapeFitLayersAll::validParallel(const std::vector<cv::Point2f>& polygon, bool bUseParallelOpt, int parallel_angle_threshold){
 	int total_segments = polygon.size();
 	if (bUseParallelOpt){
-		for (int i = 0; i < total_segments - 1; i++){
-			for (int j = i + 1; j < total_segments; j++){
-				int first_start = i;
-				int first_end = (i + 1) % total_segments;
-				int second_start = j;
-				int second_end = (j + 1) % total_segments;
+		for (int i = 0; i < total_segments; i++){
+			//for (int j = i + 1; j < total_segments; j++){
+			//	int first_start = i;
+			//	int first_end = (i + 1) % total_segments;
+			//	int second_start = j;
+			//	int second_end = (j + 1) % total_segments;
 
-				// init angles
-				cv::Point2f a_init = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
-				cv::Point2f b_init = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
-				cv::Point2f c_init = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
-				cv::Point2f d_init = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
-				float angle_init = util::lineLineAngle(a_init, b_init, c_init, d_init);
-				//std::cout << i <<" to "<<j <<" angle is " << angle_init << std::endl;
-				// check
-				if (abs(angle_init) <= parallel_angle_threshold || abs(angle_init - 180) <= parallel_angle_threshold)
-					return true;
+			//	// init angles
+			//	cv::Point2f a_init = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
+			//	cv::Point2f b_init = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
+			//	cv::Point2f c_init = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
+			//	cv::Point2f d_init = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
+			//	float angle_init = util::lineLineAngle(a_init, b_init, c_init, d_init);
+			//	//std::cout << i <<" to "<<j <<" angle is " << angle_init << std::endl;
+			//	// check
+			//	if (abs(angle_init) <= parallel_angle_threshold || abs(angle_init - 180) <= parallel_angle_threshold)
+			//		return true;
+			//}
+			int first_start = i;
+			int first_end = (i + 1) % total_segments;
+			int second_start = (i + 1) % total_segments;
+			int second_end = (i + 2) % total_segments;
+
+			// init angles
+			cv::Point2f a_init = cv::Point2f(polygon[first_start].x, polygon[first_start].y);
+			cv::Point2f b_init = cv::Point2f(polygon[first_end].x, polygon[first_end].y);
+			cv::Point2f c_init = cv::Point2f(polygon[second_start].x, polygon[second_start].y);;
+			cv::Point2f d_init = cv::Point2f(polygon[second_end].x, polygon[second_end].y);
+			float angle_init = util::lineLineAngle(a_init, b_init, c_init, d_init);
+			//std::cout << i << " angle is " << angle_init << std::endl;
+			// check
+			if (abs(angle_init) <= parallel_angle_threshold || abs(angle_init - 180) <= parallel_angle_threshold){
+				return true;
 			}
 		}
 		return false;
