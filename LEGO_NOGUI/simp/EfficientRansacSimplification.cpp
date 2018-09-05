@@ -29,11 +29,11 @@ namespace simp {
 		std::vector<util::Polygon> polygons = util::findContours(img, 40, false, true, false);
 		if (polygons.size() == 0) throw "No building is found.";
 		// debug
-		/*{
+		{
 			std::string img_name = "../data/" + std::to_string(rand() % 500) + ".png";
 			cv::imwrite(img_name, img);
 			std::cout << "img file name is " << img_name << std::endl;
-		}*/
+		}
 		// tranlsate (bbox.x, bbox.y)
 		polygons[0].translate(bbox.x, bbox.y);
 
@@ -91,15 +91,37 @@ namespace simp {
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
 			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
-				// check whether there are curvers detected
-				for (int j = 0; j < shapes.size(); j++) {
-					if (efficient_ransac::Circle* circle = dynamic_cast<efficient_ransac::Circle*>(shapes[j].second.get())) {
-						bContainCurve = true;
+				std::sort(shapes.begin(), shapes.end());
+				//std::cout << "Before shapes size is " << shapes.size() << std::endl;
+				ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
+				// check whether it's a simple contour
+				while (!util::isSimple(contour)) {
+					// remove the shortest line segment
+					int best_line_index = -1;
+					float best_line_length = std::numeric_limits<float>::max();
+					for (int j = 0; j < shapes.size(); j++){
+						if (efficient_ransac::Circle* circle = dynamic_cast<efficient_ransac::Circle*>(shapes[j].second.get())) {
+							continue;
+						}
+						else{
+							float length = cv::norm(shapes[j].second->startPoint() - shapes[j].second->endPoint());
+							if (length < best_line_length){
+								best_line_length = length;
+								best_line_index = j;
+							}
+						}
+					}
+					if (best_line_index != -1){
+						shapes.erase(shapes.begin() + best_line_index);
+						contour.clear();
+						contourPointsType.clear();
+						ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
+					}
+					else{
 						break;
 					}
 				}
-				std::sort(shapes.begin(), shapes.end());
-				ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
+				//std::cout << "After shapes size is " << shapes.size() << std::endl;
 				if (contour.size() > 0)
 					bValid = true;
 			}
