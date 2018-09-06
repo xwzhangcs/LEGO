@@ -1141,7 +1141,6 @@ namespace util {
 
 				polygons.push_back(polygon);
 			}
-
 		}
 
 		return polygons;

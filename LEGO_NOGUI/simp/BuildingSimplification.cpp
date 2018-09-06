@@ -265,9 +265,9 @@ namespace simp {
 			if (algorithms.find(ALG_EFFICIENT_RANSAC) != algorithms.end()) {
 				try {
 					util::Polygon simplified_polygon = EfficientRansacSimplification::simplify(contours[i], algorithms[ALG_EFFICIENT_RANSAC], orientation, min_hole_ratio);
-					if (!util::isSimple(simplified_polygon.contour)) {throw "Contour is self-intersecting.";}
+					if (!util::isSimple(simplified_polygon.contour)) throw "Contour is self-intersecting.";
 					// check if the shape is a triangle
-					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) {throw "Triangle is not allowed.";}
+					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
 
 					// check the OBB ratio
 					cv::Mat_<float> m;
@@ -287,9 +287,7 @@ namespace simp {
 						best_num_primitive_shapes = costs[2];
 					}
 				}
-				catch (...) { 
-					std::cout << "exception" << std::endl; 
-				}
+				catch (...) { std::cout << "exception" << std::endl; }
 			}
 
 			if (best_algorithm == ALG_UNKNOWN) {
@@ -301,6 +299,7 @@ namespace simp {
 					if (!allow_triangle_contour && simplified_polygon.contour.size() <= 3) throw "Triangle is not allowed.";
 					std::vector<float> costs = calculateCost(simplified_polygon, contours[i], layer->top_height - layer->bottom_height);
 					float cost = alpha * costs[0] / costs[1] + (1 - alpha) * costs[2] / baseline_costs[2];
+
 					if (cost < best_cost) {
 						best_algorithm = ALG_DP;
 						right_angle_for_all_contours = false;
