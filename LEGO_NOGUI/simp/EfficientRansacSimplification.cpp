@@ -29,11 +29,11 @@ namespace simp {
 		std::vector<util::Polygon> polygons = util::findContours(img, 40, false, true, false);
 		if (polygons.size() == 0) throw "No building is found.";
 		// debug
-		{
+		/*{
 			std::string img_name = "../data/" + std::to_string(rand() % 500) + ".png";
 			cv::imwrite(img_name, img);
 			std::cout << "img file name is " << img_name << std::endl;
-		}
+		}*/
 		// tranlsate (bbox.x, bbox.y)
 		polygons[0].translate(bbox.x, bbox.y);
 
@@ -79,13 +79,18 @@ namespace simp {
 		std::vector<std::pair<int, std::shared_ptr<efficient_ransac::PrimitiveShape>>> shapes;
 		std::vector<cv::Point2f> contour;
 		std::vector<int> contourPointsType;
+		std::vector<std::vector<cv::Point2f>> contour_holes;
+		std::vector<std::vector<int>> contourPointsType_holes;
 		bool bValid = false;
+		bool bValidHoles = false;
 		bool bContainCurve = false;
 		if (polygon.contour.size() >= 100) {
 			// relative parameters
 			cv::Rect bbox = cv::boundingRect(polygon.contour.points);
 			line_min_points = line_min_points * polygon.contour.size();
 			line_cluster_epsilon = line_cluster_epsilon * polygon.contour.size();
+			if (line_cluster_epsilon <= 3)
+				line_cluster_epsilon = 3.0f;
 			line_min_length = line_min_length * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
 			//std::cout << "line_min_points is " << line_min_points << std::endl;
 			shapes = er.detect(polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
@@ -116,8 +121,10 @@ namespace simp {
 						contour.clear();
 						contourPointsType.clear();
 						ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
+						//std::cout << "remove shortest line segment successfully.." << std::endl;
 					}
 					else{
+						std::cout << "failure.." << std::endl;
 						break;
 					}
 				}
@@ -126,8 +133,6 @@ namespace simp {
 					bValid = true;
 			}
 		}
-		//std::cout << "bValid is " << bValid << std::endl;
-		//std::cout << "contour size is " << contour.size() << std::endl;
 		if (!bValid){
 			contour.clear();
 			contourPointsType.clear();
@@ -150,11 +155,70 @@ namespace simp {
 				contourPointsType.push_back(0);
 			}
 		}
+
+		// holes
+		if (polygon.holes.size() > 0){
+			contour_holes.resize(polygon.holes.size());
+			contourPointsType_holes.resize(polygon.holes.size());
+			bool bValid_hole = false; 
+			for (int holeId = 0; holeId < polygon.holes.size(); holeId++){
+				bValid_hole = false;
+				std::vector<cv::Point2f> one_hole;
+				one_hole.resize(polygon.holes[holeId].size());
+				line_min_points = parameters[8];
+				line_cluster_epsilon = parameters[10];
+				line_min_length = parameters[11];
+				std::vector<std::pair<int, std::shared_ptr<efficient_ransac::PrimitiveShape>>> shapes_hole;
+				util::Polygon hole_polygon;
+				for (int k = 0; k < polygon.holes[holeId].size(); k++)
+					one_hole[k] = polygon.holes[holeId][k];
+				if (one_hole.size() > 100 && cv::contourArea(one_hole) > 100){
+					hole_polygon.contour.points = one_hole;
+					//{
+					//	cv::Rect bbox = util::boundingBox(hole_polygon.contour.points);
+					//	//cv::Rect bbox = util::boundingBox(building->presentativeContours[0].contour.points);
+					//	cv::Mat_<uchar> img;
+					//	util::createImageFromPolygon(bbox.width, bbox.height, hole_polygon, cv::Point2f(-bbox.x, -bbox.y), img);
+					//	cv::imwrite("../data/hole.png", img);
+					//}
+					cv::Rect bbox = cv::boundingRect(hole_polygon.contour.points);
+					line_min_points = line_min_points * hole_polygon.contour.size();
+					line_cluster_epsilon = line_cluster_epsilon * hole_polygon.contour.size();
+					if (line_cluster_epsilon < 3)
+						line_cluster_epsilon = 3.0f;
+					line_min_length = line_min_length * sqrt(bbox.width * bbox.width + bbox.height * bbox.height);
+					shapes_hole = er.detect(hole_polygon.contour.points, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, line_angle_threshold, principal_orientations);
+					if (shapes_hole.size() > 0){
+						std::sort(shapes_hole.begin(), shapes_hole.end());
+						ContourGenerator::generate(hole_polygon, shapes_hole, contour_holes[holeId], contourPointsType_holes[holeId], contour_max_error, contour_angle_threshold);
+						if (contour_holes[holeId].size() > 0){
+							bValid_hole = true;
+							bValidHoles = true;
+						}
+					}
+				}
+
+				if (!bValid_hole){
+					contour_holes[holeId].clear();
+					contourPointsType_holes[holeId].clear();				
+				}
+			}
+		}
 		ans.contour.points = contour;
 		ans.contour.pointsType = contourPointsType;
+		if (bValidHoles){
+			for (int i = 0; i < contour_holes.size(); i++){
+				if (contour_holes[i].size() > 0){
+					ans.holes.push_back(contour_holes[i]);
+				}
+			}
+		}
 		ans.mat = ans.contour.mat;
 		std::vector<std::vector<cv::Point2f>> contours;
-		contours = util::tessellate(ans.contour);
+		if (bValidHoles)
+			contours = util::tessellate(ans.contour, ans.holes);
+		else
+			contours = util::tessellate(ans.contour);
 
 		for (int i = 0; i < contours.size(); i++) {
 			util::clockwise(contours[i]);

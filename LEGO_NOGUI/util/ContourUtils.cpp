@@ -1123,12 +1123,25 @@ namespace util {
 				int hole_id = hierarchy[i][2];
 				while (hole_id != -1) {
 					// ignore holes in this implementation for simplicity
-
+					util::Ring hole;
+					hole.resize(contours[hole_id].size());
+					for (int j = 0; j < contours[hole_id].size(); j++) {
+						if (dilate) {
+							hole[j] = cv::Point2f(std::round(contours[hole_id][j].x * 0.25), std::round(contours[hole_id][j].y * 0.25));
+						}
+						else {
+							hole[j] = cv::Point2f(contours[hole_id][j].x, contours[hole_id][j].y);
+						}
+					}
+					if (dilate)
+						hole = removeRedundantPoint(hole);
+					polygon.holes.push_back(hole);
 					hole_id = hierarchy[hole_id][0];
 				}
 
 				polygons.push_back(polygon);
 			}
+
 		}
 
 		return polygons;
