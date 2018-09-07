@@ -39,9 +39,9 @@ namespace simp {
 			for (auto component : components) {
 				try {
 					// Better approach using efficient RANSAC
-					int height = component->getTopHeight();
-					bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect2(component->raw_footprints);
-
+					//int height = component->getTopHeight();
+					//bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect2(component->raw_footprints);
+					bool curve_preferred = false;
 					/*
 					int height = component->getTopHeight();
 					bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect(contours[0]);
@@ -109,7 +109,6 @@ namespace simp {
 	 */
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio, bool curve_preferred, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
 		// get baseline cost
 		std::vector<util::Polygon> baseline_polygons;
 		std::vector<float> baseline_costs(3, 0);

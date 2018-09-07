@@ -137,15 +137,15 @@ namespace simp {
 			contour.clear();
 			contourPointsType.clear();
 			float epsilon = 4.0f;
-			util::approxPolyDP(polygon.contour.points, contour, epsilon, true);
+			cv::approxPolyDP(polygon.contour.points, contour, epsilon, true);
 			if (contour.size() < 3) {
 				// If the simplification makes the polygon a line, gradually decrease the epsilon 
 				// until it becomes a polygon with at least 3 vertices.
-				float epsilon2 = epsilon - 0.3;
+				float epsilon2 = epsilon - 2.0;
 				while (epsilon2 >= 0 && contour.size() < 3) {
-					//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-					util::approxPolyDP(polygon.contour.points, contour, epsilon2, true);
-					epsilon2 -= 0.3;
+					cv::approxPolyDP(polygon.contour.points, contour, epsilon2, true);
+					//util::approxPolyDP(polygon.contour.points, contour, epsilon2, true);
+					epsilon2 -= 2.0;
 				}
 				if (contour.size() < 3) {
 					contour = polygon.contour.points;
