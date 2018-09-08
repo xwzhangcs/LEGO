@@ -44,7 +44,7 @@ GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuff
 	offset = glm::dvec3(0, 0, 0);
 	scale = 0.25;
 	min_hole_ratio = 0.02;
-	min_height = 1.5;
+	min_height = 1.0;
 
 	color_mode = COLOR;
 	show_mode = SHOW_INPUT;

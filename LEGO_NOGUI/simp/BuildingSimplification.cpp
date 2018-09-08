@@ -34,14 +34,16 @@ namespace simp {
 
 		time_t start = clock();
 		setbuf(stdout, NULL);
+		std::wcout << "voxel_buildings.size() is " << voxel_buildings.size() << std::endl;
 		for (int i = 0; i < voxel_buildings.size(); i++) {
 			std::vector<std::shared_ptr<util::BuildingLayer>> components = util::DisjointVoxelData::layering(voxel_buildings[i], layering_threshold, min_num_slices_per_layer);
+			std::wcout << "components.size() is " << components.size() << std::endl;
 			for (auto component : components) {
 				try {
 					// Better approach using efficient RANSAC
-					int height = component->getTopHeight();
-					bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect2(component->raw_footprints);
-
+					//int height = component->getTopHeight();
+					//bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect2(component->raw_footprints);
+					bool curve_preferred = false;
 					/*
 					int height = component->getTopHeight();
 					bool curve_preferred = height < 121 && (component->top_height - component->bottom_height < 37) && component->top_height < 53 && util::EfficientRansacCurveDetector::detect(contours[0]);
@@ -109,7 +111,6 @@ namespace simp {
 	 */
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio, bool curve_preferred, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
-
 		// get baseline cost
 		std::vector<util::Polygon> baseline_polygons;
 		std::vector<float> baseline_costs(3, 0);
@@ -529,8 +530,23 @@ namespace simp {
 		}*/
 		// post snapping
 		if (num_runs > 0){
+			std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
+			for (int j = 0; j < layers.size(); j++){
+				std::shared_ptr<util::BuildingLayer> layer_tmp = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(layers[j]->building_id, layers[j]->footprints, layers[j]->bottom_height, layers[j]->top_height));
+				current_layers.push_back(layer_tmp);
+			}
 			postSegSnapping(0, layers, layers_relationship, snapping_threshold);
 			postPointSnapping(0, layers, layers_relationship, snapping_threshold * 0.5);
+
+			for (int j = 0; j < layers.size(); j++){
+				// check whether the layer polygon becomes not simple
+				for (int p = 0; p < layers[j]->footprints.size(); p++){
+					if (!util::isSimple(layers[j]->footprints[p])){
+						layers[j]->footprints[p] = current_layers[j]->footprints[p];
+						std::cout << "here" << std::endl;
+					}
+				}
+			}
 
 			for (int i = 0; i < layers.size(); i++){
 				post_processing(layers[i], 2, 2, bAllContainCurve);
@@ -657,7 +673,8 @@ namespace simp {
 		if (parent_node != -1 && layers[parent_node]->footprints.size() > 0 && snapping_threshold > 0) {
 			for (int i = 0; i < layers[layer_id]->footprints.size(); i++){
 				//util::Polygon simplified_polygon = layers[layer_id]->footprints[i];
-				util::snapPolygon2(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
+				if (layers[layer_id]->footprints[i].contour.size() > 0)
+					util::snapPolygon2(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
 				//layers[layer_id]->footprints[i].contour.clear();
 				//layers[layer_id]->footprints[i] = simplified_polygon;
 			}
@@ -686,7 +703,8 @@ namespace simp {
 		if (parent_node != -1 && layers[parent_node]->footprints.size() > 0 && snapping_threshold > 0) {
 			for (int i = 0; i < layers[layer_id]->footprints.size(); i++){
 				//util::Polygon simplified_polygon = layers[layer_id]->footprints[i];
-				util::snapPolygon3(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
+				if (layers[layer_id]->footprints[i].contour.size() > 0)
+					util::snapPolygon3(layers[parent_node]->footprints, layers[layer_id]->footprints[i], snapping_threshold);
 				//layers[layer_id]->footprints[i].contour.clear();
 				//layers[layer_id]->footprints[i] = simplified_polygon;
 			}

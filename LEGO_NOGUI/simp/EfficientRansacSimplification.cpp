@@ -97,10 +97,11 @@ namespace simp {
 			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
 				std::sort(shapes.begin(), shapes.end());
-				//std::cout << "Before shapes size is " << shapes.size() << std::endl;
+				std::cout << "Before shapes size is " << shapes.size() << std::endl;
 				ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
+				//std::cout << "contour size is " << contour.size() << std::endl;
 				// check whether it's a simple contour
-				while (!util::isSimple(contour)) {
+				while (contour.size() > 0 && !util::isSimple(contour) && shapes.size() > 2) {
 					// remove the shortest line segment
 					int best_line_index = -1;
 					float best_line_length = std::numeric_limits<float>::max();
@@ -128,8 +129,8 @@ namespace simp {
 						break;
 					}
 				}
-				//std::cout << "After shapes size is " << shapes.size() << std::endl;
-				if (contour.size() > 0)
+				std::cout << "After shapes size is " << shapes.size() << std::endl;
+				if (contour.size() > 0 && util::isSimple(contour))
 					bValid = true;
 			}
 		}
@@ -137,15 +138,16 @@ namespace simp {
 			contour.clear();
 			contourPointsType.clear();
 			float epsilon = 4.0f;
-			util::approxPolyDP(polygon.contour.points, contour, epsilon, true);
+			cv::approxPolyDP(polygon.contour.points, contour, epsilon, true);
 			if (contour.size() < 3) {
 				// If the simplification makes the polygon a line, gradually decrease the epsilon 
 				// until it becomes a polygon with at least 3 vertices.
-				float epsilon2 = epsilon - 0.3;
+				float epsilon2 = epsilon - 2;
 				while (epsilon2 >= 0 && contour.size() < 3) {
-					//cv::approxPolyDP(contour, polygon.contour.points, epsilon2, true);
-					util::approxPolyDP(polygon.contour.points, contour, epsilon2, true);
-					epsilon2 -= 0.3;
+					contour.clear();
+					cv::approxPolyDP(polygon.contour.points, contour, epsilon2, true);
+					//util::approxPolyDP(polygon.contour.points, contour, epsilon2, true);
+					epsilon2 -= 2;
 				}
 				if (contour.size() < 3) {
 					contour = polygon.contour.points;
