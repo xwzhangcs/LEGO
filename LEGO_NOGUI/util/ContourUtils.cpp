@@ -1626,6 +1626,7 @@ namespace util {
 
 	void snapPolygon2(const std::vector<util::Polygon>& ref_polygons, std::vector<cv::Point2f>& polygon, float snapping_threshold) {
 		std::vector<cv::Point2f> orig_polygon = polygon;
+
 		for (int i = 0; i < polygon.size(); i++) {
 			int i2 = (i + 1) % polygon.size();
 			float len = length(polygon[i] - polygon[i2]);
@@ -1704,6 +1705,7 @@ namespace util {
 			int prev = (i - 1 + polygon.size()) % polygon.size();
 			if (length(polygon[i] - polygon[prev]) < 0.001) polygon.erase(polygon.begin() + i);
 		}
+
 		/*
 		if (!isSimple(polygon)) {
 		polygon = orig_polygon;

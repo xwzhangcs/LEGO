@@ -99,7 +99,6 @@ namespace simp {
 				std::sort(shapes.begin(), shapes.end());
 				//std::cout << "Before shapes size is " << shapes.size() << std::endl;
 				ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
-				//std::cout << "contour size is " << contour.size() << std::endl;
 				// check whether it's a simple contour
 				while (contour.size() > 0 && !util::isSimple(contour) && shapes.size() > 2) {
 					// remove the shortest line segment

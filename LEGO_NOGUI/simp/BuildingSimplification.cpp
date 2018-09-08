@@ -34,10 +34,8 @@ namespace simp {
 
 		time_t start = clock();
 		setbuf(stdout, NULL);
-		std::wcout << "voxel_buildings.size() is " << voxel_buildings.size() << std::endl;
 		for (int i = 0; i < voxel_buildings.size(); i++) {
 			std::vector<std::shared_ptr<util::BuildingLayer>> components = util::DisjointVoxelData::layering(voxel_buildings[i], layering_threshold, min_num_slices_per_layer);
-			std::wcout << "components.size() is " << components.size() << std::endl;
 			for (auto component : components) {
 				try {
 					// Better approach using efficient RANSAC
@@ -111,6 +109,7 @@ namespace simp {
 	 */
 	std::shared_ptr<util::BuildingLayer> BuildingSimplification::simplifyBuildingByAll(int building_id, std::shared_ptr<util::BuildingLayer> layer, const std::vector<util::Polygon>& parent_contours, std::map<int, std::vector<double>>& algorithms, float alpha, float snapping_threshold, float orientation, float min_contour_area, float max_obb_ratio, bool allow_triangle_contour, bool allow_overhang, float min_hole_ratio, bool curve_preferred, std::vector<std::tuple<float, long long, int>>& records) {
 		std::vector<util::Polygon> contours = layer->selectRepresentativeContours();
+
 		// get baseline cost
 		std::vector<util::Polygon> baseline_polygons;
 		std::vector<float> baseline_costs(3, 0);
