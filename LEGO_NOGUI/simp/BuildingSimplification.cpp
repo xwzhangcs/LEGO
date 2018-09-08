@@ -543,7 +543,6 @@ namespace simp {
 				for (int p = 0; p < layers[j]->footprints.size(); p++){
 					if (!util::isSimple(layers[j]->footprints[p])){
 						layers[j]->footprints[p] = current_layers[j]->footprints[p];
-						std::cout << "here" << std::endl;
 					}
 				}
 			}
