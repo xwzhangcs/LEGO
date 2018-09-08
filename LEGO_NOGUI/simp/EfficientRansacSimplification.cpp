@@ -97,7 +97,7 @@ namespace simp {
 			//std::cout << "shapes is " << shapes.size() << std::endl;
 			if (shapes.size() > 0){
 				std::sort(shapes.begin(), shapes.end());
-				std::cout << "Before shapes size is " << shapes.size() << std::endl;
+				//std::cout << "Before shapes size is " << shapes.size() << std::endl;
 				ContourGenerator::generate(polygon, shapes, contour, contourPointsType, contour_max_error, contour_angle_threshold);
 				//std::cout << "contour size is " << contour.size() << std::endl;
 				// check whether it's a simple contour
@@ -129,7 +129,7 @@ namespace simp {
 						break;
 					}
 				}
-				std::cout << "After shapes size is " << shapes.size() << std::endl;
+				//std::cout << "After shapes size is " << shapes.size() << std::endl;
 				if (contour.size() > 0 && util::isSimple(contour))
 					bValid = true;
 			}
