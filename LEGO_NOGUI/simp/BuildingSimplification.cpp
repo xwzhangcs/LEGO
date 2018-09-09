@@ -440,6 +440,12 @@ namespace simp {
 				std::cout << "Regularizer one layer!!!" << std::endl;
 				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
 					continue;
+				// save the original state of layers
+				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
+				for (int j = 0; j < layers.size(); j++){
+					std::shared_ptr<util::BuildingLayer> layer_tmp = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(layers[j]->building_id, layers[j]->footprints, layers[j]->bottom_height, layers[j]->top_height));
+					current_layers.push_back(layer_tmp);
+				}
 				for (int j = 0; j < layers.size(); j++){
 					bool bContainCurve = false;
 					std::vector<util::Polygon> current_polygons = layers[j]->footprints;
@@ -462,6 +468,16 @@ namespace simp {
 						post_processing(layers[j], 3, 8, bContainCurve);
 
 				}
+				// check self-intersection
+				for (int j = 0; j < layers.size(); j++){
+					// check whether the layer polygon becomes not simple
+					for (int p = 0; p < layers[j]->footprints.size(); p++){
+						if (!util::isSimple(layers[j]->footprints[p])){
+							layers[j]->footprints[p] = current_layers[j]->footprints[p];
+						}
+					}
+				}
+
 			}
 			else if (bUseInter){
 				std::cout << "Regularizer all layers!!!" << std::endl;
@@ -469,6 +485,7 @@ namespace simp {
 					continue;
 				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
 					continue;
+				// save the original state of layers
 				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
 				for (int j = 0; j < layers.size(); j++){
 					std::shared_ptr<util::BuildingLayer> layer_tmp = std::shared_ptr<util::BuildingLayer>(new util::BuildingLayer(layers[j]->building_id, layers[j]->footprints, layers[j]->bottom_height, layers[j]->top_height));
@@ -515,16 +532,25 @@ namespace simp {
 						else
 							post_processing(layers[j], 3, 8, bContainCurve);
 				}
+				// check self-intersection
+				for (int j = 0; j < layers.size(); j++){
+					// check whether the layer polygon becomes not simple
+					for (int p = 0; p < layers[j]->footprints.size(); p++){
+						if (!util::isSimple(layers[j]->footprints[p])){
+							layers[j]->footprints[p] = current_layers[j]->footprints[p];
+						}
+					}
+				}
 			}
 			else{
 				// do nothing
 			}
 		}
 		// debug
-		/*for (int i = 0; i < layers.size(); i++){
-			std::cout << "layer " << i << std::endl;
-			for (int p = 0; p < layers[i]->footprints.size(); p++){
-				std::cout << "polygon " << p << " size is " << layers[i]->footprints[p].contour.size() << std::endl;
+		/*for (int j = 0; j < layers.size(); j++){
+			std::cout << "layer " << j << std::endl;
+			for (int p = 0; p < layers[j]->footprints.size(); p++){
+				std::cout << "polygon " << p << " is  " << util::isSimple(layers[j]->footprints[p]) << std::endl;
 			}
 		}*/
 		// post snapping
