@@ -438,7 +438,7 @@ namespace simp {
 
 			if (bUseIntra && !bUseInter){
 				std::cout << "Regularizer one layer!!!" << std::endl;
-				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
+				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 5)
 					continue;
 				// save the original state of layers
 				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
@@ -463,7 +463,7 @@ namespace simp {
 						}
 					}
 					if (!bContainCurve)
-						post_processing(layers[j], 3, 3, bContainCurve);
+						post_processing(layers[j], 3, 5, bContainCurve);
 					else
 						post_processing(layers[j], 3, 8, bContainCurve);
 
@@ -483,7 +483,7 @@ namespace simp {
 				std::cout << "Regularizer all layers!!!" << std::endl;
 				if (layers.size() <= 1)
 					continue;
-				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 4)
+				if (regularizer_configs[i].bUseSymmetryLineOpt && layers.size() >= 5)
 					continue;
 				// save the original state of layers
 				std::vector<std::shared_ptr<util::BuildingLayer>> current_layers;
@@ -528,7 +528,7 @@ namespace simp {
 	
 					if (!bSmallControur)
 						if (!bContainCurve)
-							post_processing(layers[j], 3, 3, bContainCurve);
+							post_processing(layers[j], 3, 5, bContainCurve);
 						else
 							post_processing(layers[j], 3, 8, bContainCurve);
 				}
@@ -561,7 +561,7 @@ namespace simp {
 				current_layers.push_back(layer_tmp);
 			}
 			postSegSnapping(0, layers, layers_relationship, snapping_threshold);
-			postPointSnapping(0, layers, layers_relationship, snapping_threshold * 0.5);
+			postPointSnapping(0, layers, layers_relationship, snapping_threshold);
 
 			for (int j = 0; j < layers.size(); j++){
 				// check whether the layer polygon becomes not simple

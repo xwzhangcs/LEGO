@@ -9,14 +9,17 @@ EfficientRANSACOptionDialog::EfficientRANSACOptionDialog(QWidget *parent)
 	ui.lineEditCurveMinPoints->setText("200");
 	ui.lineEditCurveMaxErrorRatioToRadius->setText("0.02");
 	ui.lineEditCurveClusterEpsilon->setText("30");
-	ui.lineEditCurveMinAngle->setText("80");
+	ui.lineEditCurveMinAngle->setText("90");
 	ui.lineEditCurveMinRadius->setText("80");
 	ui.lineEditCurveMaxRadius->setText("400");
 
 	ui.lineEditLineNumIterations->setText("20000");
+	//ui.lineEditLineMinPoints->setText("2");
 	ui.lineEditLineMinPoints->setText("2");
-	ui.lineEditLineMaxError->setText("5");
-	ui.lineEditLineClusterEpsilon->setText("1.5");
+	ui.lineEditLineMaxError->setText("3");
+	//ui.lineEditLineClusterEpsilon->setText("1.5");
+	ui.lineEditLineClusterEpsilon->setText("2");
+	//ui.lineEditLineMinLength->setText("2");
 	ui.lineEditLineMinLength->setText("2");
 	ui.lineEditLineAngleThreshold->setText("10");
 
