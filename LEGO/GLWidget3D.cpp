@@ -627,6 +627,96 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 	update3DGeometry();
 }
 
+void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight, bool bWindowDis, double windowDisRatio, bool bWindowProb, double windowProb){
+	/*
+	std::cout << "facadeImagesPath is " << facadeImagesPath.toUtf8().constData() << std::endl;
+	std::cout << "imageNum is " << imageNum << std::endl;
+	std::cout << "width is " << width << std::endl;
+	std::cout << "height is " << height << std::endl;
+	std::cout << "imageRows is " << "(" << imageRows.first << ", " << imageRows.second<<")"<< std::endl;
+	std::cout << "imageCols is " << "(" << imageCols.first << ", " << imageCols.second << ")" << std::endl;
+	std::cout << "imageGroups is " << "(" << imageGroups.first << ", " << imageGroups.second << ")" << std::endl;
+	std::cout << "imageRelativeWidth is " << "(" << imageRelativeWidth.first << ", " << imageRelativeWidth.second << ")" << std::endl;
+	std::cout << "imageRelativeHeight is " << "(" << imageRelativeHeight.first << ", " << imageRelativeHeight.second << ")" << std::endl;
+	std::cout << "bWindowDis is " << bWindowDis << std::endl;
+	std::cout << "windowDisRatio is " << windowDisRatio << std::endl;
+	std::cout << "bWindowProb is " << bWindowProb << std::endl;
+	std::cout << "windowProb is " << windowProb << std::endl;*/
+
+	// generate facade images
+	for (int l = 0; l < imageNum; l++){
+		cv::Scalar bg_color(255, 255, 255); // white back ground
+		cv::Scalar window_color(0, 0, 0); // black for windows
+		int NR = util::genRand(imageRows.first, imageRows.second + 1);
+		int NC = util::genRand(imageCols.first, imageCols.second + 1);
+		int NG = util::genRand(imageGroups.first, imageGroups.second + 1);
+		double ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
+		double ratioHeight = util::genRand(imageRelativeHeight.first, imageRelativeHeight.second);
+		int thickness = -1;
+		cv::Mat result(height, width, CV_8UC3, bg_color);
+		double FH = height * 1.0 / NR;
+		double FW = width * 1.0 / NC;
+		double WH = FH * ratioHeight;
+		double WW = FW * ratioWidth;
+		std::cout << "NR is " << NR << std::endl;
+		std::cout << "NC is " << NC << std::endl;
+		std::cout << "FH is " << FH << std::endl;
+		std::cout << "FW is " << FW << std::endl;
+		std::cout << "ratioWidth is " << ratioWidth << std::endl;
+		std::cout << "ratioHeight is " << ratioHeight << std::endl;
+		std::cout << "WH is " << WH << std::endl;
+		std::cout << "WW is " << WW << std::endl;
+		// draw facade image
+		if (NG == 1){
+			for (int i = 0; i < NR; ++i) {
+				for (int j = 0; j < NC; ++j) {
+					float x1 = (FW - WW) * 0.5 + FW * j;
+					float y1 = (FH - WH) * 0.5 + FH * i;
+					float x2 = x1 + WW;
+					float y2 = y1 + WH;
+					//cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+					if (bWindowDis) {
+						x1 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
+						y1 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
+						x2 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
+						y2 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
+					}
+
+					if (bWindowProb){
+						if (util::genRand() < windowProb) {
+							cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+						}
+					}
+					else{
+						cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+					}
+				}
+			}
+		}
+		else{
+			double GFW = WW / NG;
+			double GWW = WW / NG - 2;
+			for (int i = 0; i < NR; ++i) {
+				for (int j = 0; j < NC; ++j) {
+					float x1 = (FW - WW) * 0.5 + FW * j;
+					float y1 = (FH - WH) * 0.5 + FH * i;
+					for (int k = 0; k < NG; k++){
+						float g_x1 = x1 + GFW * k;
+						float g_y1 = y1;
+						float g_x2 = g_x1 + GWW;
+						float g_y2 = g_y1 + WH;
+						
+						cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
+					}
+				}
+			}
+		}
+		QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(l + 1, 6, 10, QChar('0'));
+		cv::imwrite(img_filename.toUtf8().constData(), result);
+	}
+}
+
+
 void GLWidget3D::update3DGeometry() {
 	if (show_mode == SHOW_INPUT) {
 		update3DGeometry(voxel_buildings);

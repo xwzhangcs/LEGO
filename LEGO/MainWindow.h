@@ -33,6 +33,7 @@ public slots:
 	void onOffsetScale();
 	void onColoringModeChanged();
 	void onRenderingModeChanged();
+	void onGenerateFacadeImages();
 };
 
 #endif // MAINWINDOW_H

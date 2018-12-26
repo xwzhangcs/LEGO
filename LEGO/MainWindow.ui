@@ -66,9 +66,16 @@
     <addaction name="separator"/>
     <addaction name="actionOffsetScale"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionGenerateFacadeImages"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
    <addaction name="menuRendering"/>
+   <addaction name="menuTools"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -271,6 +278,11 @@
   <action name="actionSimplifyByEfficientRANSAC">
    <property name="text">
     <string>EfficientRANSAC</string>
+   </property>
+  </action>
+  <action name="actionGenerateFacadeImages">
+   <property name="text">
+    <string>Generate Facade Images</string>
    </property>
   </action>
  </widget>

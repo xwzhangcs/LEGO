@@ -9,6 +9,7 @@
 #include "CurveOptionDialog.h"
 #include "CurveRightAngleOptionDialog.h"
 #include "EfficientRANSACOptionDialog.h"
+#include "GenerateFacadeOptionDialog.h"
 #include "OffsetScaleDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
@@ -53,6 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionRenderingBasic, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingSSAO, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionRenderingHatching, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
+	connect(ui.actionGenerateFacadeImages, SIGNAL(triggered()), this, SLOT(onGenerateFacadeImages()));
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
@@ -206,4 +208,12 @@ void MainWindow::onRenderingModeChanged() {
 		glWidget->renderManager.renderingMode = RenderManager::RENDERING_MODE_HATCHING;
 	}
 	glWidget->update();
+}
+
+void MainWindow::onGenerateFacadeImages(){
+	GenerateFacadeOptionDialog dlg;
+	if (dlg.exec()) {
+		//generateFacadeImages(QString facadeImagesPath, int imageNum, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight);
+		glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb());
+	}
 }

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'MainWindow.ui'
 **
-** Created by: Qt User Interface Compiler version 5.8.0
+** Created by: Qt User Interface Compiler version 5.9.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -51,11 +51,13 @@ public:
     QAction *actionSaveTopFaces;
     QAction *actionOffsetScale;
     QAction *actionSimplifyByEfficientRANSAC;
+    QAction *actionGenerateFacadeImages;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuRendering;
     QMenu *menuSimplify;
+    QMenu *menuTools;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -136,6 +138,8 @@ public:
         actionOffsetScale->setObjectName(QStringLiteral("actionOffsetScale"));
         actionSimplifyByEfficientRANSAC = new QAction(MainWindowClass);
         actionSimplifyByEfficientRANSAC->setObjectName(QStringLiteral("actionSimplifyByEfficientRANSAC"));
+        actionGenerateFacadeImages = new QAction(MainWindowClass);
+        actionGenerateFacadeImages->setObjectName(QStringLiteral("actionGenerateFacadeImages"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -148,6 +152,8 @@ public:
         menuRendering->setObjectName(QStringLiteral("menuRendering"));
         menuSimplify = new QMenu(menuBar);
         menuSimplify->setObjectName(QStringLiteral("menuSimplify"));
+        menuTools = new QMenu(menuBar);
+        menuTools->setObjectName(QStringLiteral("menuTools"));
         MainWindowClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(MainWindowClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -159,6 +165,7 @@ public:
         menuBar->addAction(menuFile->menuAction());
         menuBar->addAction(menuSimplify->menuAction());
         menuBar->addAction(menuRendering->menuAction());
+        menuBar->addAction(menuTools->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionSaveOBJ);
         menuFile->addAction(actionSaveTopFaces);
@@ -187,6 +194,7 @@ public:
         menuSimplify->addAction(actionCurveTest);
         menuSimplify->addSeparator();
         menuSimplify->addAction(actionOffsetScale);
+        menuTools->addAction(actionGenerateFacadeImages);
 
         retranslateUi(MainWindowClass);
 
@@ -198,18 +206,24 @@ public:
         MainWindowClass->setWindowTitle(QApplication::translate("MainWindowClass", "LEGO", Q_NULLPTR));
         actionExit->setText(QApplication::translate("MainWindowClass", "Exit", Q_NULLPTR));
         actionOpenSliceImage->setText(QApplication::translate("MainWindowClass", "Open Slice Image", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionOpenSliceImage->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
         actionRenderingBasic->setText(QApplication::translate("MainWindowClass", "Basic", Q_NULLPTR));
         actionRenderingSSAO->setText(QApplication::translate("MainWindowClass", "SSAO", Q_NULLPTR));
         actionRenderingHatching->setText(QApplication::translate("MainWindowClass", "Hatching", Q_NULLPTR));
         actionOpen->setText(QApplication::translate("MainWindowClass", "Open", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionOpen->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+O", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
         actionSavePLY->setText(QApplication::translate("MainWindowClass", "Save PLY", Q_NULLPTR));
         actionSimplifyByDP->setText(QApplication::translate("MainWindowClass", "Douglas-Peucker", Q_NULLPTR));
         actionSimplifyByRightAngle->setText(QApplication::translate("MainWindowClass", "Right Angle", Q_NULLPTR));
         actionInputVoxel->setText(QApplication::translate("MainWindowClass", "Input", Q_NULLPTR));
         actionSaveImage->setText(QApplication::translate("MainWindowClass", "Save Image", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionSaveImage->setShortcut(QApplication::translate("MainWindowClass", "P", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
         actionSaveImageHD->setText(QApplication::translate("MainWindowClass", "Save Image HD", Q_NULLPTR));
         actionColor->setText(QApplication::translate("MainWindowClass", "Color", Q_NULLPTR));
         actionTexture->setText(QApplication::translate("MainWindowClass", "Texture", Q_NULLPTR));
@@ -221,13 +235,17 @@ public:
         actionCurveTest->setText(QApplication::translate("MainWindowClass", "Curve Test", Q_NULLPTR));
         actionSimplifyByCurveRightAngle->setText(QApplication::translate("MainWindowClass", "Curve + Right Angle", Q_NULLPTR));
         actionSaveOBJ->setText(QApplication::translate("MainWindowClass", "Save OBJ", Q_NULLPTR));
+#ifndef QT_NO_SHORTCUT
         actionSaveOBJ->setShortcut(QApplication::translate("MainWindowClass", "Ctrl+S", Q_NULLPTR));
+#endif // QT_NO_SHORTCUT
         actionSaveTopFaces->setText(QApplication::translate("MainWindowClass", "Save Top Faces", Q_NULLPTR));
         actionOffsetScale->setText(QApplication::translate("MainWindowClass", "Offset & Scale", Q_NULLPTR));
         actionSimplifyByEfficientRANSAC->setText(QApplication::translate("MainWindowClass", "EfficientRANSAC", Q_NULLPTR));
+        actionGenerateFacadeImages->setText(QApplication::translate("MainWindowClass", "Generate Facade Images", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));
+        menuTools->setTitle(QApplication::translate("MainWindowClass", "Tools", Q_NULLPTR));
     } // retranslateUi
 
 };

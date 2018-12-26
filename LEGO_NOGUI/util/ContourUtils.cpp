@@ -2496,6 +2496,14 @@ namespace util {
 		return score / valid_segments;
 	}
 
+	double genRand() {
+		return (double)(rand() % 1000) / 1000.0;
+	}
+
+	double genRand(double a, double b) {
+		return genRand() * (b - a) + a;
+	}
+
 	bool isTangent(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d) {
 		cv::Point2f u = b - a;
 		cv::Point2f v = d - c;
