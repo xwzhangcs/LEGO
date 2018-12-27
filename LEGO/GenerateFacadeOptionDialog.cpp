@@ -9,20 +9,21 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditImageWidth->setText("227");
 	ui.lineEditImageNum->setText("1");
 	ui.lineEditNCMin->setText("5");
-	ui.lineEditNCMax->setText("20");
+	ui.lineEditNCMax->setText("10");
 	ui.lineEditNRMin->setText("5");
-	ui.lineEditNRMax->setText("20");
+	ui.lineEditNRMax->setText("10");
 	ui.lineEditNGMin->setText("1");
 	ui.lineEditNGMax->setText("1");
 	ui.lineEditNGMin->setText("1");
-	ui.lineEditRelativeWidthMin->setText("0.4");
+	ui.lineEditRelativeWidthMin->setText("0.6");
 	ui.lineEditRelativeWidthMax->setText("0.8");
-	ui.lineEditRelativeHeightMin->setText("0.4");
+	ui.lineEditRelativeHeightMin->setText("0.5");
 	ui.lineEditRelativeHeightMax->setText("0.8");
 	ui.checkBoxWindowDis->setChecked(false);
 	ui.lineEditWindowDis->setText("0.1");
 	ui.checkBoxWindowProb->setChecked(false);
 	ui.lineEditWindowProb->setText("0.8");
+	ui.checkBoxDataAug->setChecked(false);
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
@@ -88,6 +89,10 @@ bool GenerateFacadeOptionDialog::isAllowWindowProb(){
 
 double GenerateFacadeOptionDialog::getWindowProb(){
 	return ui.lineEditWindowProb->text().toDouble();
+}
+
+bool GenerateFacadeOptionDialog::isAllowDataAugmentaion(){
+	return ui.checkBoxDataAug->isChecked();
 }
 
 void GenerateFacadeOptionDialog::onOK() {

@@ -627,10 +627,11 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 	update3DGeometry();
 }
 
-void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight, bool bWindowDis, double windowDisRatio, bool bWindowProb, double windowProb){
+void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bool bDataAugmentaion, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight, bool bWindowDis, double windowDisRatio, bool bWindowProb, double windowProb){
 	/*
 	std::cout << "facadeImagesPath is " << facadeImagesPath.toUtf8().constData() << std::endl;
 	std::cout << "imageNum is " << imageNum << std::endl;
+	std::cout <<"bDataAugmentaion is " << bDataAugmentaion << std::endl;
 	std::cout << "width is " << width << std::endl;
 	std::cout << "height is " << height << std::endl;
 	std::cout << "imageRows is " << "(" << imageRows.first << ", " << imageRows.second<<")"<< std::endl;
@@ -713,6 +714,62 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, in
 		}
 		QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(l + 1, 6, 10, QChar('0'));
 		cv::imwrite(img_filename.toUtf8().constData(), result);
+
+		// dataAugmentaion
+		if (bDataAugmentaion){
+			int cnt = 0;
+			// read an image
+			cv::Mat img = cv::imread(img_filename.toUtf8().constData());
+
+			// convert the image to grayscale
+			cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
+
+			for (int iter = 0; iter < 5; ++iter) {
+				// rotate the image
+				cv::Mat rot_img;
+				cv::Point2f offset(img.cols / 2 + rand() % 30 - 15, img.rows / 2 + rand() % 30 - 15);
+				float angle = rand() % 5 - 2;
+				cv::Mat rot_mat = cv::getRotationMatrix2D(offset, angle, 1.0);
+				cv::warpAffine(img, rot_img, rot_mat, img.size(), cv::INTER_CUBIC, cv::BORDER_REPLICATE);
+
+				
+				// crop the image
+				int x1 = rand() % (int)8;
+				int y1 = rand() % (int)8;
+				int x2 = rot_img.cols - 1 - rand() % 8;
+				int y2 = rot_img.rows - 1 - rand() % 8;
+				cv::Mat crop_img = cv::Mat(rot_img, cv::Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1)).clone();
+
+				
+				//// blur
+				//int blur = rand() % 2;
+				//if (blur == 0) {
+				//	// do nothing
+				//}
+				//else if (blur == 1) {
+				//	cv::blur(crop_img, crop_img, cv::Size(3, 3));
+				//}
+
+				// mirror
+				if (rand() % 2 == 0) {
+					cv::flip(crop_img, crop_img, 1);
+				}
+				// resize
+				cv::resize(crop_img, crop_img, cv::Size(width, height));
+				
+				// Gaussian noise
+				cv::Mat mGaussian_noise = cv::Mat(crop_img.size(), CV_8UC1);
+				double m_NoiseStdDev = 10;
+				cv::randn(mGaussian_noise, 0, m_NoiseStdDev);
+				crop_img += mGaussian_noise;
+				cv::normalize(crop_img, crop_img, 0, 255, CV_MINMAX, CV_8UC1);
+
+				// convert to color image
+				cv::cvtColor(crop_img, crop_img, cv::COLOR_GRAY2BGR);
+				QString img_filename = facadeImagesPath + QString("/facade_image_data_augmentation_%1.png").arg(l + iter, 6, 10, QChar('0'));
+				cv::imwrite(img_filename.toUtf8().constData(), crop_img);
+			}
+		}
 	}
 }
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>278</width>
-    <height>411</height>
+    <height>441</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>93</y>
+     <y>123</y>
      <width>261</width>
      <height>261</height>
     </rect>
@@ -352,7 +352,7 @@
    <property name="geometry">
     <rect>
      <x>43</x>
-     <y>364</y>
+     <y>394</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -365,7 +365,7 @@
    <property name="geometry">
     <rect>
      <x>173</x>
-     <y>364</y>
+     <y>394</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -380,7 +380,7 @@
      <x>10</x>
      <y>10</y>
      <width>261</width>
-     <height>81</height>
+     <height>101</height>
     </rect>
    </property>
    <property name="title">
@@ -443,6 +443,19 @@
       <width>111</width>
       <height>20</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxDataAug">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>80</y>
+      <width>131</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Augmentation</string>
     </property>
    </widget>
   </widget>

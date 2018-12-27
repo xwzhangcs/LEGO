@@ -23,6 +23,7 @@ public:
 	double getWindowDisplacement();
 	bool isAllowWindowProb();
 	double getWindowProb();
+	bool isAllowDataAugmentaion();
 
 private:
 	Ui::GenerateFacadeOptionDialog ui;
