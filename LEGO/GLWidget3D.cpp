@@ -645,6 +645,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	std::cout << "windowProb is " << windowProb << std::endl;*/
 
 	// generate facade images
+	int index = 0;
+	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt");
 	for (int l = 0; l < imageNum; l++){
 		cv::Scalar bg_color(255, 255, 255); // white back ground
 		cv::Scalar window_color(0, 0, 0); // black for windows
@@ -712,8 +714,22 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				}
 			}
 		}
-		QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(l + 1, 6, 10, QChar('0'));
+		QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 		cv::imwrite(img_filename.toUtf8().constData(), result);
+		index++;
+		// write to parameters.txt
+		{
+			out_param << img_filename.toUtf8().constData();
+			out_param << ",";
+			out_param << NR;
+			out_param << ",";
+			out_param << NC;
+			out_param << ",";
+			out_param << ratioWidth;
+			out_param << ",";
+			out_param << ratioHeight;
+			out_param << "\n";
+		}
 
 		// dataAugmentaion
 		if (bDataAugmentaion){
@@ -742,13 +758,13 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 
 				
 				//// blur
-				//int blur = rand() % 2;
-				//if (blur == 0) {
-				//	// do nothing
-				//}
-				//else if (blur == 1) {
-				//	cv::blur(crop_img, crop_img, cv::Size(3, 3));
-				//}
+				int blur = rand() % 2;
+				if (blur == 0) {
+					// do nothing
+				}
+				else if (blur == 1) {
+					cv::blur(crop_img, crop_img, cv::Size(3, 3));
+				}
 
 				// mirror
 				if (rand() % 2 == 0) {
@@ -758,16 +774,30 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				cv::resize(crop_img, crop_img, cv::Size(width, height));
 				
 				// Gaussian noise
-				cv::Mat mGaussian_noise = cv::Mat(crop_img.size(), CV_8UC1);
+				/*cv::Mat mGaussian_noise = cv::Mat(crop_img.size(), CV_8UC1);
 				double m_NoiseStdDev = 10;
 				cv::randn(mGaussian_noise, 0, m_NoiseStdDev);
 				crop_img += mGaussian_noise;
-				cv::normalize(crop_img, crop_img, 0, 255, CV_MINMAX, CV_8UC1);
+				cv::normalize(crop_img, crop_img, 0, 255, CV_MINMAX, CV_8UC1);*/
 
 				// convert to color image
 				cv::cvtColor(crop_img, crop_img, cv::COLOR_GRAY2BGR);
-				QString img_filename = facadeImagesPath + QString("/facade_image_data_augmentation_%1.png").arg(l + iter, 6, 10, QChar('0'));
+				QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 				cv::imwrite(img_filename.toUtf8().constData(), crop_img);
+				index++;
+				// write to parameters.txt
+				{
+					out_param << img_filename.toUtf8().constData();
+					out_param << ",";
+					out_param << NR;
+					out_param << ",";
+					out_param << NC;
+					out_param << ",";
+					out_param << ratioWidth;
+					out_param << ",";
+					out_param << ratioHeight;
+					out_param << "\n";
+				}
 			}
 		}
 	}

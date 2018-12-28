@@ -9,13 +9,13 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditImageWidth->setText("227");
 	ui.lineEditImageNum->setText("1");
 	ui.lineEditNCMin->setText("5");
-	ui.lineEditNCMax->setText("10");
+	ui.lineEditNCMax->setText("20");
 	ui.lineEditNRMin->setText("5");
-	ui.lineEditNRMax->setText("10");
+	ui.lineEditNRMax->setText("20");
 	ui.lineEditNGMin->setText("1");
 	ui.lineEditNGMax->setText("1");
 	ui.lineEditNGMin->setText("1");
-	ui.lineEditRelativeWidthMin->setText("0.6");
+	ui.lineEditRelativeWidthMin->setText("0.5");
 	ui.lineEditRelativeWidthMax->setText("0.8");
 	ui.lineEditRelativeHeightMin->setText("0.5");
 	ui.lineEditRelativeHeightMax->setText("0.8");
