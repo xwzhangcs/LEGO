@@ -11,13 +11,13 @@
 /* #undef CV_DISABLE_OPTIMIZATION */
 
 /* Compile for 'real' NVIDIA GPU architectures */
-#define CUDA_ARCH_BIN " 20 30 35 37 50 52 60 61"
+#define CUDA_ARCH_BIN ""
 
 /* Create PTX or BIN for 1.0 compute capability */
 /* #undef CUDA_ARCH_BIN_OR_PTX_10 */
 
 /* NVIDIA GPU features are used */
-#define CUDA_ARCH_FEATURES " 20 30 35 37 50 52 60 61"
+#define CUDA_ARCH_FEATURES ""
 
 /* Compile for 'virtual' NVIDIA PTX architectures */
 #define CUDA_ARCH_PTX ""
@@ -49,14 +49,14 @@
 /* C= */
 /* #undef HAVE_CSTRIPES */
 
-/* NVidia Cuda Basic Linear Algebra Subprograms (BLAS) API*/
-#define HAVE_CUBLAS
+/* NVIDIA CUDA Basic Linear Algebra Subprograms (BLAS) API*/
+/* #undef HAVE_CUBLAS */
 
-/* NVidia Cuda Runtime API*/
-#define HAVE_CUDA
+/* NVIDIA CUDA Runtime API*/
+/* #undef HAVE_CUDA */
 
-/* NVidia Cuda Fast Fourier Transform (FFT) API*/
-#define HAVE_CUFFT
+/* NVIDIA CUDA Fast Fourier Transform (FFT) API*/
+/* #undef HAVE_CUFFT */
 
 /* IEEE1394 capturing support */
 /* #undef HAVE_DC1394 */
@@ -125,12 +125,12 @@
 /* #undef HAVE_LIBV4L */
 
 /* Microsoft Media Foundation Capture library */
-/* #undef HAVE_MSMF */
+#define HAVE_MSMF
 
-/* NVidia Video Decoding API*/
-#define HAVE_NVCUVID
+/* NVIDIA Video Decoding API*/
+/* #undef HAVE_NVCUVID */
 
-/* NVidia Video Encoding API*/
+/* NVIDIA Video Encoding API*/
 /* #undef HAVE_NVCUVENC */
 
 /* OpenCL Support */

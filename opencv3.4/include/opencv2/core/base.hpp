@@ -271,7 +271,7 @@ enum BorderTypes {
     BORDER_REFLECT     = 2, //!< `fedcba|abcdefgh|hgfedcb`
     BORDER_WRAP        = 3, //!< `cdefgh|abcdefgh|abcdefg`
     BORDER_REFLECT_101 = 4, //!< `gfedcb|abcdefgh|gfedcba`
-    BORDER_TRANSPARENT = 5, //!< `uvwxyz|absdefgh|ijklmno`
+    BORDER_TRANSPARENT = 5, //!< `uvwxyz|abcdefgh|ijklmno`
 
     BORDER_REFLECT101  = BORDER_REFLECT_101, //!< same as BORDER_REFLECT_101
     BORDER_DEFAULT     = BORDER_REFLECT_101, //!< same as BORDER_REFLECT_101
@@ -371,7 +371,7 @@ It is possible to alternate error processing by using redirectError().
 @param _func - function name. Available only when the compiler supports getting it
 @param _file - source file name where the error has occurred
 @param _line - line number in the source file where the error has occurred
-@see CV_Error, CV_Error_, CV_ErrorNoReturn, CV_ErrorNoReturn_, CV_Assert, CV_DbgAssert
+@see CV_Error, CV_Error_, CV_Assert, CV_DbgAssert
  */
 CV_EXPORTS void error(int _code, const String& _err, const char* _func, const char* _file, int _line);
 
@@ -414,8 +414,6 @@ CV_INLINE CV_NORETURN void errorNoReturn(int _code, const String& _err, const ch
 // We need to use simplified definition for them.
 #define CV_Error(...) do { abort(); } while (0)
 #define CV_Error_( code, args ) do { cv::format args; abort(); } while (0)
-#define CV_ErrorNoReturn(...) do { abort(); } while (0)
-#define CV_ErrorNoReturn_(...) do { abort(); } while (0)
 #define CV_Assert_1( expr ) do { if (!(expr)) abort(); } while (0)
 
 #else // CV_STATIC_ANALYSIS
@@ -446,13 +444,24 @@ for example:
 */
 #define CV_Error_( code, args ) cv::error( code, cv::format args, CV_Func, __FILE__, __LINE__ )
 
-/** same as CV_Error(code,msg), but does not return */
-#define CV_ErrorNoReturn( code, msg ) cv::errorNoReturn( code, msg, CV_Func, __FILE__, __LINE__ )
-
-/** same as CV_Error_(code,args), but does not return */
-#define CV_ErrorNoReturn_( code, args ) cv::errorNoReturn( code, cv::format args, CV_Func, __FILE__, __LINE__ )
-
 #define CV_Assert_1( expr ) if(!!(expr)) ; else cv::error( cv::Error::StsAssert, #expr, CV_Func, __FILE__, __LINE__ )
+
+//! @cond IGNORED
+#define CV__ErrorNoReturn( code, msg ) cv::errorNoReturn( code, msg, CV_Func, __FILE__, __LINE__ )
+#define CV__ErrorNoReturn_( code, args ) cv::errorNoReturn( code, cv::format args, CV_Func, __FILE__, __LINE__ )
+#ifdef __OPENCV_BUILD
+#undef CV_Error
+#define CV_Error CV__ErrorNoReturn
+#undef CV_Error_
+#define CV_Error_ CV__ErrorNoReturn_
+#undef CV_Assert_1
+#define CV_Assert_1( expr ) if(!!(expr)) ; else cv::errorNoReturn( cv::Error::StsAssert, #expr, CV_Func, __FILE__, __LINE__ )
+#else
+// backward compatibility
+#define CV_ErrorNoReturn CV__ErrorNoReturn
+#define CV_ErrorNoReturn_ CV__ErrorNoReturn_
+#endif
+//! @endcond
 
 #endif // CV_STATIC_ANALYSIS
 
@@ -758,5 +767,6 @@ CV_EXPORTS_W void setUseIPP_NE(bool flag);
 
 #include "opencv2/core/neon_utils.hpp"
 #include "opencv2/core/vsx_utils.hpp"
+#include "opencv2/core/check.hpp"
 
 #endif //OPENCV_CORE_BASE_HPP
