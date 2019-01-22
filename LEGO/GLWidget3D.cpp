@@ -715,11 +715,12 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			}
 		}
 		QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+		QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 		cv::imwrite(img_filename.toUtf8().constData(), result);
 		index++;
 		// write to parameters.txt
 		{
-			out_param << img_filename.toUtf8().constData();
+			out_param << img_name.toUtf8().constData();
 			out_param << ",";
 			out_param << NR;
 			out_param << ",";
@@ -783,11 +784,12 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				// convert to color image
 				cv::cvtColor(crop_img, crop_img, cv::COLOR_GRAY2BGR);
 				QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 				cv::imwrite(img_filename.toUtf8().constData(), crop_img);
 				index++;
 				// write to parameters.txt
 				{
-					out_param << img_filename.toUtf8().constData();
+					out_param << img_name.toUtf8().constData();
 					out_param << ",";
 					out_param << NR;
 					out_param << ",";
