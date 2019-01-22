@@ -720,11 +720,24 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		index++;
 		// write to parameters.txt
 		{
-			out_param << img_name.toUtf8().constData();
+			// original values
+			/*out_param << img_name.toUtf8().constData();
 			out_param << ",";
 			out_param << NR;
 			out_param << ",";
 			out_param << NC;
+			out_param << ",";
+			out_param << ratioWidth;
+			out_param << ",";
+			out_param << ratioHeight;
+			out_param << "\n";*/
+
+			// normalize for NN training
+			out_param << img_name.toUtf8().constData();
+			out_param << ",";
+			out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+			out_param << ",";
+			out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
 			out_param << ",";
 			out_param << ratioWidth;
 			out_param << ",";
