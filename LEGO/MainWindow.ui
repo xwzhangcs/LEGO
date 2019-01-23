@@ -71,6 +71,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionGenerateFacadeImages"/>
+    <addaction name="actionGenerateRectifiedImage"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -283,6 +284,11 @@
   <action name="actionGenerateFacadeImages">
    <property name="text">
     <string>Generate Facade Images</string>
+   </property>
+  </action>
+  <action name="actionGenerateRectifiedImage">
+   <property name="text">
+    <string>Generate Rectified Image</string>
    </property>
   </action>
  </widget>

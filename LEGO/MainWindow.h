@@ -34,6 +34,7 @@ public slots:
 	void onColoringModeChanged();
 	void onRenderingModeChanged();
 	void onGenerateFacadeImages();
+	void onGenerateRectifiedImage();
 };
 
 #endif // MAINWINDOW_H
