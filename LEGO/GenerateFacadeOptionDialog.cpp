@@ -5,10 +5,10 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
-	ui.lineEditImageHeight->setText("227");
-	ui.lineEditImageWidth->setText("227");
+	ui.lineEditImageHeight->setText("224");
+	ui.lineEditImageWidth->setText("224");
 	ui.lineEditImageNum->setText("1");
-	ui.lineEditNCMin->setText("5");
+	ui.lineEditNCMin->setText("10");
 	ui.lineEditNCMax->setText("20");
 	ui.lineEditNRMin->setText("5");
 	ui.lineEditNRMax->setText("20");
@@ -22,7 +22,7 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.checkBoxWindowDis->setChecked(false);
 	ui.lineEditWindowDis->setText("0.1");
 	ui.checkBoxWindowProb->setChecked(false);
-	ui.lineEditWindowProb->setText("0.8");
+	ui.lineEditWindowProb->setText("0.85");
 	ui.checkBoxDataAug->setChecked(false);
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));

@@ -222,5 +222,44 @@ void MainWindow::onGenerateFacadeImages(){
 void MainWindow::onGenerateRectifiedImage() {
 	QString filename = QFileDialog::getOpenFileName(this, tr("Load ..."), "", tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) return;
-	std::cout << "filename is " << filename.toUtf8().constData() << std::endl;
+	cv::Scalar bg_color(255, 255, 255); // white back ground
+	cv::Scalar window_color(0, 0, 0); // black for windows
+	cv::Mat src = cv::imread(filename.toUtf8().constData(), 0);
+	// scale to NN image size
+	int height = 224;
+	int width = 224;
+	cv::Mat scale_img;
+	cv::resize(src, scale_img, cv::Size(width, height));
+	// Find contours
+	std::vector<std::vector<cv::Point> > contours;
+	std::vector<cv::Vec4i> hierarchy;
+	cv::findContours(scale_img, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, cv::Point(0, 0));
+
+	// Approximate contours to polygons + get bounding rects and circles
+	std::vector<cv::Rect> boundRect(contours.size());
+	for (int i = 0; i < contours.size(); i++)
+	{
+		boundRect[i] = cv::boundingRect(cv::Mat(contours[i]));
+	}
+
+	// Draw polygonal contour + bonding rects + circles
+	cv::Mat drawing(scale_img.size(), CV_8UC3, bg_color);
+	for (int i = 0; i< contours.size(); i++)
+	{
+		//cv::drawContours(drawing, contours, i, window_color, 1, 8, std::vector<cv::Vec4i>(), 0, cv::Point());
+		if (hierarchy[i][2] != -1) continue;
+		cv::rectangle(drawing, cv::Point(boundRect[i].tl().x + 1, boundRect[i].tl().y + 1), cv::Point(boundRect[i].br().x, boundRect[i].br().y), window_color, -1);
+	}
+	int pos = filename.lastIndexOf(".");
+	QString result_name = filename.left(pos) + "_output.png";
+	std::cout << "result_name is " << result_name.toUtf8().constData() << std::endl;
+	cv::imwrite(result_name.toUtf8().constData(), drawing);
+	// get synthetic facade image based on parameters
+	{
+
+	}
+	// recover to the original image
+	cv::resize(drawing, drawing, src.size());
+	QString final_name = filename.left(pos) + "_final.png";
+	cv::imwrite(final_name.toUtf8().constData(), drawing);
 }

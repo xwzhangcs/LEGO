@@ -656,7 +656,6 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		double ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
 		double ratioHeight = util::genRand(imageRelativeHeight.first, imageRelativeHeight.second);
 		int thickness = -1;
-		cv::Mat result(height, width, CV_8UC3, bg_color);
 		double FH = height * 1.0 / NR;
 		double FW = width * 1.0 / NC;
 		double WH = FH * ratioHeight;
@@ -670,154 +669,201 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		std::cout << "WH is " << WH << std::endl;
 		std::cout << "WW is " << WW << std::endl;
 		// draw facade image
-		if (NG == 1){
-			for (int i = 0; i < NR; ++i) {
-				for (int j = 0; j < NC; ++j) {
-					float x1 = (FW - WW) * 0.5 + FW * j;
-					float y1 = (FH - WH) * 0.5 + FH * i;
-					float x2 = x1 + WW;
-					float y2 = y1 + WH;
-					//cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
-					if (bWindowDis) {
-						x1 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
-						y1 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
-						x2 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
-						y2 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
-					}
+		for (int iter_outers = 0; iter_outers < 10; ++iter_outers){
+			cv::Mat result(height, width, CV_8UC3, bg_color);
+			if (NG == 1){
+				for (int i = 0; i < NR; ++i) {
+					for (int j = 0; j < NC; ++j) {
+						float x1 = (FW - WW) * 0.5 + FW * j;
+						float y1 = (FH - WH) * 0.5 + FH * i;
+						float x2 = x1 + WW;
+						float y2 = y1 + WH;
+						//cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+						if (bWindowDis) {
+							x1 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
+							y1 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
+							x2 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
+							y2 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
+						}
 
-					if (bWindowProb){
-						if (util::genRand() < windowProb) {
+						if (bWindowProb){
+							if (util::genRand() < windowProb) {
+								cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+							}
+						}
+						else{
 							cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
 						}
 					}
-					else{
-						cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+				}
+			}
+			else{
+				double GFW = WW / NG;
+				double GWW = WW / NG - 2;
+				for (int i = 0; i < NR; ++i) {
+					for (int j = 0; j < NC; ++j) {
+						float x1 = (FW - WW) * 0.5 + FW * j;
+						float y1 = (FH - WH) * 0.5 + FH * i;
+						for (int k = 0; k < NG; k++){
+							float g_x1 = x1 + GFW * k;
+							float g_y1 = y1;
+							float g_x2 = g_x1 + GWW;
+							float g_y2 = g_y1 + WH;
+
+							cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
+						}
 					}
 				}
 			}
-		}
-		else{
-			double GFW = WW / NG;
-			double GWW = WW / NG - 2;
-			for (int i = 0; i < NR; ++i) {
-				for (int j = 0; j < NC; ++j) {
-					float x1 = (FW - WW) * 0.5 + FW * j;
-					float y1 = (FH - WH) * 0.5 + FH * i;
-					for (int k = 0; k < NG; k++){
-						float g_x1 = x1 + GFW * k;
-						float g_y1 = y1;
-						float g_x2 = g_x1 + GWW;
-						float g_y2 = g_y1 + WH;
-						
-						cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
-					}
-				}
+
+			QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+			QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+			cv::imwrite(img_filename.toUtf8().constData(), result);
+			index++;
+			// write to parameters.txt
+			{
+				// normalize for NN training
+				out_param << img_name.toUtf8().constData();
+				out_param << ",";
+				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+				out_param << ",";
+				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
+				out_param << ",";
+				out_param << ratioWidth;
+				out_param << ",";
+				out_param << ratioHeight;
+				out_param << "\n";
 			}
-		}
-		QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
-		QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
-		cv::imwrite(img_filename.toUtf8().constData(), result);
-		index++;
-		// write to parameters.txt
-		{
-			// original values
-			/*out_param << img_name.toUtf8().constData();
-			out_param << ",";
-			out_param << NR;
-			out_param << ",";
-			out_param << NC;
-			out_param << ",";
-			out_param << ratioWidth;
-			out_param << ",";
-			out_param << ratioHeight;
-			out_param << "\n";*/
 
-			// normalize for NN training
-			out_param << img_name.toUtf8().constData();
-			out_param << ",";
-			out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
-			out_param << ",";
-			out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
-			out_param << ",";
-			out_param << ratioWidth;
-			out_param << ",";
-			out_param << ratioHeight;
-			out_param << "\n";
-		}
+			// dataAugmentaion
+			if (bDataAugmentaion){
+				int cnt = 0;
+				// read an image
+				cv::Mat img = cv::imread(img_filename.toUtf8().constData());
 
-		// dataAugmentaion
-		if (bDataAugmentaion){
-			int cnt = 0;
-			// read an image
-			cv::Mat img = cv::imread(img_filename.toUtf8().constData());
+				// convert the image to grayscale
+				cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
 
-			// convert the image to grayscale
-			cv::cvtColor(img, img, cv::COLOR_BGR2GRAY);
+				for (int iter = 0; iter < 5; ++iter) {
+					// rotate the image
+					cv::Mat rot_img;
+					cv::Point2f offset(img.cols / 2 + rand() % 30 - 15, img.rows / 2 + rand() % 30 - 15);
+					float angle = rand() % 5 - 2;
+					cv::Mat rot_mat = cv::getRotationMatrix2D(offset, angle, 1.0);
+					cv::warpAffine(img, rot_img, rot_mat, img.size(), cv::INTER_CUBIC, cv::BORDER_REPLICATE);
 
-			for (int iter = 0; iter < 5; ++iter) {
-				// rotate the image
-				cv::Mat rot_img;
-				cv::Point2f offset(img.cols / 2 + rand() % 30 - 15, img.rows / 2 + rand() % 30 - 15);
-				float angle = rand() % 5 - 2;
-				cv::Mat rot_mat = cv::getRotationMatrix2D(offset, angle, 1.0);
-				cv::warpAffine(img, rot_img, rot_mat, img.size(), cv::INTER_CUBIC, cv::BORDER_REPLICATE);
 
-				
-				// crop the image
-				int x1 = rand() % (int)8;
-				int y1 = rand() % (int)8;
-				int x2 = rot_img.cols - 1 - rand() % 8;
-				int y2 = rot_img.rows - 1 - rand() % 8;
-				cv::Mat crop_img = cv::Mat(rot_img, cv::Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1)).clone();
+					// crop the image
+					int x1 = rand() % (int)8;
+					int y1 = rand() % (int)8;
+					int x2 = rot_img.cols - 1 - rand() % 8;
+					int y2 = rot_img.rows - 1 - rand() % 8;
+					cv::Mat crop_img = cv::Mat(rot_img, cv::Rect(x1, y1, x2 - x1 + 1, y2 - y1 + 1)).clone();
 
-				
-				//// blur
-				int blur = rand() % 2;
-				if (blur == 0) {
-					// do nothing
-				}
-				else if (blur == 1) {
-					cv::blur(crop_img, crop_img, cv::Size(3, 3));
-				}
 
-				// mirror
-				if (rand() % 2 == 0) {
-					cv::flip(crop_img, crop_img, 1);
-				}
-				// resize
-				cv::resize(crop_img, crop_img, cv::Size(width, height));
-				
-				// Gaussian noise
-				/*cv::Mat mGaussian_noise = cv::Mat(crop_img.size(), CV_8UC1);
-				double m_NoiseStdDev = 10;
-				cv::randn(mGaussian_noise, 0, m_NoiseStdDev);
-				crop_img += mGaussian_noise;
-				cv::normalize(crop_img, crop_img, 0, 255, CV_MINMAX, CV_8UC1);*/
+					//// blur
+					int blur = rand() % 2;
+					if (blur == 0) {
+						// do nothing
+					}
+					else if (blur == 1) {
+						cv::blur(crop_img, crop_img, cv::Size(3, 3));
+					}
 
-				// convert to color image
-				cv::cvtColor(crop_img, crop_img, cv::COLOR_GRAY2BGR);
-				QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
-				QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
-				cv::imwrite(img_filename.toUtf8().constData(), crop_img);
-				index++;
-				// write to parameters.txt
-				{
-					out_param << img_name.toUtf8().constData();
-					out_param << ",";
-					out_param << NR;
-					out_param << ",";
-					out_param << NC;
-					out_param << ",";
-					out_param << ratioWidth;
-					out_param << ",";
-					out_param << ratioHeight;
-					out_param << "\n";
+					// mirror
+					if (rand() % 2 == 0) {
+						cv::flip(crop_img, crop_img, 1);
+					}
+					// resize
+					cv::resize(crop_img, crop_img, cv::Size(width, height));
+
+					// Gaussian noise
+					/*cv::Mat mGaussian_noise = cv::Mat(crop_img.size(), CV_8UC1);
+					double m_NoiseStdDev = 10;
+					cv::randn(mGaussian_noise, 0, m_NoiseStdDev);
+					crop_img += mGaussian_noise;
+					cv::normalize(crop_img, crop_img, 0, 255, CV_MINMAX, CV_8UC1);*/
+
+					// convert to color image
+					cv::cvtColor(crop_img, crop_img, cv::COLOR_GRAY2BGR);
+					QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+					QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+					cv::imwrite(img_filename.toUtf8().constData(), crop_img);
+					index++;
+					// write to parameters.txt
+					{
+						out_param << img_name.toUtf8().constData();
+						out_param << ",";
+						out_param << NR;
+						out_param << ",";
+						out_param << NC;
+						out_param << ",";
+						out_param << ratioWidth;
+						out_param << ",";
+						out_param << ratioHeight;
+						out_param << "\n";
+					}
 				}
 			}
 		}
 	}
 }
 
+
+cv::Mat GLWidget3D::generateFacadeSynImage(int width, int height, int imageRows, int imageCols, int imageGroups, double imageRelativeWidth, double imageRelativeHeight){
+	cv::Scalar bg_color(255, 255, 255); // white back ground
+	cv::Scalar window_color(0, 0, 0); // black for windows
+	int NR = imageRows;
+	int NC = imageCols;
+	int NG = imageGroups;
+	double ratioWidth = imageRelativeWidth;
+	double ratioHeight = imageRelativeHeight;
+	int thickness = -1;
+	cv::Mat result(height, width, CV_8UC3, bg_color);
+	double FH = height * 1.0 / NR;
+	double FW = width * 1.0 / NC;
+	double WH = FH * ratioHeight;
+	double WW = FW * ratioWidth;
+	std::cout << "NR is " << NR << std::endl;
+	std::cout << "NC is " << NC << std::endl;
+	std::cout << "FH is " << FH << std::endl;
+	std::cout << "FW is " << FW << std::endl;
+	std::cout << "ratioWidth is " << ratioWidth << std::endl;
+	std::cout << "ratioHeight is " << ratioHeight << std::endl;
+	std::cout << "WH is " << WH << std::endl;
+	std::cout << "WW is " << WW << std::endl;
+	// draw facade image
+	if (NG == 1){
+		for (int i = 0; i < NR; ++i) {
+			for (int j = 0; j < NC; ++j) {
+				float x1 = (FW - WW) * 0.5 + FW * j;
+				float y1 = (FH - WH) * 0.5 + FH * i;
+				float x2 = x1 + WW;
+				float y2 = y1 + WH;
+				cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+			}
+		}
+	}
+	else{
+		double GFW = WW / NG;
+		double GWW = WW / NG - 2;
+		for (int i = 0; i < NR; ++i) {
+			for (int j = 0; j < NC; ++j) {
+				float x1 = (FW - WW) * 0.5 + FW * j;
+				float y1 = (FH - WH) * 0.5 + FH * i;
+				for (int k = 0; k < NG; k++){
+					float g_x1 = x1 + GFW * k;
+					float g_y1 = y1;
+					float g_x2 = g_x1 + GWW;
+					float g_y2 = g_y1 + WH;
+
+					cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
+				}
+			}
+		}
+	}
+	return result;
+}
 
 void GLWidget3D::update3DGeometry() {
 	if (show_mode == SHOW_INPUT) {
