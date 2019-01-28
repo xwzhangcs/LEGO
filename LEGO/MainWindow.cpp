@@ -253,13 +253,54 @@ void MainWindow::onGenerateRectifiedImage() {
 	int pos = filename.lastIndexOf(".");
 	QString result_name = filename.left(pos) + "_output.png";
 	std::cout << "result_name is " << result_name.toUtf8().constData() << std::endl;
+	//cv::cvtColor(scale_img, scale_img, cv::COLOR_GRAY2BGR);
 	cv::imwrite(result_name.toUtf8().constData(), drawing);
 	// get synthetic facade image based on parameters
+	cv::Mat final_img;
 	{
+		std::vector<double> paras;
+		/*paras.push_back(0.5622);
+		paras.push_back(0.951);
+		paras.push_back(0.6858);
+		paras.push_back(0.5022);*/
 
+		/*paras.push_back(0.5822);
+		paras.push_back(0.4022);
+		paras.push_back(0.5714);
+		paras.push_back(0.491);*/
+
+		/*paras.push_back(0.3488);
+		paras.push_back(0.1879);
+		paras.push_back(0.6395);
+		paras.push_back(0.624);*/
+
+		/*paras.push_back(0.4915);
+		paras.push_back(0.8496);
+		paras.push_back(0.5301);
+		paras.push_back(0.4905);*/
+
+		/*paras.push_back(0.8152);
+		paras.push_back(0.5340);
+		paras.push_back(0.5134);
+		paras.push_back(0.5675);*/
+
+		paras.push_back(0.4287);
+		paras.push_back(0.3372);
+		paras.push_back(0.5442);
+		paras.push_back(0.5423);
+
+		std::pair<int, int> imageRows(5, 20);
+		std::pair<int, int> imageCols(10, 20);
+		int img_rows = round(paras[0] * (imageRows.second - imageRows.first) + imageRows.first);
+		int img_cols = round(paras[1] * (imageCols.second - imageCols.first) + imageCols.first);
+		int img_groups = 1;
+		double relative_widht = paras[2];
+		double relative_height = paras[3];
+
+		final_img = glWidget->generateFacadeSynImage(width, height, img_rows, img_cols, img_groups, relative_widht, relative_height);
 	}
 	// recover to the original image
-	cv::resize(drawing, drawing, src.size());
+	cv::resize(final_img, final_img, src.size());
 	QString final_name = filename.left(pos) + "_final.png";
-	cv::imwrite(final_name.toUtf8().constData(), drawing);
+	cv::imwrite(final_name.toUtf8().constData(), final_img);
 }
