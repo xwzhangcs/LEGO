@@ -255,10 +255,13 @@ void MainWindow::onGenerateRectifiedImage() {
 	std::cout << "result_name is " << result_name.toUtf8().constData() << std::endl;
 	//cv::cvtColor(scale_img, scale_img, cv::COLOR_GRAY2BGR);
 	cv::imwrite(result_name.toUtf8().constData(), drawing);
+
 	// get synthetic facade image based on parameters
 	cv::Mat final_img;
 	{
 		std::vector<double> paras;
+
+		// v2
 		/*paras.push_back(0.5622);
 		paras.push_back(0.951);
 		paras.push_back(0.6858);
@@ -274,6 +277,23 @@ void MainWindow::onGenerateRectifiedImage() {
 		paras.push_back(0.6395);
 		paras.push_back(0.624);*/
 
+		/*paras.push_back(0.4253);
+		paras.push_back(0.0288);
+		paras.push_back(0.7289);
+		paras.push_back(0.5789);*/
+
+		/*paras.push_back(0.5722);
+		paras.push_back(0.5306);
+		paras.push_back(0.5488);
+		paras.push_back(0.3768);*/
+
+		/*paras.push_back(0.2806);
+		paras.push_back(0.3817);
+		paras.push_back(0.5031);
+		paras.push_back(0.5382);*/
+
+
+		// v1
 		/*paras.push_back(0.4915);
 		paras.push_back(0.8496);
 		paras.push_back(0.5301);
@@ -284,10 +304,25 @@ void MainWindow::onGenerateRectifiedImage() {
 		paras.push_back(0.5134);
 		paras.push_back(0.5675);*/
 
-		paras.push_back(0.4287);
+		/*paras.push_back(0.4287);
 		paras.push_back(0.3372);
 		paras.push_back(0.5442);
-		paras.push_back(0.5423);
+		paras.push_back(0.5423);*/
+
+		/*paras.push_back(0.3502);
+		paras.push_back(0.5533);
+		paras.push_back(0.6352);
+		paras.push_back(0.6255);*/
+
+		/*paras.push_back(0.6687);
+		paras.push_back(0.5243);
+		paras.push_back(0.5373);
+		paras.push_back(0.463);*/
+
+		paras.push_back(0.4166);
+		paras.push_back(0.4558);
+		paras.push_back(0.4780);
+		paras.push_back(0.5248);
 
 		std::pair<int, int> imageRows(5, 20);
 		std::pair<int, int> imageCols(10, 20);
