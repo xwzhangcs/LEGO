@@ -664,6 +664,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		std::cout << "NC is " << NC << std::endl;
 		std::cout << "FH is " << FH << std::endl;
 		std::cout << "FW is " << FW << std::endl;
+		std::cout << "NG is " << NG << std::endl;
 		std::cout << "ratioWidth is " << ratioWidth << std::endl;
 		std::cout << "ratioHeight is " << ratioHeight << std::endl;
 		std::cout << "WH is " << WH << std::endl;
@@ -710,7 +711,21 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 							float g_x2 = g_x1 + GWW;
 							float g_y2 = g_y1 + WH;
 
-							cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
+							if (bWindowDis) {
+								g_x1 += util::genRand(-GWW * windowDisRatio, GWW * windowDisRatio);
+								g_y1 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
+								g_x2 += util::genRand(-GWW * windowDisRatio, GWW * windowDisRatio);
+								g_y2 += util::genRand(-WH * windowDisRatio, WH * windowDisRatio);
+							}
+
+							if (bWindowProb){
+								if (util::genRand() < windowProb) {
+									cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
+								}
+							}
+							else{
+								cv::rectangle(result, cv::Point(std::round(g_x1), std::round(g_y1)), cv::Point(std::round(g_x2), std::round(g_y2)), window_color, thickness);
+							}
 						}
 					}
 				}
@@ -728,6 +743,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
 				out_param << ",";
 				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
+				out_param << ",";
+				out_param << (NG - imageGroups.first) * 1.0 / (imageGroups.second - imageGroups.first);
 				out_param << ",";
 				out_param << ratioWidth;
 				out_param << ",";
