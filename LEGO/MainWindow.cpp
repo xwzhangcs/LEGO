@@ -253,9 +253,9 @@ void MainWindow::onGenerateRectifiedImage() {
 	int pos = filename.lastIndexOf(".");
 	QString result_name = filename.left(pos) + "_output.png";
 	std::cout << "result_name is " << result_name.toUtf8().constData() << std::endl;
-	//cv::cvtColor(scale_img, scale_img, cv::COLOR_GRAY2BGR);
-	cv::imwrite(result_name.toUtf8().constData(), drawing);
-
+	cv::cvtColor(scale_img, scale_img, cv::COLOR_GRAY2BGR);
+	cv::imwrite(result_name.toUtf8().constData(), scale_img);
+	return;
 	// get synthetic facade image based on parameters
 	cv::Mat final_img;
 	{

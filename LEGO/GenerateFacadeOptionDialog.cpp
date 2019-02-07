@@ -13,14 +13,14 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditNRMin->setText("4");
 	ui.lineEditNRMax->setText("13");
 	ui.lineEditNGMin->setText("1");
-	ui.lineEditNGMax->setText("4");
+	ui.lineEditNGMax->setText("3");
 	ui.lineEditNGMin->setText("1");
 	ui.lineEditRelativeWidthMin->setText("0.55");
 	ui.lineEditRelativeWidthMax->setText("0.85");
 	ui.lineEditRelativeHeightMin->setText("0.55");
 	ui.lineEditRelativeHeightMax->setText("0.85");
 	ui.checkBoxWindowDis->setChecked(false);
-	ui.lineEditWindowDis->setText("0.1");
+	ui.lineEditWindowDis->setText("0.15");
 	ui.checkBoxWindowProb->setChecked(false);
 	ui.lineEditWindowProb->setText("0.85");
 	ui.checkBoxDataAug->setChecked(false);

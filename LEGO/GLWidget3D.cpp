@@ -700,7 +700,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			}
 			else{
 				double GFW = WW / NG;
-				double GWW = WW / NG - 2;
+				double GWW = WW / NG - 0.1 * WW;
 				for (int i = 0; i < NR; ++i) {
 					for (int j = 0; j < NC; ++j) {
 						float x1 = (FW - WW) * 0.5 + FW * j;
