@@ -215,11 +215,22 @@ void MainWindow::onGenerateFacadeImages(){
 	GenerateFacadeOptionDialog dlg;
 	if (dlg.exec()) {
 		//generateFacadeImages(QString facadeImagesPath, int imageNum, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight);
-		glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb());
+		glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding());
 	}
 }
 
 void MainWindow::onGenerateRectifiedImage() {
+	{
+		int img_rows = 5;
+		int img_cols = 5;
+		int img_groups = 2;
+		double relative_widht = 0.5;
+		double relative_height = 0.5;
+		cv::Mat final_img = glWidget->generateFacadeSynImage(224, 224, img_rows, img_cols, img_groups, relative_widht, relative_height);
+		cv::imwrite("../data/test.png", final_img);
+	}
+	return;
+	//
 	QString filename = QFileDialog::getOpenFileName(this, tr("Load ..."), "", tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) return;
 	cv::Scalar bg_color(255, 255, 255); // white back ground
@@ -321,16 +332,18 @@ void MainWindow::onGenerateRectifiedImage() {
 
 		paras.push_back(0.4166);
 		paras.push_back(0.4558);
+		paras.push_back(0.01);
 		paras.push_back(0.4780);
 		paras.push_back(0.5248);
 
-		std::pair<int, int> imageRows(5, 20);
-		std::pair<int, int> imageCols(10, 20);
+		std::pair<int, int> imageRows(4, 13);
+		std::pair<int, int> imageCols(4, 13);
+		std::pair<int, int> imageGroups(1, 3);
 		int img_rows = round(paras[0] * (imageRows.second - imageRows.first) + imageRows.first);
 		int img_cols = round(paras[1] * (imageCols.second - imageCols.first) + imageCols.first);
-		int img_groups = 1;
-		double relative_widht = paras[2];
-		double relative_height = paras[3];
+		int img_groups = paras[2] * (imageGroups.second - imageGroups.first) + imageGroups.first;
+		double relative_widht = paras[3];
+		double relative_height = paras[4];
 
 		final_img = glWidget->generateFacadeSynImage(width, height, img_rows, img_cols, img_groups, relative_widht, relative_height);
 	}

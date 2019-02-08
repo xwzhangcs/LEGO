@@ -627,7 +627,7 @@ void GLWidget3D::simplifyByEfficientRansac(double curve_num_iterations, double c
 	update3DGeometry();
 }
 
-void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bool bDataAugmentaion, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight, bool bWindowDis, double windowDisRatio, bool bWindowProb, double windowProb){
+void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bool bDataAugmentaion, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight, bool bWindowDis, double windowDisRatio, bool bWindowProb, double windowProb, bool bPadding, std::pair<int, int> imagePadding){
 	/*
 	std::cout << "facadeImagesPath is " << facadeImagesPath.toUtf8().constData() << std::endl;
 	std::cout << "imageNum is " << imageNum << std::endl;
@@ -642,7 +642,9 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	std::cout << "bWindowDis is " << bWindowDis << std::endl;
 	std::cout << "windowDisRatio is " << windowDisRatio << std::endl;
 	std::cout << "bWindowProb is " << bWindowProb << std::endl;
-	std::cout << "windowProb is " << windowProb << std::endl;*/
+	std::cout << "windowProb is " << windowProb << std::endl;
+	std::cout << "bPadding is " << bPadding << std::endl;
+	std::cout << "imagePadding is " << "(" << imagePadding.first << ", " << imagePadding.second << ")" << std::endl;*/
 
 	// generate facade images
 	int index = 0;
@@ -699,8 +701,9 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				}
 			}
 			else{
-				double GFW = WW / NG;
-				double GWW = WW / NG - 0.1 * WW;
+				double gap = 0.1 * WW; // Assume not too many windows in one group
+				double GWW = (WW - gap * (NG - 1)) / NG;
+				double GFW = GWW + gap;
 				for (int i = 0; i < NR; ++i) {
 					for (int j = 0; j < NC; ++j) {
 						float x1 = (FW - WW) * 0.5 + FW * j;
@@ -733,6 +736,33 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 
 			QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 			QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+			
+			// add padding
+			if (bPadding){
+				int top = util::genRand(imagePadding.first, imagePadding.second + 1);
+				int bottom = util::genRand(imagePadding.first, imagePadding.second + 1);
+				int left = util::genRand(imagePadding.first, imagePadding.second + 1);
+				int right = util::genRand(imagePadding.first, imagePadding.second + 1);
+				std::cout << "top is " << top << std::endl;
+				std::cout << "bottom is " << bottom << std::endl;
+				std::cout << "left is " << left << std::endl;
+				std::cout << "right is " << right << std::endl;
+				int borderType = cv::BORDER_CONSTANT;
+				cv::copyMakeBorder(result, result, top, bottom, left, right, borderType, bg_color);
+				QString img_filename_padding = facadeImagesPath + QString("/facade_image_%1_padding.png").arg(index, 6, 10, QChar('0'));
+				cv::imwrite(img_filename_padding.toUtf8().constData(), result);
+				// crop
+				{
+					int final_width = width + 2 * imagePadding.first;
+					int final_height = height + 2 * imagePadding.first;
+					int x1, y1;
+					x1 = rand() % (int)(result.cols - final_width + 1);
+					y1 = rand() % (int)(result.rows - final_height + 1);
+					std::cout << "x1 is " << x1 << std::endl;
+					std::cout << "y1 is " << y1 << std::endl;
+					result = cv::Mat(result, cv::Rect(x1, y1, final_width, final_height)).clone();
+				}
+			}
 			cv::imwrite(img_filename.toUtf8().constData(), result);
 			index++;
 			// write to parameters.txt
@@ -843,6 +873,7 @@ cv::Mat GLWidget3D::generateFacadeSynImage(int width, int height, int imageRows,
 	double WW = FW * ratioWidth;
 	std::cout << "NR is " << NR << std::endl;
 	std::cout << "NC is " << NC << std::endl;
+	std::cout << "NG is " << NG << std::endl;
 	std::cout << "FH is " << FH << std::endl;
 	std::cout << "FW is " << FW << std::endl;
 	std::cout << "ratioWidth is " << ratioWidth << std::endl;
@@ -862,8 +893,9 @@ cv::Mat GLWidget3D::generateFacadeSynImage(int width, int height, int imageRows,
 		}
 	}
 	else{
-		double GFW = WW / NG;
-		double GWW = WW / NG - 2;
+		double gap = 0.1 * WW; // Assume not too many windows in one group
+		double GWW = (WW - gap * (NG - 1)) / NG;
+		double GFW = GWW + gap;
 		for (int i = 0; i < NR; ++i) {
 			for (int j = 0; j < NC; ++j) {
 				float x1 = (FW - WW) * 0.5 + FW * j;

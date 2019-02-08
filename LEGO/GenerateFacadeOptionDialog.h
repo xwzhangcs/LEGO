@@ -22,6 +22,8 @@ public:
 	bool isAllowWindowDisplacement();
 	double getWindowDisplacement();
 	bool isAllowWindowProb();
+	bool isAllowPadding();
+	std::pair<int, int> getPadding();
 	double getWindowProb();
 	bool isAllowDataAugmentaion();
 
@@ -34,4 +36,5 @@ public slots:
 	void onGetPath();
 	void onUseWindowDis();
 	void onUseWindowProb();
+	void onUsePadding();
 };

@@ -5,8 +5,8 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
-	ui.lineEditImageHeight->setText("224");
-	ui.lineEditImageWidth->setText("224");
+	ui.lineEditImageHeight->setText("220");
+	ui.lineEditImageWidth->setText("220");
 	ui.lineEditImageNum->setText("1");
 	ui.lineEditNCMin->setText("4");
 	ui.lineEditNCMax->setText("13");
@@ -24,15 +24,20 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.checkBoxWindowProb->setChecked(false);
 	ui.lineEditWindowProb->setText("0.85");
 	ui.checkBoxDataAug->setChecked(false);
+	ui.checkBoxPadding->setChecked(false);
+	ui.lineEditPaddingMin->setText("2");
+	ui.lineEditPaddingMax->setText("8");
 
 	connect(ui.pushButtonOK, SIGNAL(clicked()), this, SLOT(onOK()));
 	connect(ui.pushButtonCancel, SIGNAL(clicked()), this, SLOT(onCancel()));
 	connect(ui.pushButtonInputPath, SIGNAL(clicked()), this, SLOT(onGetPath()));
 	connect(ui.checkBoxWindowDis, SIGNAL(clicked()), this, SLOT(onUseWindowDis()));
 	connect(ui.checkBoxWindowProb, SIGNAL(clicked()), this, SLOT(onUseWindowProb()));
+	connect(ui.checkBoxPadding, SIGNAL(clicked()), this, SLOT(onUsePadding()));
 
 	onUseWindowDis();
 	onUseWindowProb();
+	onUsePadding();
 }
 
 GenerateFacadeOptionDialog::~GenerateFacadeOptionDialog()
@@ -87,6 +92,14 @@ bool GenerateFacadeOptionDialog::isAllowWindowProb(){
 	return ui.checkBoxWindowProb->isChecked();
 }
 
+bool GenerateFacadeOptionDialog::isAllowPadding(){
+	return ui.checkBoxPadding->isChecked();
+}
+
+std::pair<int, int> GenerateFacadeOptionDialog::getPadding(){
+	return std::make_pair(ui.lineEditPaddingMin->text().toInt(), ui.lineEditPaddingMax->text().toInt());
+}
+
 double GenerateFacadeOptionDialog::getWindowProb(){
 	return ui.lineEditWindowProb->text().toDouble();
 }
@@ -116,4 +129,10 @@ void GenerateFacadeOptionDialog::onUseWindowDis() {
 
 void GenerateFacadeOptionDialog::onUseWindowProb() {
 	ui.lineEditWindowProb->setEnabled(ui.checkBoxWindowProb->isChecked());
+}
+
+void GenerateFacadeOptionDialog::onUsePadding() {
+	ui.lineEditPaddingMin->setEnabled(ui.checkBoxPadding->isChecked());
+	ui.lineEditPaddingMax->setEnabled(ui.checkBoxPadding->isChecked());
+	ui.label_19->setEnabled(ui.checkBoxPadding->isChecked());
 }
