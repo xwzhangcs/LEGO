@@ -743,14 +743,12 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				int bottom = util::genRand(imagePadding.first, imagePadding.second + 1);
 				int left = util::genRand(imagePadding.first, imagePadding.second + 1);
 				int right = util::genRand(imagePadding.first, imagePadding.second + 1);
-				std::cout << "top is " << top << std::endl;
+				/*std::cout << "top is " << top << std::endl;
 				std::cout << "bottom is " << bottom << std::endl;
 				std::cout << "left is " << left << std::endl;
-				std::cout << "right is " << right << std::endl;
+				std::cout << "right is " << right << std::endl;*/
 				int borderType = cv::BORDER_CONSTANT;
 				cv::copyMakeBorder(result, result, top, bottom, left, right, borderType, bg_color);
-				QString img_filename_padding = facadeImagesPath + QString("/facade_image_%1_padding.png").arg(index, 6, 10, QChar('0'));
-				cv::imwrite(img_filename_padding.toUtf8().constData(), result);
 				// crop
 				{
 					int final_width = width + 2 * imagePadding.first;
@@ -758,10 +756,19 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 					int x1, y1;
 					x1 = rand() % (int)(result.cols - final_width + 1);
 					y1 = rand() % (int)(result.rows - final_height + 1);
-					std::cout << "x1 is " << x1 << std::endl;
-					std::cout << "y1 is " << y1 << std::endl;
+					/*std::cout << "x1 is " << x1 << std::endl;
+					std::cout << "y1 is " << y1 << std::endl;*/
 					result = cv::Mat(result, cv::Rect(x1, y1, final_width, final_height)).clone();
 				}
+				// add rotation
+				cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
+				// rotate the image
+				cv::Mat rot_img;
+				cv::Point2f offset(result.cols / 2 + rand() % 30 - 15, result.rows / 2 + rand() % 30 - 15);
+				float angle = rand() % 7 - 3;
+				cv::Mat rot_mat = cv::getRotationMatrix2D(offset, angle, 1.0);
+				cv::warpAffine(result, rot_img, rot_mat, result.size(), cv::INTER_CUBIC, cv::BORDER_REPLICATE);
+				cv::cvtColor(rot_img, result, cv::COLOR_GRAY2BGR);
 			}
 			cv::imwrite(img_filename.toUtf8().constData(), result);
 			index++;
