@@ -664,8 +664,16 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			NC = util::genRand(imageCols.first, imageCols.second + 1);
 			NG = util::genRand(imageGroups.first, imageGroups.second + 1);
 		}
-		double ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
-		double ratioHeight = util::genRand(imageRelativeHeight.first, imageRelativeHeight.second);
+		double ratioWidth = 0;
+		double ratioHeight = 0;
+		if (NC <= 3){
+			ratioWidth = util::genRand(imageRelativeWidth.second - 0.15, imageRelativeWidth.second);
+			ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
+		}
+		else{
+			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
+			ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
+		}
 		int thickness = -1;
 		double FH = height * 1.0 / NR;
 		double FW = width * 1.0 / NC;
