@@ -26,6 +26,10 @@ public:
 	std::pair<int, int> getPadding();
 	double getWindowProb();
 	bool isAllowDataAugmentaion();
+	bool isAllowDoors();
+	std::pair<double, double> getDRelativeWidth();
+	std::pair<double, double> getDRelativeHeight();
+	std::pair<int, int> getND();
 
 private:
 	Ui::GenerateFacadeOptionDialog ui;
@@ -37,4 +41,5 @@ public slots:
 	void onUseWindowDis();
 	void onUseWindowProb();
 	void onUsePadding();
+	void onUseDoors();
 };

@@ -214,8 +214,10 @@ void MainWindow::onRenderingModeChanged() {
 void MainWindow::onGenerateFacadeImages(){
 	GenerateFacadeOptionDialog dlg;
 	if (dlg.exec()) {
-		//generateFacadeImages(QString facadeImagesPath, int imageNum, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight);
-		glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding());
+		if (dlg.isAllowDoors())
+			glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding(), dlg.getND(), dlg.getDRelativeWidth(), dlg.getDRelativeHeight());
+		else
+			glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding());
 	}
 }
 

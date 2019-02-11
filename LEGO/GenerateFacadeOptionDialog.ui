@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>278</width>
-    <height>449</height>
+    <height>637</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <x>10</x>
      <y>123</y>
      <width>261</width>
-     <height>281</height>
+     <height>161</height>
     </rect>
    </property>
    <property name="title">
@@ -71,241 +71,11 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="label_12">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>50</y>
-      <width>16</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>~</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditNRMin">
-    <property name="geometry">
-     <rect>
-      <x>74</x>
-      <y>50</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_11">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>50</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>NR:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditNRMax">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>50</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditNCMin">
-    <property name="geometry">
-     <rect>
-      <x>74</x>
-      <y>80</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_13">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>80</y>
-      <width>16</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>~</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_14">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>80</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>NC:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditNCMax">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>80</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>140</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>R Width:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditRelativeWidthMin">
-    <property name="geometry">
-     <rect>
-      <x>74</x>
-      <y>140</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>169</y>
-      <width>81</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>R Height:</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditRelativeHeightMin">
-    <property name="geometry">
-     <rect>
-      <x>74</x>
-      <y>169</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_15">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>109</y>
-      <width>51</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>NG:</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_16">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>109</y>
-      <width>16</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>~</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditNGMin">
-    <property name="geometry">
-     <rect>
-      <x>74</x>
-      <y>109</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditNGMax">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>109</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditRelativeWidthMax">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>140</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_17">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>140</y>
-      <width>16</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>~</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_18">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>170</y>
-      <width>16</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>~</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEditRelativeHeightMax">
-    <property name="geometry">
-     <rect>
-      <x>150</x>
-      <y>170</y>
-      <width>41</width>
-      <height>20</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QCheckBox" name="checkBoxWindowDis">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>200</y>
+      <y>50</y>
       <width>131</width>
       <height>17</height>
      </rect>
@@ -318,7 +88,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>226</y>
+      <y>76</y>
       <width>131</width>
       <height>17</height>
      </rect>
@@ -331,7 +101,7 @@
     <property name="geometry">
      <rect>
       <x>150</x>
-      <y>200</y>
+      <y>50</y>
       <width>41</width>
       <height>20</height>
      </rect>
@@ -341,7 +111,7 @@
     <property name="geometry">
      <rect>
       <x>150</x>
-      <y>226</y>
+      <y>76</y>
       <width>41</width>
       <height>20</height>
      </rect>
@@ -351,7 +121,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>250</y>
+      <y>100</y>
       <width>131</width>
       <height>17</height>
      </rect>
@@ -364,7 +134,7 @@
     <property name="geometry">
      <rect>
       <x>130</x>
-      <y>250</y>
+      <y>100</y>
       <width>16</width>
       <height>21</height>
      </rect>
@@ -377,7 +147,7 @@
     <property name="geometry">
      <rect>
       <x>74</x>
-      <y>250</y>
+      <y>100</y>
       <width>41</width>
       <height>20</height>
      </rect>
@@ -387,18 +157,31 @@
     <property name="geometry">
      <rect>
       <x>150</x>
-      <y>250</y>
+      <y>100</y>
       <width>41</width>
       <height>20</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxDoors">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>131</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Ebable doors</string>
     </property>
    </widget>
   </widget>
   <widget class="QPushButton" name="pushButtonOK">
    <property name="geometry">
     <rect>
-     <x>43</x>
-     <y>411</y>
+     <x>50</x>
+     <y>595</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -410,8 +193,8 @@
   <widget class="QPushButton" name="pushButtonCancel">
    <property name="geometry">
     <rect>
-     <x>173</x>
-     <y>411</y>
+     <x>180</x>
+     <y>595</y>
      <width>91</width>
      <height>31</height>
     </rect>
@@ -504,6 +287,416 @@
      <string>Augmentation</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_2">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>292</y>
+     <width>261</width>
+     <height>171</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Window Config</string>
+   </property>
+   <widget class="QLineEdit" name="lineEditRelativeHeightMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>140</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNGMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>79</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_17">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>110</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNCMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>50</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_14">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>NC:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditRelativeWidthMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>110</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNRMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>20</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_18">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>140</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_11">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>NR:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNRMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>20</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNCMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>50</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_4">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>R Width:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>139</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>R Height:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditRelativeWidthMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>110</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_15">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>79</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>NG:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditRelativeHeightMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>139</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>50</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNGMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>79</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>20</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_16">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>79</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="groupBox_3">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>472</y>
+     <width>261</width>
+     <height>111</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Door Config</string>
+   </property>
+   <widget class="QLineEdit" name="lineEditDRelativeWidthMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>53</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_20">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>53</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditDRelativeWidthMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>53</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>82</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>R Height:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_21">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>83</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditDRelativeHeightMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>83</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>53</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>R Width:</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditDRelativeHeightMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>82</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNDMax">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>20</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEditNDMin">
+    <property name="geometry">
+     <rect>
+      <x>74</x>
+      <y>20</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_22">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ND:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_23">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>20</y>
+      <width>16</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>~</string>
+    </property>
+   </widget>
+   <zorder>lineEditDRelativeWidthMax</zorder>
+   <zorder>label_20</zorder>
+   <zorder>lineEditDRelativeWidthMin</zorder>
+   <zorder>label_6</zorder>
+   <zorder>label_21</zorder>
+   <zorder>lineEditDRelativeHeightMax</zorder>
+   <zorder>label_5</zorder>
+   <zorder>lineEditDRelativeHeightMin</zorder>
+   <zorder>lineEditNCMin_2</zorder>
+   <zorder>label_23</zorder>
+   <zorder>label_22</zorder>
+   <zorder>lineEditNCMax_2</zorder>
+   <zorder>lineEditNDMax</zorder>
+   <zorder>lineEditNDMin</zorder>
+   <zorder>label_22</zorder>
+   <zorder>label_23</zorder>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
