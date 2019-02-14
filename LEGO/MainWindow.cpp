@@ -11,6 +11,10 @@
 #include "EfficientRANSACOptionDialog.h"
 #include "GenerateFacadeOptionDialog.h"
 #include "OffsetScaleDialog.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "regularizer/Config.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -222,16 +226,6 @@ void MainWindow::onGenerateFacadeImages(){
 }
 
 void MainWindow::onGenerateRectifiedImage() {
-	{
-		int img_rows = 5;
-		int img_cols = 5;
-		int img_groups = 2;
-		double relative_widht = 0.5;
-		double relative_height = 0.5;
-		cv::Mat final_img = glWidget->generateFacadeSynImage(224, 224, img_rows, img_cols, img_groups, relative_widht, relative_height);
-		cv::imwrite("../data/test.png", final_img);
-	}
-	return;
 	//
 	QString filename = QFileDialog::getOpenFileName(this, tr("Load ..."), "", tr("Image files (*.png *.jpg *.bmp)"));
 	if (filename.isEmpty()) return;

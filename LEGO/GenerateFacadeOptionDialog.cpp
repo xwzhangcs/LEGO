@@ -14,10 +14,10 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditNRMax->setText("12");
 	ui.lineEditNGMin->setText("1");
 	ui.lineEditNGMax->setText("3");
-	ui.lineEditRelativeWidthMin->setText("0.4");
-	ui.lineEditRelativeWidthMax->setText("0.9");
-	ui.lineEditRelativeHeightMin->setText("0.4");
-	ui.lineEditRelativeHeightMax->setText("0.9");
+	ui.lineEditRelativeWidthMin->setText("0.5");
+	ui.lineEditRelativeWidthMax->setText("0.85");
+	ui.lineEditRelativeHeightMin->setText("0.5");
+	ui.lineEditRelativeHeightMax->setText("0.85");
 	ui.checkBoxWindowDis->setChecked(false);
 	ui.lineEditWindowDis->setText("0.10");
 	ui.checkBoxWindowProb->setChecked(false);
@@ -30,7 +30,7 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditDRelativeHeightMin->setText("0.2");
 	ui.lineEditDRelativeHeightMax->setText("0.3");
 	ui.lineEditDRelativeWidthMin->setText("0.7");
-	ui.lineEditDRelativeWidthMax->setText("0.9");
+	ui.lineEditDRelativeWidthMax->setText("0.85");
 	ui.lineEditNDMin->setText("2");
 	ui.lineEditNDMax->setText("6");
 
