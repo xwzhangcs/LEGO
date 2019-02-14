@@ -5,8 +5,8 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
-	ui.lineEditImageHeight->setText("220");
-	ui.lineEditImageWidth->setText("220");
+	ui.lineEditImageHeight->setText("224");
+	ui.lineEditImageWidth->setText("224");
 	ui.lineEditImageNum->setText("1");
 	ui.lineEditNCMin->setText("1");
 	ui.lineEditNCMax->setText("12");
@@ -15,9 +15,9 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditNGMin->setText("1");
 	ui.lineEditNGMax->setText("3");
 	ui.lineEditRelativeWidthMin->setText("0.5");
-	ui.lineEditRelativeWidthMax->setText("0.85");
+	ui.lineEditRelativeWidthMax->setText("0.9");
 	ui.lineEditRelativeHeightMin->setText("0.5");
-	ui.lineEditRelativeHeightMax->setText("0.85");
+	ui.lineEditRelativeHeightMax->setText("0.9");
 	ui.checkBoxWindowDis->setChecked(false);
 	ui.lineEditWindowDis->setText("0.10");
 	ui.checkBoxWindowProb->setChecked(false);
@@ -28,9 +28,9 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditPaddingMax->setText("8");
 	ui.checkBoxDoors->setChecked(false);
 	ui.lineEditDRelativeHeightMin->setText("0.2");
-	ui.lineEditDRelativeHeightMax->setText("0.3");
+	ui.lineEditDRelativeHeightMax->setText("0.4");
 	ui.lineEditDRelativeWidthMin->setText("0.7");
-	ui.lineEditDRelativeWidthMax->setText("0.85");
+	ui.lineEditDRelativeWidthMax->setText("0.9");
 	ui.lineEditNDMin->setText("2");
 	ui.lineEditNDMax->setText("6");
 

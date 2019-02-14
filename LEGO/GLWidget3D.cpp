@@ -658,22 +658,25 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		cv::Scalar bg_color(255, 255, 255); // white back ground
 		cv::Scalar window_color(0, 0, 0); // black for windows
 		int NR = util::genRand(imageRows.first, imageRows.second + 1);
-		int NC = util::genRand(imageCols.first, imageCols.second + 1);
 		int NG = util::genRand(imageGroups.first, imageGroups.second + 1);
-		while (NC == 1 && NG != 1){
+		int NC = 0;
+		if (NG == 1)
 			NC = util::genRand(imageCols.first, imageCols.second + 1);
-			NG = util::genRand(imageGroups.first, imageGroups.second + 1);
+		else{
+			NC = util::genRand(imageCols.first + 1, imageCols.second / NG + 2);
 		}
 		double ratioWidth = 0;
 		double ratioHeight = 0;
-		if (NC <= 3){
-			ratioWidth = util::genRand(imageRelativeWidth.second - 0.15, imageRelativeWidth.second);
-			ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
+		if (NC == 1){
+			ratioWidth = util::genRand(0.9, 1.0);
+		}
+		else if (NC <= 3){
+			ratioWidth = util::genRand(imageRelativeWidth.second - 0.2, imageRelativeWidth.second);
 		}
 		else{
 			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
-			ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
 		}
+		ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
 		int thickness = -1;
 		double FH = height * 1.0 / NR;
 		double FW = width * 1.0 / NC;
@@ -689,7 +692,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		std::cout << "WH is " << WH << std::endl;
 		std::cout << "WW is " << WW << std::endl;
 		// draw facade image
-		for (int iter_outers = 0; iter_outers < 1; ++iter_outers){
+		for (int iter_outers = 0; iter_outers < 10; ++iter_outers){
 			cv::Mat result(height, width, CV_8UC3, bg_color);
 			if (NG == 1){
 				for (int i = 0; i < NR; ++i) {
@@ -718,7 +721,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				}
 			}
 			else{
-				double gap = 0.1 * WW; // Assume not too many windows in one group
+				double gap = 0.05 * WW; // Assume not too many windows in one group
 				double GWW = (WW - gap * (NG - 1)) / NG;
 				double GFW = GWW + gap;
 				for (int i = 0; i < NR; ++i) {
@@ -777,12 +780,14 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 					std::cout << "y1 is " << y1 << std::endl;*/
 					result = cv::Mat(result, cv::Rect(x1, y1, final_width, final_height)).clone();
 				}
-				// add rotation
+			}
+			// add rotation
+			{
 				cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
 				// rotate the image
 				cv::Mat rot_img;
 				cv::Point2f offset(result.cols / 2 + rand() % 30 - 15, result.rows / 2 + rand() % 30 - 15);
-				float angle = rand() % 7 - 3;
+				float angle = rand() % 5 - 2;
 				cv::Mat rot_mat = cv::getRotationMatrix2D(offset, angle, 1.0);
 				cv::warpAffine(result, rot_img, rot_mat, result.size(), cv::INTER_CUBIC, cv::BORDER_REPLICATE);
 				cv::cvtColor(rot_img, result, cv::COLOR_GRAY2BGR);
@@ -826,10 +831,10 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	std::cout << "bWindowProb is " << bWindowProb << std::endl;
 	std::cout << "windowProb is " << windowProb << std::endl;
 	std::cout << "bPadding is " << bPadding << std::endl;
-	std::cout << "imagePadding is " << "(" << imagePadding.first << ", " << imagePadding.second << ")" << std::endl;*/
+	std::cout << "imagePadding is " << "(" << imagePadding.first << ", " << imagePadding.second << ")" << std::endl;
 	std::cout << "imageDoors is " << "(" << imageDoors.first << ", " << imageDoors.second << ")" << std::endl;
 	std::cout << "imageDRelativeWidth is " << "(" << imageDRelativeWidth.first << ", " << imageDRelativeWidth.second << ")" << std::endl;
-	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
+	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;*/
 	
 
 	// generate facade images
@@ -839,23 +844,26 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		cv::Scalar bg_color(255, 255, 255); // white back ground
 		cv::Scalar window_color(0, 0, 0); // black for windows
 		int NR = util::genRand(imageRows.first, imageRows.second + 1);
-		int NC = util::genRand(imageCols.first, imageCols.second + 1);
 		int NG = util::genRand(imageGroups.first, imageGroups.second + 1);
-		while (NC == 1 && NG != 1){
+		int NC = 0;
+		if (NG == 1)
 			NC = util::genRand(imageCols.first, imageCols.second + 1);
-			NG = util::genRand(imageGroups.first, imageGroups.second + 1);
+		else{
+			NC = util::genRand(imageCols.first + 1, imageCols.second / NG + 2);
 		}
 		int ND = util::genRand(imageDoors.first, imageDoors.second + 1);
 		double ratioWidth = 0;
 		double ratioHeight = 0;
-		if (NC <= 3){
-			ratioWidth = util::genRand(imageRelativeWidth.second - 0.15, imageRelativeWidth.second);
-			ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
+		if (NC == 1){
+			ratioWidth = util::genRand(0.9, 1.0);
+		}
+		else if (NC <= 3){
+			ratioWidth = util::genRand(imageRelativeWidth.second - 0.2, imageRelativeWidth.second);
 		}
 		else{
 			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
-			ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
 		}
+		ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
 		double ratioDWidth = util::genRand(imageDRelativeWidth.first, imageDRelativeWidth.second);
 		double ratioDHeight = util::genRand(imageDRelativeHeight.first, imageDRelativeHeight.second);
 		int thickness = -1;
@@ -913,7 +921,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				// doors
 				for (int i = 0; i < ND; i++){
 					float x1 = (DFW - DW) * 0.5 + DFW * i;
-					float y1 = (height - DFH) + (DFH - DH) * 0.5;
+					float y1 = height - DH;
 					float x2 = x1 + DW;
 					float y2 = y1 + DH;
 					if (bWindowDis) {
@@ -927,7 +935,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			}
 			else{
 				// windows
-				double gap = 0.1 * WW; // Assume not too many windows in one group
+				double gap = 0.05 * WW; // Assume not too many windows in one group
 				double GWW = (WW - gap * (NG - 1)) / NG;
 				double GFW = GWW + gap;
 				for (int i = 0; i < NR; ++i) {
@@ -961,7 +969,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				// doors
 				for (int i = 0; i < ND; i++){
 					float x1 = (DFW - DW) * 0.5 + DFW * i;
-					float y1 = (height - DFH) + (DFH - DH) * 0.5;
+					float y1 = height - DH;
 					float x2 = x1 + DW;
 					float y2 = y1 + DH;
 					if (bWindowDis) {
@@ -1000,7 +1008,9 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 					std::cout << "y1 is " << y1 << std::endl;*/
 					result = cv::Mat(result, cv::Rect(x1, y1, final_width, final_height)).clone();
 				}
-				// add rotation
+			}
+			// add rotation
+			{
 				cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
 				// rotate the image
 				cv::Mat rot_img;
