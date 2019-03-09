@@ -670,7 +670,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			ratioWidth = util::genRand(0.9, 1.0);
 		}
 		else if (NC <= 3){
-			ratioWidth = util::genRand(imageRelativeWidth.second - 0.2, imageRelativeWidth.second);
+			ratioWidth = util::genRand(imageRelativeWidth.second - 0.4, imageRelativeWidth.second);
 		}
 		else{
 			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
@@ -856,7 +856,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			ratioWidth = util::genRand(0.9, 1.0);
 		}
 		else if (NC <= 3){
-			ratioWidth = util::genRand(imageRelativeWidth.second - 0.2, imageRelativeWidth.second);
+			ratioWidth = util::genRand(imageRelativeWidth.second - 0.4, imageRelativeWidth.second);
 		}
 		else{
 			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
@@ -1008,6 +1008,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				}
 			}
 			// add rotation
+			if (false)
 			{
 				cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
 				// rotate the image
@@ -1029,17 +1030,15 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				out_param << ",";
 				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
 				out_param << ",";
-				out_param << (NG - imageGroups.first) * 1.0 / (imageGroups.second - imageGroups.first);
-				out_param << ",";
 				out_param << (ND - imageDoors.first) * 1.0 / (imageDoors.second - imageDoors.first);
 				out_param << ",";
-				out_param << ratioWidth;
+				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
 				out_param << ",";
-				out_param << ratioHeight;
+				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
 				out_param << ",";
-				out_param << ratioDWidth;
+				out_param << (ratioDWidth - imageDRelativeWidth.first) * 1.0 / (imageDRelativeWidth.second - imageDRelativeWidth.first);
 				out_param << ",";
-				out_param << ratioDHeight;
+				out_param << (ratioDHeight - imageDRelativeHeight.first) * 1.0 / (imageDRelativeHeight.second - imageDRelativeHeight.first);
 				out_param << "\n";
 			}
 		}
