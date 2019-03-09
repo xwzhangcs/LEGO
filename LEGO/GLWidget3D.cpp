@@ -651,7 +651,9 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	*/
 	// generate facade images
+	std::cout << "imageRelativeHeight is " << "(" << imageRelativeHeight.first << ", " << imageRelativeHeight.second << ")" << std::endl;
 	int index = 0;
+	std::cout << "windowProb is " << windowProb << std::endl;
 	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt");
 	for (int l = 0; l < imageNum; l++){
 		cv::Scalar bg_color(255, 255, 255); // white back ground
@@ -675,7 +677,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		else{
 			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
 		}
-		ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
+		ratioHeight = util::genRand(imageRelativeHeight.first, imageRelativeHeight.second);
 		int thickness = -1;
 		double FH = height * 1.0 / NR;
 		double FW = width * 1.0 / NC;
@@ -691,7 +693,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		std::cout << "WH is " << WH << std::endl;
 		std::cout << "WW is " << WW << std::endl;
 		// draw facade image
-		for (int iter_outers = 0; iter_outers < 1; ++iter_outers){
+		for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
 			cv::Mat result(height, width, CV_8UC3, bg_color);
 			if (NG == 1){
 				for (int i = 0; i < NR; ++i) {
@@ -798,14 +800,14 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			{
 				// normalize for NN training
 				out_param << img_name.toUtf8().constData();
-				out_param << ",";
-				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+				/*out_param << ",";
+				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);*/
 				out_param << ",";
 				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
 				out_param << ",";
 				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
-				out_param << ",";
-				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
+				/*out_param << ",";
+				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);*/
 				out_param << "\n";
 			}
 		}
@@ -861,7 +863,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		else{
 			ratioWidth = util::genRand(imageRelativeWidth.first, imageRelativeWidth.second);
 		}
-		ratioHeight = util::genRand(imageRelativeWidth.first, imageRelativeHeight.second);
+		ratioHeight = util::genRand(imageRelativeHeight.first, imageRelativeHeight.second);
 		double ratioDWidth = util::genRand(imageDRelativeWidth.first, imageDRelativeWidth.second);
 		double ratioDHeight = util::genRand(imageDRelativeHeight.first, imageDRelativeHeight.second);
 		int thickness = -1;
@@ -1025,16 +1027,16 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			{
 				// normalize for NN training
 				out_param << img_name.toUtf8().constData();
-				out_param << ",";
-				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+				/*out_param << ",";
+				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);*/
 				out_param << ",";
 				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
 				out_param << ",";
 				out_param << (ND - imageDoors.first) * 1.0 / (imageDoors.second - imageDoors.first);
 				out_param << ",";
 				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
-				out_param << ",";
-				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
+				/*out_param << ",";
+				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);*/
 				out_param << ",";
 				out_param << (ratioDWidth - imageDRelativeWidth.first) * 1.0 / (imageDRelativeWidth.second - imageDRelativeWidth.first);
 				out_param << ",";
