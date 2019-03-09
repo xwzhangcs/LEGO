@@ -800,14 +800,14 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			{
 				// normalize for NN training
 				out_param << img_name.toUtf8().constData();
-				/*out_param << ",";
-				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);*/
 				out_param << ",";
+				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+				/*out_param << ",";
 				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
 				out_param << ",";
-				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
-				/*out_param << ",";
-				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);*/
+				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
+				out_param << ",";
+				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
 				out_param << "\n";
 			}
 		}
@@ -1027,16 +1027,16 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 			{
 				// normalize for NN training
 				out_param << img_name.toUtf8().constData();
-				/*out_param << ",";
-				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);*/
 				out_param << ",";
-				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
+				out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+				/*out_param << ",";
+				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);*/
 				out_param << ",";
 				out_param << (ND - imageDoors.first) * 1.0 / (imageDoors.second - imageDoors.first);
-				out_param << ",";
-				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
 				/*out_param << ",";
-				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);*/
+				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
+				out_param << ",";
+				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
 				out_param << ",";
 				out_param << (ratioDWidth - imageDRelativeWidth.first) * 1.0 / (imageDRelativeWidth.second - imageDRelativeWidth.first);
 				out_param << ",";
