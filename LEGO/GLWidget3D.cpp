@@ -650,7 +650,6 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	std::cout << "imageDRelativeWidth is " << "(" << imageDRelativeWidth.first << ", " << imageDRelativeWidth.second << ")" << std::endl;
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	*/
-
 	// generate facade images
 	int index = 0;
 	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt");
@@ -692,7 +691,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 		std::cout << "WH is " << WH << std::endl;
 		std::cout << "WW is " << WW << std::endl;
 		// draw facade image
-		for (int iter_outers = 0; iter_outers < 10; ++iter_outers){
+		for (int iter_outers = 0; iter_outers < 1; ++iter_outers){
 			cv::Mat result(height, width, CV_8UC3, bg_color);
 			if (NG == 1){
 				for (int i = 0; i < NR; ++i) {
@@ -782,6 +781,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				}
 			}
 			// add rotation
+			if (false)
 			{
 				cv::cvtColor(result, result, cv::COLOR_BGR2GRAY);
 				// rotate the image
@@ -803,11 +803,9 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 				out_param << ",";
 				out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
 				out_param << ",";
-				out_param << (NG - imageGroups.first) * 1.0 / (imageGroups.second - imageGroups.first);
+				out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
 				out_param << ",";
-				out_param << ratioWidth;
-				out_param << ",";
-				out_param << ratioHeight;
+				out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
 				out_param << "\n";
 			}
 		}
