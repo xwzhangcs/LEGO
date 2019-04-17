@@ -36,6 +36,7 @@ public slots:
 	void onRenderingModeChanged();
 	void onGenerateFacadeImages();
 	void onGenerateRectifiedImage();
+	void onGenerateRoofImages();
 };
 
 #endif // MAINWINDOW_H

@@ -54,6 +54,7 @@ public:
     QAction *actionGenerateFacadeImages;
     QAction *actionGenerateRectifiedImage;
     QAction *actionSaveXyzn;
+    QAction *actionGenerateRoofImages;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -146,6 +147,8 @@ public:
         actionGenerateRectifiedImage->setObjectName(QStringLiteral("actionGenerateRectifiedImage"));
         actionSaveXyzn = new QAction(MainWindowClass);
         actionSaveXyzn->setObjectName(QStringLiteral("actionSaveXyzn"));
+        actionGenerateRoofImages = new QAction(MainWindowClass);
+        actionGenerateRoofImages->setObjectName(QStringLiteral("actionGenerateRoofImages"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -203,6 +206,7 @@ public:
         menuSimplify->addAction(actionOffsetScale);
         menuTools->addAction(actionGenerateFacadeImages);
         menuTools->addAction(actionGenerateRectifiedImage);
+        menuTools->addAction(actionGenerateRoofImages);
 
         retranslateUi(MainWindowClass);
 
@@ -244,6 +248,7 @@ public:
         actionGenerateFacadeImages->setText(QApplication::translate("MainWindowClass", "Generate Facade Images", Q_NULLPTR));
         actionGenerateRectifiedImage->setText(QApplication::translate("MainWindowClass", "Generate Rectified Image", Q_NULLPTR));
         actionSaveXyzn->setText(QApplication::translate("MainWindowClass", "Save xyzn", Q_NULLPTR));
+        actionGenerateRoofImages->setText(QApplication::translate("MainWindowClass", "Generate Roof Images", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));

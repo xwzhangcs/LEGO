@@ -10,6 +10,7 @@
 #include "CurveRightAngleOptionDialog.h"
 #include "EfficientRANSACOptionDialog.h"
 #include "GenerateFacadeOptionDialog.h"
+#include "GenerateRoofOptionDialog.h"
 #include "OffsetScaleDialog.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -61,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionRenderingHatching, SIGNAL(triggered()), this, SLOT(onRenderingModeChanged()));
 	connect(ui.actionGenerateFacadeImages, SIGNAL(triggered()), this, SLOT(onGenerateFacadeImages()));
 	connect(ui.actionGenerateRectifiedImage, SIGNAL(triggered()), this, SLOT(onGenerateRectifiedImage()));
+	connect(ui.actionGenerateRoofImages, SIGNAL(triggered()), this, SLOT(onGenerateRoofImages()));
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
@@ -355,4 +357,11 @@ void MainWindow::onGenerateRectifiedImage() {
 	cv::resize(final_img, final_img, src.size());
 	QString final_name = filename.left(pos) + "_final.png";
 	cv::imwrite(final_name.toUtf8().constData(), final_img);
+}
+
+void MainWindow::onGenerateRoofImages(){
+	GenerateRoofOptionDialog dlg;
+	if (dlg.exec()) {
+			
+	}
 }
