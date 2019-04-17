@@ -63,6 +63,7 @@ namespace util {
 		public:
 			static void write(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<std::shared_ptr<BuildingLayer>>& buildings);
 			static void writeVoxels(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<VoxelBuilding>& voxel_buildings);
+			static void writePointCloud_XYZN(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<VoxelBuilding>& voxel_buildings);
 
 		private:
 			static void writeBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, const std::string& facade_texture, const std::string& roof_texture, std::vector<Face>& faces);

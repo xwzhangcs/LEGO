@@ -337,6 +337,15 @@ void GLWidget3D::saveOBJ(const QString& filename) {
 	}
 }
 
+void GLWidget3D::saveXYZN(const QString& filename) {
+	if (show_mode == SHOW_INPUT) {
+		util::obj::OBJWriter::writePointCloud_XYZN(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, voxel_buildings);
+	}
+	else {
+		util::obj::OBJWriter::write(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, buildings);
+	}
+}
+
 void GLWidget3D::saveTopFace(const QString& filename) {
 	util::topface::TopFaceWriter::write(filename.toUtf8().constData(), vdb_size.x, vdb_size.y, offset.x, offset.y, offset.z, scale, buildings);
 }
@@ -652,10 +661,10 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	*/
 	// generate facade images
 	std::cout << "imageRelativeHeight is " << "(" << imageRelativeHeight.first << ", " << imageRelativeHeight.second << ")" << std::endl;
-	int index = imageNum - 50000;
+	int index = imageNum - 10000;
 	std::cout << "windowProb is " << windowProb << std::endl;
 	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt", std::ios::app);
-	for (int l = 0; l < 10000; l++){
+	for (int l = 0; l < 2000; l++){
 		cv::Scalar bg_color(255, 255, 255); // white back ground
 		cv::Scalar window_color(0, 0, 0); // black for windows
 		int NR = util::genRand(imageRows.first, imageRows.second + 1);
@@ -884,9 +893,9 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, int imageNum, bo
 	
 
 	// generate facade images
-	int index = imageNum - 50000;
+	int index = imageNum - 10000;
 	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt", std::ios::app);
-	for (int l = 0; l < 10000; l++){
+	for (int l = 0; l < 2000; l++){
 		cv::Scalar bg_color(255, 255, 255); // white back ground
 		cv::Scalar window_color(0, 0, 0); // black for windows
 		int NR = util::genRand(imageRows.first, imageRows.second + 1);

@@ -41,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionSaveOBJ, SIGNAL(triggered()), this, SLOT(onSaveOBJ()));
+	connect(ui.actionSaveXyzn, SIGNAL(triggered()), this, SLOT(onSaveXYZN()));
 	connect(ui.actionSaveTopFaces, SIGNAL(triggered()), this, SLOT(onSaveTopFaces()));
 	connect(ui.actionSavePLY, SIGNAL(triggered()), this, SLOT(onSavePLY()));
 	connect(ui.actionSaveImage, SIGNAL(triggered()), this, SLOT(onSaveImage()));
@@ -86,6 +87,13 @@ void MainWindow::onSaveOBJ() {
 	QString filename = QFileDialog::getSaveFileName(this, tr("Save OBJ file..."), "", tr("OBJ files (*.obj)"));
 	if (!filename.isEmpty()) {
 		glWidget->saveOBJ(filename);
+	}
+}
+
+void MainWindow::onSaveXYZN() {
+	QString filename = QFileDialog::getSaveFileName(this, tr("Save xyzn file..."), "", tr("xyzn files (*.xyzn)"));
+	if (!filename.isEmpty()) {
+		glWidget->saveXYZN(filename);
 	}
 }
 

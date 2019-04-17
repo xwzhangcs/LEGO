@@ -269,6 +269,33 @@ namespace util {
 			file.close();
 		}
 
+		void OBJWriter::writePointCloud_XYZN(const std::string& filename, double width, double height, double offset_x, double offset_y, double offset_z, double scale, const std::vector<VoxelBuilding>& voxel_buildings) {
+			std::vector<Vertex> vertices;
+			std::vector<Face> faces;
+
+			for (auto& voxel_building : voxel_buildings) {
+				for (int z = 0; z < voxel_building.node_stack.size(); z++) {
+					for (auto voxel_node : voxel_building.node_stack[z]) {
+						writeVoxelNode(voxel_node, scale, cv::Point3f(1, 1, 1), faces);
+					}
+				}
+			}
+
+			std::ofstream file(filename);
+
+			// output vertex coordinates
+			file << "# List of geometric vertices" << std::endl;
+			for (auto& face : faces) {
+				for (auto& vertex : face.vertices) {
+					if(util::genRand() < 0.2)
+						file << (vertex.position.x + width * 0.5 - 0.5) * scale + offset_x << " " << (vertex.position.y - height * 0.5 + 0.5) * scale + offset_y << " " << vertex.position.z * scale + offset_z << " " << vertex.normal.x << " " << vertex.normal.y << " " << vertex.normal.z<<std::endl;
+				}
+			}
+			file << std::endl;
+			file.close();
+		}
+
+
 		void OBJWriter::writeBuilding(std::shared_ptr<BuildingLayer> building, double scale, const cv::Point3f& color, const std::string& facade_texture, const std::string& roof_texture, std::vector<Face>& faces) {
 			double roof_tile_size = 20.0 / scale;
 

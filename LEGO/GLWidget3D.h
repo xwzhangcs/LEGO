@@ -59,6 +59,7 @@ public:
 	void render();
 	void loadVoxelData(const QString& filename);
 	void saveOBJ(const QString& filename);
+	void saveXYZN(const QString& filename);
 	void saveTopFace(const QString& filename);
 	void savePLY(const QString& filename);
 	void saveImage(const QString& filename);

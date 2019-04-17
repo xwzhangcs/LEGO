@@ -53,6 +53,7 @@ public:
     QAction *actionSimplifyByEfficientRANSAC;
     QAction *actionGenerateFacadeImages;
     QAction *actionGenerateRectifiedImage;
+    QAction *actionSaveXyzn;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -143,6 +144,8 @@ public:
         actionGenerateFacadeImages->setObjectName(QStringLiteral("actionGenerateFacadeImages"));
         actionGenerateRectifiedImage = new QAction(MainWindowClass);
         actionGenerateRectifiedImage->setObjectName(QStringLiteral("actionGenerateRectifiedImage"));
+        actionSaveXyzn = new QAction(MainWindowClass);
+        actionSaveXyzn->setObjectName(QStringLiteral("actionSaveXyzn"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -171,6 +174,7 @@ public:
         menuBar->addAction(menuTools->menuAction());
         menuFile->addAction(actionOpen);
         menuFile->addAction(actionSaveOBJ);
+        menuFile->addAction(actionSaveXyzn);
         menuFile->addAction(actionSaveTopFaces);
         menuFile->addAction(actionSavePLY);
         menuFile->addSeparator();
@@ -239,6 +243,7 @@ public:
         actionSimplifyByEfficientRANSAC->setText(QApplication::translate("MainWindowClass", "EfficientRANSAC", Q_NULLPTR));
         actionGenerateFacadeImages->setText(QApplication::translate("MainWindowClass", "Generate Facade Images", Q_NULLPTR));
         actionGenerateRectifiedImage->setText(QApplication::translate("MainWindowClass", "Generate Rectified Image", Q_NULLPTR));
+        actionSaveXyzn->setText(QApplication::translate("MainWindowClass", "Save xyzn", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));
