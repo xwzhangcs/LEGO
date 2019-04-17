@@ -33,6 +33,54 @@ GenerateRoofOptionDialog::~GenerateRoofOptionDialog()
 {
 }
 
+QString GenerateRoofOptionDialog::getPathForRoofImages(){
+	return ui.lineEditRoofImagePath->text();
+}
+
+int GenerateRoofOptionDialog::getNumberOfImages(){
+	return ui.lineEditImageNum->text().toInt();
+}
+
+int GenerateRoofOptionDialog::getRoofType(){
+	return ui.comboBoxRoofTypes->currentIndex();
+}
+
+int GenerateRoofOptionDialog::getWidth(){
+	return ui.lineEditImageWidth->text().toInt();
+}
+
+int GenerateRoofOptionDialog::getHeight(){
+	return ui.lineEditImageHeight->text().toInt();
+}
+
+std::pair<int, int> GenerateRoofOptionDialog::getRoofWidth(){
+	return std::make_pair(ui.lineEditWidthMin->text().toInt(), ui.lineEditWidthMax->text().toInt());
+}
+
+std::pair<double, double> GenerateRoofOptionDialog::getAspect(){
+	return std::make_pair(ui.lineEditAspectMin->text().toDouble(), ui.lineEditAspectMax->text().toDouble());
+}
+
+std::pair<double, double> GenerateRoofOptionDialog::getSlope(){
+	return std::make_pair(ui.lineEditSlopeMin->text().toDouble(), ui.lineEditSlopeMax->text().toDouble());
+}
+
+std::pair<double, double> GenerateRoofOptionDialog::getRidge(){
+	return std::make_pair(ui.lineEditRidgeMin->text().toDouble(), ui.lineEditRidgeMax->text().toDouble());
+}
+
+bool GenerateRoofOptionDialog::isAllowHeightDisplacement(){
+	return ui.checkBoxHeightDis->isChecked();
+}
+
+double GenerateRoofOptionDialog::getHeightDisplacement(){
+	return ui.lineEditHeightDis->text().toDouble();
+}
+
+bool GenerateRoofOptionDialog::isAllowDataAugmentaion(){
+	return ui.checkBoxDataAug->isChecked();
+}
+
 void GenerateRoofOptionDialog::onOK() {
 	accept();
 }

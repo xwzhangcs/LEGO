@@ -1206,6 +1206,37 @@ cv::Mat GLWidget3D::generateFacadeSynImage(int width, int height, int imageRows,
 	return result;
 }
 
+void GLWidget3D::generateRoofImages(QString roofImagesPath, int imageNum, bool bDataAugmentaion, int roofType, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, std::pair<double, double> roofSlope, std::pair<double, double> roofRidge, bool bRoofDis, double roofDisRatio){
+	std::cout << "roofImagesPath is " << roofImagesPath.toUtf8().constData() << std::endl;
+	std::cout << "imageNum is " << imageNum << std::endl;
+	std::cout <<"bDataAugmentaion is " << bDataAugmentaion << std::endl;
+	std::cout << "width is " << width << std::endl;
+	std::cout << "height is " << height << std::endl;
+	std::cout << "roofType is " << roofType << std::endl;
+	std::cout << "roofWidth is " << "(" << roofWidth.first << ", " << roofWidth.second << ")" << std::endl;
+	std::cout << "roofAspect is " << "(" << roofAspect.first << ", " << roofAspect.second << ")" << std::endl;
+	std::cout << "roofSlope is " << "(" << roofSlope.first << ", " << roofSlope.second << ")" << std::endl;
+	std::cout << "roofRidge is " << "(" << roofRidge.first << ", " << roofRidge.second << ")" << std::endl;
+	std::cout << "bWindowDis is " << bRoofDis << std::endl;
+	std::cout << "windowDisRatio is " << roofDisRatio << std::endl;
+	if (roofType == 0){ // flat roof
+
+	}
+	else if (roofType == 1){ // gable roof
+
+	}
+	else if (roofType == 2){ // hip roof
+
+	}
+	else if (roofType == 3){ // pyramidal roof
+
+	}
+	else{
+
+	}
+}
+
+
 void GLWidget3D::update3DGeometry() {
 	if (show_mode == SHOW_INPUT) {
 		update3DGeometry(voxel_buildings);

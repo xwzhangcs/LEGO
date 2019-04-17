@@ -12,6 +12,7 @@ public:
 	~GenerateRoofOptionDialog();
 	QString getPathForRoofImages();
 	int getNumberOfImages();
+	int getRoofType();
 	int getWidth();
 	int getHeight();
 	std::pair<int, int> getRoofWidth();

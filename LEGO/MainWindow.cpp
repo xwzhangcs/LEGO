@@ -362,6 +362,6 @@ void MainWindow::onGenerateRectifiedImage() {
 void MainWindow::onGenerateRoofImages(){
 	GenerateRoofOptionDialog dlg;
 	if (dlg.exec()) {
-			
+		glWidget->generateRoofImages(dlg.getPathForRoofImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getRoofType(), dlg.getWidth(), dlg.getHeight(), dlg.getRoofWidth(), dlg.getAspect(), dlg.getSlope(), dlg.getRidge(), dlg.isAllowHeightDisplacement(), dlg.getHeightDisplacement());
 	}
 }
