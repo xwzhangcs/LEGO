@@ -2504,6 +2504,27 @@ namespace util {
 		return genRand() * (b - a) + a;
 	}
 
+	bool isInside(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& p){
+		/* Calculate area of triangle ABC */
+		float A = area(a, b, c);
+
+		/* Calculate area of triangle PBC */
+		float A1 = area(p, b, c);
+
+		/* Calculate area of triangle PAC */
+		float A2 = area(a, p, c);
+
+		/* Calculate area of triangle PAB */
+		float A3 = area(a, b, p);
+
+		/* Check if sum of A1, A2 and A3 is same as A */
+		return (A == A1 + A2 + A3);
+	}
+
+	float area(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c){
+		return abs((a.x*(b.y - c.y) + b.x*(c.y - a.y) + c.x*(a.y - b.y)) / 2.0);
+	}
+
 	bool isTangent(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& d) {
 		cv::Point2f u = b - a;
 		cv::Point2f v = d - c;

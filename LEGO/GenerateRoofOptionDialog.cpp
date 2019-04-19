@@ -8,10 +8,10 @@ GenerateRoofOptionDialog::GenerateRoofOptionDialog(QWidget *parent)
 	ui.lineEditImageHeight->setText("224");
 	ui.lineEditImageWidth->setText("224");
 	ui.lineEditImageNum->setText("1");
-	ui.lineEditWidthMin->setText("1");
-	ui.lineEditWidthMax->setText("1");
-	ui.lineEditAspectMin->setText("0.5");
-	ui.lineEditAspectMax->setText("0.8");
+	ui.lineEditWidthMin->setText("80");
+	ui.lineEditWidthMax->setText("200");
+	ui.lineEditAspectMin->setText("0.4");
+	ui.lineEditAspectMax->setText("1.0");
 	ui.lineEditSlopeMin->setText("30");
 	ui.lineEditSlopeMax->setText("60");
 	ui.lineEditRidgeMin->setText("0.4");

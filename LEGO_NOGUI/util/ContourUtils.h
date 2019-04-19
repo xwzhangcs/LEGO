@@ -237,4 +237,10 @@ namespace util {
 
 	double genRand();
 	double genRand(double a, double b);
+
+	// point inside of a triangle
+	/* A function to check whether point P(x, y) lies inside the triangle formed
+	by A(x1, y1), B(x2, y2) and C(x3, y3) */
+	bool isInside(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c, const cv::Point2f& p);
+	float area(const cv::Point2f& a, const cv::Point2f& b, const cv::Point2f& c);
 }

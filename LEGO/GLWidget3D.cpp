@@ -19,6 +19,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#define PI 3.14159265
 
 GLWidget3D::GLWidget3D(MainWindow *parent) : QGLWidget(QGLFormat(QGL::SampleBuffers)) {
 	this->mainWin = parent;
@@ -1207,7 +1208,7 @@ cv::Mat GLWidget3D::generateFacadeSynImage(int width, int height, int imageRows,
 }
 
 void GLWidget3D::generateRoofImages(QString roofImagesPath, int imageNum, bool bDataAugmentaion, int roofType, int width, int height, std::pair<int, int> roofWidth, std::pair<double, double> roofAspect, std::pair<double, double> roofSlope, std::pair<double, double> roofRidge, bool bRoofDis, double roofDisRatio){
-	std::cout << "roofImagesPath is " << roofImagesPath.toUtf8().constData() << std::endl;
+	/*std::cout << "roofImagesPath is " << roofImagesPath.toUtf8().constData() << std::endl;
 	std::cout << "imageNum is " << imageNum << std::endl;
 	std::cout <<"bDataAugmentaion is " << bDataAugmentaion << std::endl;
 	std::cout << "width is " << width << std::endl;
@@ -1218,22 +1219,217 @@ void GLWidget3D::generateRoofImages(QString roofImagesPath, int imageNum, bool b
 	std::cout << "roofSlope is " << "(" << roofSlope.first << ", " << roofSlope.second << ")" << std::endl;
 	std::cout << "roofRidge is " << "(" << roofRidge.first << ", " << roofRidge.second << ")" << std::endl;
 	std::cout << "bWindowDis is " << bRoofDis << std::endl;
-	std::cout << "windowDisRatio is " << roofDisRatio << std::endl;
-	if (roofType == 0){ // flat roof
+	std::cout << "windowDisRatio is " << roofDisRatio << std::endl;*/
 
-	}
-	else if (roofType == 1){ // gable roof
+	std::ofstream out_param(roofImagesPath.toUtf8() + "/parameters.txt", std::ios::app);
+	int index = 0;
+	for (int l = 0; l < imageNum; l++){
+		cv::Scalar bg_color(0, 0, 0); // white back ground
+		int imageRoofWidth = util::genRand(roofWidth.first, roofWidth.second + 1);
+		double imageRoofAspect = util::genRand(roofAspect.first, roofAspect.second);
+		int imageRoofHeight = imageRoofWidth * imageRoofAspect;
+		std::cout << "imageRoofAspect is " << imageRoofAspect << std::endl;
+		std::cout << "imageRoofWidth is " << imageRoofWidth << std::endl;
+		std::cout << "imageRoofHeight is " << imageRoofHeight << std::endl;
+		if (roofType == 0){ // flat roof
+			double roofBaseHeight = 2.0; // 2.0 meters
+			for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
+				cv::Mat result(height, width, CV_8UC1, bg_color);
+				int upper_left_w = (width - imageRoofWidth) * 0.5;
+				int upper_left_h = (height - imageRoofHeight) * 0.5;
+				for (int i = upper_left_h; i < upper_left_h + imageRoofHeight; i++) {
+					for (int j = upper_left_w; j < upper_left_w + imageRoofWidth; j++) {
+						double pixel_depth = roofBaseHeight;
+						if (bRoofDis) {
+							pixel_depth += util::genRand(-roofBaseHeight * roofDisRatio, roofBaseHeight * roofDisRatio);
+						}
+						result.at<uchar>(i, j) = (uchar) 255 * pixel_depth / (1.5 * roofBaseHeight);
+					}
+				}
+				QString img_filename = roofImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				cv::imwrite(img_filename.toUtf8().constData(), result);
+				index++;
+				// output to .txt
+				{
+					out_param << img_name.toUtf8().constData();
+					out_param << ",";
+					out_param << roofType;
+					out_param << ",";
+					out_param << imageRoofWidth;
+					out_param << ",";
+					out_param << imageRoofAspect;
+					out_param << "\n";
+				}
+			}
+		}
+		else if (roofType == 1){ // gable roof
+			double imageRoofSlope = util::genRand(roofSlope.first, roofSlope.second);
+			std::cout << "imageRoofSlope is " << imageRoofSlope << std::endl;
+			double ridge_height = (1 + roofDisRatio) * imageRoofHeight * 0.5 * tan(imageRoofSlope * PI / 180.0);
+			for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
+				cv::Mat result(height, width, CV_8UC1, bg_color);
+				int upper_left_w = (width - imageRoofWidth) * 0.5;
+				int upper_left_h = (height - imageRoofHeight) * 0.5;
+				for (int i = 0; i < imageRoofHeight; i++) {
+					for (int j = 0; j < imageRoofWidth; j++) {
+						double pixel_depth = 0;
+						if (i <= imageRoofHeight * 0.5)
+							pixel_depth = i *  tan(imageRoofSlope * PI / 180.0);
+						else
+							pixel_depth = (imageRoofHeight - i) *  tan(imageRoofSlope * PI / 180.0);
+						if (bRoofDis) {
+							pixel_depth += util::genRand(-pixel_depth * roofDisRatio, pixel_depth * roofDisRatio);
+						}
+						result.at<uchar>(i + upper_left_h, j + upper_left_w) = (uchar)255 * pixel_depth / ridge_height;
+					}
+				}
+				QString img_filename = roofImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				cv::imwrite(img_filename.toUtf8().constData(), result);
+				index++;
+				// output to .txt
+				{
+					out_param << img_name.toUtf8().constData();
+					out_param << ",";
+					out_param << roofType;
+					out_param << ",";
+					out_param << imageRoofWidth;
+					out_param << ",";
+					out_param << imageRoofAspect;
+					out_param << ",";
+					out_param << imageRoofSlope;
+					out_param << "\n";
+				}
+			}
+		}
+		else if (roofType == 2){ // hip roof
+			double imageRoofSlope = util::genRand(roofSlope.first, roofSlope.second);
+			std::cout << "imageRoofSlope is " << imageRoofSlope << std::endl;
+			int imageRoofRidge = imageRoofWidth * util::genRand(roofRidge.first, roofRidge.second);
+			std::cout << "imageRoofRidge is " << imageRoofRidge << std::endl;
+			double ridge_height = (1 + roofDisRatio) * imageRoofHeight * 0.5 * tan(imageRoofSlope * PI / 180.0);
+			double ridge_height_abs = imageRoofHeight * 0.5 * tan(imageRoofSlope * PI / 180.0);
+			for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
+				cv::Mat result(height, width, CV_8UC1, bg_color);
+				// draw outer part
+				int upper_left_w = (width - imageRoofWidth) * 0.5;
+				int upper_left_h = (height - imageRoofHeight) * 0.5;
+				//
+				cv::Point2f a1(upper_left_h, upper_left_w);
+				cv::Point2f b1(upper_left_h + imageRoofHeight, upper_left_w);
+				cv::Point2f c1(upper_left_h + imageRoofHeight * 0.5, (width - imageRoofRidge) * 0.5);
+				cv::Point2f a2(upper_left_h, upper_left_w + imageRoofWidth);
+				cv::Point2f b2(upper_left_h + imageRoofHeight, upper_left_w + imageRoofWidth);
+				cv::Point2f c2(upper_left_h + imageRoofHeight * 0.5, (width - imageRoofRidge) * 0.5 + imageRoofRidge);
+				for (int i = 0; i < imageRoofHeight; i++) {
+					for (int j = 0; j < imageRoofWidth; j++) {
+						cv::Point2f p(i + upper_left_h, j + upper_left_w);
+						double pixel_depth = 0;
+						if (util::isInside(a1, b1, c1, p)){
+							pixel_depth = ridge_height_abs * j / (c1.y - upper_left_w);
+						}
+						else if (util::isInside(a2, b2, c2, p)){
+							pixel_depth = ridge_height_abs * (imageRoofWidth - j) / (upper_left_w + imageRoofWidth - c2.y);
+						}
+						else{
+							if (i <= imageRoofHeight * 0.5)
+								pixel_depth = i *  tan(imageRoofSlope * PI / 180.0);
+							else
+								pixel_depth = (imageRoofHeight - i) *  tan(imageRoofSlope * PI / 180.0);
+						}
+						if (bRoofDis) {
+							pixel_depth += util::genRand(-pixel_depth * roofDisRatio, pixel_depth * roofDisRatio);
+						}
+						result.at<uchar>(i + upper_left_h, j + upper_left_w) = (uchar)255 * pixel_depth / ridge_height;
+					}
+				}
 
-	}
-	else if (roofType == 2){ // hip roof
+				QString img_filename = roofImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				cv::imwrite(img_filename.toUtf8().constData(), result);
+				index++;
+				// output to .txt
+				{
+					out_param << img_name.toUtf8().constData();
+					out_param << ",";
+					out_param << roofType;
+					out_param << ",";
+					out_param << imageRoofWidth;
+					out_param << ",";
+					out_param << imageRoofAspect;
+					out_param << ",";
+					out_param << imageRoofSlope;
+					out_param << ",";
+					out_param << imageRoofRidge;
+					out_param << "\n";
+				}
+			}
+		}
+		else if (roofType == 3){ // pyramidal roof
+			double imageRoofSlope = util::genRand(roofSlope.first, roofSlope.second);
+			std::cout << "imageRoofSlope is " << imageRoofSlope << std::endl;
+			double rof_top_height = (1 + roofDisRatio) * imageRoofHeight * 0.5 * tan(imageRoofSlope * PI / 180.0);
+			double rof_top_height_abs = imageRoofHeight * 0.5 * tan(imageRoofSlope * PI / 180.0);
+			for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
+				cv::Mat result(height, width, CV_8UC1, bg_color);
+				// draw outer part
+				int upper_left_w = (width - imageRoofWidth) * 0.5;
+				int upper_left_h = (height - imageRoofHeight) * 0.5;
+				//
+				cv::Point2f a1(upper_left_h, upper_left_w);
+				cv::Point2f b1(upper_left_h + imageRoofHeight, upper_left_w);
+				cv::Point2f c1(upper_left_h + imageRoofHeight * 0.5, width * 0.5);
+				cv::Point2f a2(upper_left_h, upper_left_w + imageRoofWidth);
+				cv::Point2f b2(upper_left_h + imageRoofHeight, upper_left_w + imageRoofWidth);
+				cv::Point2f c2(upper_left_h + imageRoofHeight * 0.5, width * 0.5);
+				for (int i = 0; i < imageRoofHeight; i++) {
+					for (int j = 0; j < imageRoofWidth; j++) {
+						cv::Point2f p(i + upper_left_h, j + upper_left_w);
+						double pixel_depth = 0;
+						if (util::isInside(a1, b1, c1, p)){
+							pixel_depth = rof_top_height_abs * j / (c1.y - upper_left_w);
+						}
+						else if (util::isInside(a2, b2, c2, p)){
+							pixel_depth = rof_top_height_abs * (imageRoofWidth - j) / (upper_left_w + imageRoofWidth - c2.y);
+						}
+						else{
+							if (i <= imageRoofHeight * 0.5)
+								pixel_depth = i *  tan(imageRoofSlope * PI / 180.0);
+							else
+								pixel_depth = (imageRoofHeight - i) *  tan(imageRoofSlope * PI / 180.0);
+						}
+						if (bRoofDis) {
+							pixel_depth += util::genRand(-pixel_depth * roofDisRatio, pixel_depth * roofDisRatio);
+						}
+						result.at<uchar>(i + upper_left_h, j + upper_left_w) = (uchar)255 * pixel_depth / rof_top_height;
+					}
+				}
 
-	}
-	else if (roofType == 3){ // pyramidal roof
+				QString img_filename = roofImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+				cv::imwrite(img_filename.toUtf8().constData(), result);
+				index++;
+				// output to .txt
+				{
+					out_param << img_name.toUtf8().constData();
+					out_param << ",";
+					out_param << roofType;
+					out_param << ",";
+					out_param << imageRoofWidth;
+					out_param << ",";
+					out_param << imageRoofAspect;
+					out_param << ",";
+					out_param << imageRoofSlope;
+					out_param << "\n";
+				}
+			}
+		}
+		else{
 
+		}
 	}
-	else{
 
-	}
 }
 
 
