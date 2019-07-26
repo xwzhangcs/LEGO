@@ -19,7 +19,7 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	ui.lineEditRelativeHeightMin->setText("0.3");
 	ui.lineEditRelativeHeightMax->setText("0.9");
 	ui.checkBoxWindowDis->setChecked(false);
-	ui.lineEditWindowDis->setText("0.10");
+	ui.lineEditWindowDis->setText("0.06");
 	ui.checkBoxWindowProb->setChecked(false);
 	ui.lineEditWindowProb->setText("0.90");
 	ui.checkBoxDataAug->setChecked(false);
@@ -109,7 +109,7 @@ bool GenerateFacadeOptionDialog::isAllowDoors(){
 }
 
 std::pair<double, double> GenerateFacadeOptionDialog::getDRelativeWidth(){
-	return std::make_pair(ui.lineEditDRelativeWidthMin->text().toDouble(), ui.lineEditRelativeWidthMax->text().toDouble());
+	return std::make_pair(ui.lineEditDRelativeWidthMin->text().toDouble(), ui.lineEditDRelativeWidthMax->text().toDouble());
 }
 
 std::pair<double, double> GenerateFacadeOptionDialog::getDRelativeHeight(){

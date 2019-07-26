@@ -229,7 +229,7 @@ void MainWindow::onGenerateFacadeImages(){
 	GenerateFacadeOptionDialog dlg;
 	if (dlg.exec()) {
 		if (dlg.isAllowDoors())
-			glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding(), dlg.getND(), dlg.getDRelativeWidth(), dlg.getDRelativeHeight());
+			glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding(), dlg.getND(), dlg.getDRelativeWidth(), dlg.getDRelativeHeight());
 		else
 			glWidget->generateFacadeImages(dlg.getPathForFacadeImages(), dlg.isAllowDataAugmentaion(), dlg.getWidth(), dlg.getHeight(), dlg.getNR(), dlg.getNC(), dlg.getNG(), dlg.getRelativeWidth(), dlg.getRelativeHeight(), dlg.isAllowWindowDisplacement(), dlg.getWindowDisplacement(), dlg.isAllowWindowProb(), dlg.getWindowProb(), dlg.isAllowPadding(), dlg.getPadding());
 	}
