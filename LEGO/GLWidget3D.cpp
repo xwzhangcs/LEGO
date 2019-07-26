@@ -893,8 +893,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	*/
 	// generate facade images
 	int index = 0;
-	double step_W = 0.04;
-	double step_H = 0.04;
+	double step_W = 0.03;
+	double step_H = 0.03;
 	int num_W = 0;
 	int num_H = 0;
 	if (ceil((imageRelativeWidth.second - imageRelativeWidth.first) / step_W) - (imageRelativeWidth.second - imageRelativeWidth.first) / step_W < 0.01)
@@ -941,7 +941,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 					std::cout << "WW is " << WW << std::endl;
 
 					// draw facade image
-					for (int iter_outers = 0; iter_outers < 15; ++iter_outers){
+					for (int iter_outers = 0; iter_outers < 70; ++iter_outers){
 						cv::Mat result(height, width, CV_8UC3, bg_color);
 						if (NG == 1){
 							for (int i = 0; i < NR; ++i) {
@@ -989,18 +989,65 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 						cv::imwrite(img_filename.toUtf8().constData(), result);
 						index++;
 						// write to parameters.txt
+						//{
+						//	// normalize for NN training
+						//	out_param << img_name.toUtf8().constData();
+						//	out_param << ",";
+						//	out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+						//	/*out_param << ",";
+						//	out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
+						//	out_param << ",";
+						//	out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
+						//	out_param << ",";
+						//	out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
+						//	out_param << "\n";
+						//}
+
 						{
-							// normalize for NN training
 							out_param << img_name.toUtf8().constData();
 							out_param << ",";
-							out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
-							/*out_param << ",";
-							out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
-							out_param << ",";
-							out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
-							out_param << ",";
-							out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
-							out_param << "\n";
+							if (NR > 1 && NC > 1){
+								out_param << 1;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << "\n";
+							}
+							else if (NR == 1){
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 1;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << "\n";
+							}
+							else if (NC == 1){
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 0;
+								out_param << ",";
+								out_param << 1;
+								out_param << ",";
+								out_param << 0;
+								out_param << "\n";
+							}
 						}
 					}
 				}
@@ -1314,7 +1361,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	// generate facade images
 	// generate facade images
-	int index = 0;
+	int index = 89232;
 	double step_W = 0.1;
 	double step_H = 0.1;
 	double step_DW = 0.1;
@@ -1452,24 +1499,70 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 									cv::imwrite(img_filename.toUtf8().constData(), result);
 									index++;
 									// write to parameters.txt
+									//{
+									//	// normalize for NN training
+									//	out_param << img_name.toUtf8().constData();
+									//	out_param << ",";
+									//	out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+									//	/*out_param << ",";
+									//	out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);*/
+									//	out_param << ",";
+									//	out_param << (ND - imageDoors.first) * 1.0 / (imageDoors.second - imageDoors.first);
+									//	/*out_param << ",";
+									//	out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
+									//	out_param << ",";
+									//	out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
+									//	out_param << ",";
+									//	out_param << (ratioDWidth - imageDRelativeWidth.first) * 1.0 / (imageDRelativeWidth.second - imageDRelativeWidth.first);
+									//	out_param << ",";
+									//	out_param << (ratioDHeight - imageDRelativeHeight.first) * 1.0 / (imageDRelativeHeight.second - imageDRelativeHeight.first);
+									//	out_param << "\n";
+									//}
 									{
-										// normalize for NN training
 										out_param << img_name.toUtf8().constData();
 										out_param << ",";
-										out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
-										/*out_param << ",";
-										out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);*/
-										out_param << ",";
-										out_param << (ND - imageDoors.first) * 1.0 / (imageDoors.second - imageDoors.first);
-										/*out_param << ",";
-										out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
-										out_param << ",";
-										out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
-										out_param << ",";
-										out_param << (ratioDWidth - imageDRelativeWidth.first) * 1.0 / (imageDRelativeWidth.second - imageDRelativeWidth.first);
-										out_param << ",";
-										out_param << (ratioDHeight - imageDRelativeHeight.first) * 1.0 / (imageDRelativeHeight.second - imageDRelativeHeight.first);
-										out_param << "\n";
+										if (NR > 1 && NC > 1){
+											out_param << 0;
+											out_param << ",";
+											out_param << 1;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << "\n";
+										}
+										else if (NR == 1){
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 1;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << "\n";
+										}
+										else if (NC == 1){
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 0;
+											out_param << ",";
+											out_param << 1;
+											out_param << "\n";
+										}
 									}
 								}
 							}
