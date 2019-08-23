@@ -1361,7 +1361,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	// generate facade images
 	// generate facade images
-	int index = 89232;
+	int index = 0;
 	double step_W = 0.1;
 	double step_H = 0.1;
 	double step_DW = 0.1;
@@ -1417,7 +1417,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 								double DFH = height * ratioDHeight;
 								double DW = DFW * ratioDWidth;
 								double DH = DFH * (1 - windowDisRatio);
-								double FH = (height - DFH) * 1.0 / NR;
+								double GAP = height * util::genRand(0, 0.2);
+								double FH = (height - DFH - GAP) * 1.0 / NR;
 								double FW = width * 1.0 / NC;
 								double WH = FH * ratioHeight;
 								double WW = FW * ratioWidth;
