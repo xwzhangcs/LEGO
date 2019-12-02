@@ -893,8 +893,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	*/
 	// generate facade images
 	int index = 0;
-	double step_W = 0.03;
-	double step_H = 0.03;
+	double step_W = 0.05;
+	double step_H = 0.05;
 	int num_W = 0;
 	int num_H = 0;
 	if (ceil((imageRelativeWidth.second - imageRelativeWidth.first) / step_W) - (imageRelativeWidth.second - imageRelativeWidth.first) / step_W < 0.01)
@@ -908,8 +908,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 		num_H = floor((imageRelativeHeight.second - imageRelativeHeight.first) / step_H);
 	std::cout << "num_W is " << num_W << std::endl;
 	std::cout << "num_H is " << num_H << std::endl;
-	cv::Scalar bg_color(255, 255, 255); // white back ground
-	cv::Scalar window_color(0, 0, 0); // black for windows
+	cv::Scalar bg_color(255, 0, 0); // white back ground
+	cv::Scalar window_color(0, 0, 255); // black for windows
 	int thickness = -1;
 	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt", std::ios::app);
 	for (int row = imageRows.first; row <= imageRows.second; row++){ // loop row
@@ -941,7 +941,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 					std::cout << "WW is " << WW << std::endl;
 
 					// draw facade image
-					for (int iter_outers = 0; iter_outers < 70; ++iter_outers){
+					for (int iter_outers = 0; iter_outers < 3; ++iter_outers){
 						cv::Mat result(height, width, CV_8UC3, bg_color);
 						if (NG == 1){
 							for (int i = 0; i < NR; ++i) {
@@ -989,21 +989,22 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 						cv::imwrite(img_filename.toUtf8().constData(), result);
 						index++;
 						// write to parameters.txt
-						//{
-						//	// normalize for NN training
-						//	out_param << img_name.toUtf8().constData();
-						//	out_param << ",";
-						//	out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
-						//	/*out_param << ",";
-						//	out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
-						//	out_param << ",";
-						//	out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);*/
-						//	out_param << ",";
-						//	out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
-						//	out_param << "\n";
-						//}
-
 						{
+							// normalize for NN training
+							//out_param << img_name.toUtf8().constData();
+							out_param << QString("facade_image_%1_fake.png").arg(index - 1, 6, 10, QChar('0')).toUtf8().constData();
+							out_param << ",";
+							out_param << (NR - imageRows.first) * 1.0 / (imageRows.second - imageRows.first);
+							out_param << ",";
+							out_param << (NC - imageCols.first) * 1.0 / (imageCols.second - imageCols.first);
+							out_param << ",";
+							out_param << (ratioWidth - imageRelativeWidth.first) * 1.0 / (imageRelativeWidth.second - imageRelativeWidth.first);
+							out_param << ",";
+							out_param << (ratioHeight - imageRelativeHeight.first) * 1.0 / (imageRelativeHeight.second - imageRelativeHeight.first);
+							out_param << "\n";
+						}
+
+						/*{
 							out_param << img_name.toUtf8().constData();
 							out_param << ",";
 							if (NR > 1 && NC > 1){
@@ -1048,7 +1049,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 								out_param << 0;
 								out_param << "\n";
 							}
-						}
+						}*/
 					}
 				}
 			}
@@ -1361,7 +1362,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	// generate facade images
 	// generate facade images
-	int index = 0;
+	int index = 89232;
 	double step_W = 0.1;
 	double step_H = 0.1;
 	double step_DW = 0.1;
@@ -1417,7 +1418,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 								double DFH = height * ratioDHeight;
 								double DW = DFW * ratioDWidth;
 								double DH = DFH * (1 - windowDisRatio);
-								double GAP = height * util::genRand(0, 0.2);
+								double GAP = height * util::genRand(0, 0.15);
 								double FH = (height - DFH - GAP) * 1.0 / NR;
 								double FW = width * 1.0 / NC;
 								double WH = FH * ratioHeight;
