@@ -893,8 +893,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	*/
 	// generate facade images
 	int index = 0;
-	double step_W = 0.08;
-	double step_H = 0.08;
+	double step_W = 0.1;
+	double step_H = 0.1;
 	int num_W = 0;
 	int num_H = 0;
 	if (ceil((imageRelativeWidth.second - imageRelativeWidth.first) / step_W) - (imageRelativeWidth.second - imageRelativeWidth.first) / step_W < 0.01)
@@ -940,8 +940,11 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 					std::cout << "WH is " << WH << std::endl;
 					std::cout << "WW is " << WW << std::endl;
 
+					int num_iters = 4;
+					if (row >= 6 && col >= 6)
+						num_iters = 8;
 					// draw facade image
-					for (int iter_outers = 0; iter_outers < 4; ++iter_outers){
+					for (int iter_outers = 0; iter_outers < num_iters; ++iter_outers){
 						cv::Mat result(height, width, CV_8UC1, bg_color);
 						if (NG == 1){
 							for (int i = 0; i < NR; ++i) {
@@ -1362,7 +1365,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	// generate facade images
 	// generate facade images
-	int index = 5184;
+	int index = 2880;
 	double step_W = 0.1;
 	double step_H = 0.1;
 	double step_DW = 0.1;
@@ -1442,8 +1445,11 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 								std::cout << "DH is " << DH << std::endl;
 								std::cout << "DW is " << DW << std::endl;
 
+								int num_iters = 4;
+								if (row >= 6 && col >= 6)
+									num_iters = 8;
 								// draw facade image
-								for (int iter_outers = 0; iter_outers < 4; ++iter_outers){
+								for (int iter_outers = 0; iter_outers < num_iters; ++iter_outers){
 									cv::Mat result(height, width, CV_8UC1, bg_color);
 									if (NG == 1){
 										// windows

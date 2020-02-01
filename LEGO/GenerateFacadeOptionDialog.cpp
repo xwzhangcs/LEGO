@@ -5,23 +5,23 @@ GenerateFacadeOptionDialog::GenerateFacadeOptionDialog(QWidget *parent)
 	: QDialog(parent)
 {
 	ui.setupUi(this);
-	ui.lineEditImageHeight->setText("102");
-	ui.lineEditImageWidth->setText("102");
+	ui.lineEditImageHeight->setText("118");
+	ui.lineEditImageWidth->setText("118");
 	ui.lineEditImageNum->setText("1");
-	ui.lineEditNCMin->setText("2");
-	ui.lineEditNCMax->setText("7");
-	ui.lineEditNRMin->setText("2");
-	ui.lineEditNRMax->setText("7");
+	ui.lineEditNCMin->setText("3");
+	ui.lineEditNCMax->setText("8");
+	ui.lineEditNRMin->setText("3");
+	ui.lineEditNRMax->setText("8");
 	ui.lineEditNGMin->setText("1");
 	ui.lineEditNGMax->setText("1");
-	ui.lineEditRelativeWidthMin->setText("0.3");
+	ui.lineEditRelativeWidthMin->setText("0.4");
 	ui.lineEditRelativeWidthMax->setText("0.7");
-	ui.lineEditRelativeHeightMin->setText("0.3");
+	ui.lineEditRelativeHeightMin->setText("0.4");
 	ui.lineEditRelativeHeightMax->setText("0.7");
 	ui.checkBoxWindowDis->setChecked(false);
 	ui.lineEditWindowDis->setText("0.06");
 	ui.checkBoxWindowProb->setChecked(false);
-	ui.lineEditWindowProb->setText("0.90");
+	ui.lineEditWindowProb->setText("0.7");
 	ui.checkBoxDataAug->setChecked(false);
 	ui.checkBoxPadding->setChecked(false);
 	ui.lineEditPaddingMin->setText("5");
