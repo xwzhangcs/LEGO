@@ -892,7 +892,7 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 	std::cout << "imageDRelativeHeight is " << "(" << imageDRelativeHeight.first << ", " << imageDRelativeHeight.second << ")" << std::endl;
 	*/
 	// generate facade images
-	int index = 0;
+	int index = 576;
 	double step_W = 0.1;
 	double step_H = 0.1;
 	int num_W = 0;
@@ -908,8 +908,8 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 		num_H = floor((imageRelativeHeight.second - imageRelativeHeight.first) / step_H);
 	std::cout << "num_W is " << num_W << std::endl;
 	std::cout << "num_H is " << num_H << std::endl;
-	cv::Scalar bg_color(255, 255, 255); // white back ground
-	cv::Scalar window_color(0, 0, 0); // black for windows
+	cv::Scalar bg_color(0, 0, 0); // white back ground
+	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
 	std::ofstream out_param(facadeImagesPath.toUtf8() + "/parameters.txt", std::ios::app);
 	for (int row = imageRows.first; row <= imageRows.second; row++){ // loop row
@@ -940,12 +940,13 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 					std::cout << "WH is " << WH << std::endl;
 					std::cout << "WW is " << WW << std::endl;
 
-					int num_iters = 4;
+					int num_iters = 10;
 					if (row >= 6 && col >= 6)
-						num_iters = 8;
+						num_iters = 30;
 					// draw facade image
 					for (int iter_outers = 0; iter_outers < num_iters; ++iter_outers){
 						cv::Mat result(height, width, CV_8UC1, bg_color);
+						//cv::Mat result_G(height, width, CV_8UC1, bg_color);
 						if (NG == 1){
 							for (int i = 0; i < NR; ++i) {
 								for (int j = 0; j < NC; ++j) {
@@ -953,6 +954,11 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 									float y1 = FH * i;
 									float x2 = x1 + WW;
 									float y2 = y1 + WH;
+
+									/*float x1_G = x1;
+									float y1_G = y1;
+									float x2_G = x2;
+									float y2_G = y2;*/
 									//cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
 									if (bWindowDis) {
 										x1 += util::genRand(-WW * windowDisRatio, WW * windowDisRatio);
@@ -964,18 +970,21 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 									if (bWindowProb){
 										if (util::genRand() < windowProb) {
 											cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+											//cv::rectangle(result_G, cv::Point(std::round(x1_G), std::round(y1_G)), cv::Point(std::round(x2_G), std::round(y2_G)), window_color, thickness);
 										}
 									}
 									else{
 										cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+										//cv::rectangle(result_G, cv::Point(std::round(x1_G), std::round(y1_G)), cv::Point(std::round(x2_G), std::round(y2_G)), window_color, thickness);
 									}
 								}
 							}
 						}
 
 						QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+						//QString img_filename_G = facadeImagesPath + QString("/G/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 						QString img_name = QString("facade_image_%1.png").arg(index, 6, 10, QChar('0'));
-
+						//std::cout << "img_filename_G is " << img_filename_G.toUtf8().constData() << std::endl;
 						// add padding
 						if (bPadding){
 							int top = util::genRand(imagePadding.first, imagePadding.second + 1);
@@ -988,8 +997,10 @@ void GLWidget3D::generateFacadeImages(QString facadeImagesPath, bool bDataAugmen
 							std::cout << "right is " << right << std::endl;*/
 							int borderType = cv::BORDER_CONSTANT;
 							cv::copyMakeBorder(result, result, top, bottom, left, right, borderType, bg_color);
+							//cv::copyMakeBorder(result_G, result_G, top, bottom, left, right, borderType, bg_color);
 						}
 						cv::imwrite(img_filename.toUtf8().constData(), result);
+						//cv::imwrite(img_filename_G.toUtf8().constData(), result_G);
 						index++;
 						// write to parameters.txt
 						{

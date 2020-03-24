@@ -427,4 +427,12 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\LEGO_meeting_2020_spring\0207\test.csv">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\LEGO_meeting_2020_spring\0207\train.csv">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
