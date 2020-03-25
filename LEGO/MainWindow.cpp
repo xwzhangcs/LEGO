@@ -63,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionGenerateFacadeImages, SIGNAL(triggered()), this, SLOT(onGenerateFacadeImages()));
 	connect(ui.actionGenerateRectifiedImage, SIGNAL(triggered()), this, SLOT(onGenerateRectifiedImage()));
 	connect(ui.actionGenerateRoofImages, SIGNAL(triggered()), this, SLOT(onGenerateRoofImages()));
+	connect(ui.actionGenerateEDImages, SIGNAL(triggered()), this, SLOT(onGenerateEDImages()));
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
@@ -364,4 +365,8 @@ void MainWindow::onGenerateRoofImages(){
 	if (dlg.exec()) {
 		glWidget->generateRoofImages(dlg.getPathForRoofImages(), dlg.getNumberOfImages(), dlg.isAllowDataAugmentaion(), dlg.getRoofType(), dlg.getWidth(), dlg.getHeight(), dlg.getRoofWidth(), dlg.getAspect(), dlg.getSlope(), dlg.getRidge(), dlg.isAllowHeightDisplacement(), dlg.getHeightDisplacement());
 	}
+}
+
+void MainWindow::onGenerateEDImages(){
+	glWidget->generateEDImages(QString("../data_1/ED"), 118, 118, 5);
 }

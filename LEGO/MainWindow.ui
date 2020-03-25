@@ -74,6 +74,7 @@
     <addaction name="actionGenerateFacadeImages"/>
     <addaction name="actionGenerateRectifiedImage"/>
     <addaction name="actionGenerateRoofImages"/>
+    <addaction name="actionGenerateEDImages"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -301,6 +302,11 @@
   <action name="actionGenerateRoofImages">
    <property name="text">
     <string>Generate Roof Images</string>
+   </property>
+  </action>
+  <action name="actionGenerateEDImages">
+   <property name="text">
+    <string>Generate ED Images</string>
    </property>
   </action>
  </widget>
