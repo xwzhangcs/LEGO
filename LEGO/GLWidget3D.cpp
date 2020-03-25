@@ -1884,35 +1884,58 @@ cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int ima
 	int NR = imageRows;
 	int NG = imageGroups;
 	int NC = imageCols;
-	double ratioWidth = imageRelativeW.first;
-	double ratioHeight = imageRelativeW.second;
-	double FH = height * 1.0 / NR;
 	double FW = width * 1.0 / NC;
-	double WH = FH * ratioHeight;
-	double WW = FW * ratioWidth;
-	if (NC > 1)
-		FW = WW + (width - WW * NC) / (NC - 1);
+	double FH = height * 1.0 / NR;
+	double WW = FW * imageRelativeW.first;
+	double WH = FH * imageRelativeW.second;
+	double WWS = FW * imageRelativeSideW.first;
+	double WHS = FH * imageRelativeSideW.second;
+	double WWM = FW * imageRelativeMidW.first;
+	double WHM = FH * imageRelativeMidW.second;
+	double width_spacing = 0.0f;
+	double height_spacing = 0.0f;
+	if (NC > 2)
+		width_spacing = (width - WWS * 2 - WW * (NC - 3) - WWM) / (NC - 1);
 	if (NR > 1)
-		FH = WH + (height - WH * NR) / (NR - 1);
+		height_spacing = (height - WH * NR) / (NR - 1);
 	if (NG == 1){
+		float curH_spacing = 0;
+		float curW_spacing = 0;
 		for (int i = 0; i < NR; ++i) {
+			curW_spacing = 0;
 			for (int j = 0; j < NC; ++j) {
-				float x1 = FW * j;
-				float y1 = FH * i;
-				float x2 = x1 + WW;
-				float y2 = y1 + WH;
-
+				float x1, y1, x2, y2;
+				float curW, curH;
+				if (j == 0){
+					curW = WWS;
+					curH = WHS;
+				}
+				else if (NC % 2 == 1 && j == (NC - 1) / 2){
+					curW = WWM;
+					curH = WHM;
+				}
+				else{
+					curW = WW;
+					curH = WH;
+				}
+				x1 = curW_spacing;
+				y1 = curH_spacing;
+				x2 = x1 + curW;
+				y2 = y1 + curH;
+				curW_spacing += curW + width_spacing;
 				if (window_displacement > 0) {
-					x1 += util::genRand(-WW * window_displacement, WW * window_displacement);
-					y1 += util::genRand(-WH * window_displacement, WH * window_displacement);
-					x2 += util::genRand(-WW * window_displacement, WW * window_displacement);
-					y2 += util::genRand(-WH * window_displacement, WH * window_displacement);
+					x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
+					y1 += util::genRand(-curH * window_displacement, curH * window_displacement);
+					x2 += util::genRand(-curW * window_displacement, curW * window_displacement);
+					y2 += util::genRand(-curH * window_displacement, curH * window_displacement);
 				}
 
 				if (util::genRand() < window_prob) {
 					cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
 				}
 			}
+			curH_spacing += height_spacing + WH;
+
 		}
 	}
 	if (imagePadding > 0){
