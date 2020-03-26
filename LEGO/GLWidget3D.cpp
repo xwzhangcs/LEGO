@@ -1875,7 +1875,7 @@ void GLWidget3D::generateRoofImages(QString roofImagesPath, int imageNum, bool b
 
 }
 
-cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int imageCols, int imageGroups, std::pair<double, double> imageRelativeW, bool bSideW, std::pair<double, double> imageRelativeSideW, bool bMidW, std::pair<double, double> imageRelativeMidW, float window_displacement, float window_prob, int imagePadding){
+cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int imageCols, int imageGroups, std::pair<double, double> imageRelativeW, std::pair<double, double> imageRelativeSideW, std::pair<double, double> imageRelativeMidW, float window_displacement, float window_prob, int imagePadding){
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
@@ -1952,18 +1952,18 @@ cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int ima
 }
 
 
-void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int height, int padding){
+void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	int index = 0;
+	int index = 324;
 	double step_W = 0.2;
-	double step_H = 0.1;
+	double step_H = 0.2;
 	int num_W = 0;
 	int num_H = 0;
-	std::pair<int, int> imageRowsRange(5, 5);
-	std::pair<int, int> imageColsRange(5, 5);
+	std::pair<int, int> imageRowsRange(3, 8);
+	std::pair<int, int> imageColsRange(3, 8);
 	std::pair<int, int> imageGroupsRange(1, 1);
-	std::pair<double, double> imageRelativeWidthRange(0.3, 0.5);
-	std::pair<double, double> imageRelativeHeightRange(0.5, 0.5);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
 
 
 	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
@@ -1980,31 +1980,62 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
+	bool bSideW = false;
+	bool bMidW = true;
+	double ratioWidth = 0.0;
+	double ratioHeight = 0.0;
+	double ratioSideWidth = 0.0;
+	double ratioSideHeight = 0.0;
+	double ratioMidWidth = 0.0;
+	double ratioMidHeight = 0.0;
 	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
 		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
 			for (int relativeW = 0; relativeW <= num_W; relativeW++){ // loop relativeWidth
 				for (int relativeH = 0; relativeH <= num_H; relativeH++){
 					for (int relativeSideW = 0; relativeSideW <= num_W; relativeSideW++){ // loop relativeWidth
 						for (int relativeMidW = 0; relativeMidW <= num_W; relativeMidW++){ // loop relativeWidth
-							double ratioWidth = relativeW * step_W + imageRelativeWidthRange.first;
-							double ratioHeight = relativeH * step_H + imageRelativeHeightRange.first;
-							double ratioSideWidth = relativeSideW * step_W + imageRelativeWidthRange.first;
-							double ratioSideHeight = relativeH * step_H + imageRelativeHeightRange.first;
-							double ratioMidWidth = relativeMidW * step_W + imageRelativeWidthRange.first;
-							double ratioMidHeight = relativeH * step_H + imageRelativeHeightRange.first;
+							if (bSideW && bMidW){
+								if (relativeW == relativeSideW || relativeW == relativeMidW)
+									continue;
+								if (col % 2 == 0)
+									continue;
+							}
+							else if (bSideW && !bMidW){
+								if (relativeW == relativeSideW || relativeW != relativeMidW)
+									continue;
+							}
+							else if (!bSideW && bMidW){
+								if (relativeW != relativeSideW || relativeW == relativeMidW)
+									continue;
+								if (col % 2 == 0)
+									continue;
+							}
+							else{
+								if (relativeW != relativeSideW || relativeW != relativeMidW)
+									continue;
+							}
+							ratioWidth = relativeW * step_W + imageRelativeWidthRange.first;
+							ratioHeight = relativeH * step_H + imageRelativeHeightRange.first;
+							ratioSideWidth = relativeSideW * step_W + imageRelativeWidthRange.first;
+							ratioSideHeight = relativeH * step_H + imageRelativeHeightRange.first;
+							ratioMidWidth = relativeMidW * step_W + imageRelativeWidthRange.first;
+							ratioMidHeight = relativeH * step_H + imageRelativeHeightRange.first;
+
 							std::pair<double, double> imageRelativeW(ratioWidth, ratioHeight);
-							bool bSideW = true;
 							std::pair<double, double> imageRelativeSideW(ratioSideWidth, ratioSideHeight);
-							bool bMidW = true;
 							std::pair<double, double> imageRelativeMidW(ratioMidWidth, ratioMidHeight);
-							float window_displacement = 0;
-							float window_prob = 1;
-							cv::Mat result = generateFacade(width, height, row, col, 1, imageRelativeW, bSideW, imageRelativeSideW, bMidW, imageRelativeMidW, window_displacement, window_prob, padding);
-							QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
-							std::cout << "img_filename is " << img_filename.toUtf8().constData() << std::endl;
-							cv::imwrite(img_filename.toUtf8().constData(), result);
-							//cv::imwrite(img_filename_G.toUtf8().constData(), result_G);
-							index++;
+							int num_iters = 10;
+							if (row >= 6 && col >= 6)
+								num_iters = 30;
+							// draw facade image
+							for (int iter_outers = 0; iter_outers < num_iters; ++iter_outers){
+								cv::Mat result = generateFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
+								QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
+								std::cout << "img_filename is " << img_filename.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename.toUtf8().constData(), result);
+								//cv::imwrite(img_filename_G.toUtf8().constData(), result_G);
+								index++;
+							}
 						}
 					}
 				}
