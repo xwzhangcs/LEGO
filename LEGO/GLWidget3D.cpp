@@ -1954,7 +1954,7 @@ cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int ima
 
 void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	int index = 324;
+	int index = 3240;
 	double step_W = 0.2;
 	double step_H = 0.2;
 	int num_W = 0;
@@ -1980,8 +1980,8 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = false;
-	bool bMidW = true;
+	bool bSideW = true;
+	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
 	double ratioSideWidth = 0.0;
@@ -2013,6 +2013,8 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 							else{
 								if (relativeW != relativeSideW || relativeW != relativeMidW)
 									continue;
+								if (col % 2 == 0)
+									continue;
 							}
 							ratioWidth = relativeW * step_W + imageRelativeWidthRange.first;
 							ratioHeight = relativeH * step_H + imageRelativeHeightRange.first;
@@ -2028,7 +2030,7 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 							if (row >= 6 && col >= 6)
 								num_iters = 30;
 							// draw facade image
-							for (int iter_outers = 0; iter_outers < num_iters; ++iter_outers){
+							for (int iter_outers = 0; iter_outers < 5 * num_iters; ++iter_outers){
 								cv::Mat result = generateFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
 								QString img_filename = facadeImagesPath + QString("/facade_image_%1.png").arg(index, 6, 10, QChar('0'));
 								std::cout << "img_filename is " << img_filename.toUtf8().constData() << std::endl;

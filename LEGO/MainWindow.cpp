@@ -368,7 +368,7 @@ void MainWindow::onGenerateRoofImages(){
 }
 
 void MainWindow::onGenerateEDImages(){
-	float window_displacement = 0;
+	float window_displacement = 0.2;
 	float window_prob = 0.7;
-	glWidget->generateEDImages(QString("../data_1/ED_mid"), 120, 120, window_displacement, window_prob, 4);
+	glWidget->generateEDImages(QString("../data_1/deform_side"), 120, 120, window_displacement, window_prob, 4);
 }
