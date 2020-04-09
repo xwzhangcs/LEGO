@@ -56,6 +56,8 @@ public:
     QAction *actionSaveXyzn;
     QAction *actionGenerateRoofImages;
     QAction *actionGenerateEDImages;
+    QAction *actionGenerateDeformImages;
+    QAction *actionGenerateFuseImages;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -152,6 +154,10 @@ public:
         actionGenerateRoofImages->setObjectName(QStringLiteral("actionGenerateRoofImages"));
         actionGenerateEDImages = new QAction(MainWindowClass);
         actionGenerateEDImages->setObjectName(QStringLiteral("actionGenerateEDImages"));
+        actionGenerateDeformImages = new QAction(MainWindowClass);
+        actionGenerateDeformImages->setObjectName(QStringLiteral("actionGenerateDeformImages"));
+        actionGenerateFuseImages = new QAction(MainWindowClass);
+        actionGenerateFuseImages->setObjectName(QStringLiteral("actionGenerateFuseImages"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -211,6 +217,8 @@ public:
         menuTools->addAction(actionGenerateRectifiedImage);
         menuTools->addAction(actionGenerateRoofImages);
         menuTools->addAction(actionGenerateEDImages);
+        menuTools->addAction(actionGenerateDeformImages);
+        menuTools->addAction(actionGenerateFuseImages);
 
         retranslateUi(MainWindowClass);
 
@@ -254,6 +262,8 @@ public:
         actionSaveXyzn->setText(QApplication::translate("MainWindowClass", "Save xyzn", Q_NULLPTR));
         actionGenerateRoofImages->setText(QApplication::translate("MainWindowClass", "Generate Roof Images", Q_NULLPTR));
         actionGenerateEDImages->setText(QApplication::translate("MainWindowClass", "Generate ED Images", Q_NULLPTR));
+        actionGenerateDeformImages->setText(QApplication::translate("MainWindowClass", "Generate Deform Images", Q_NULLPTR));
+        actionGenerateFuseImages->setText(QApplication::translate("MainWindowClass", "Generate Fuse Images", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));

@@ -64,6 +64,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionGenerateRectifiedImage, SIGNAL(triggered()), this, SLOT(onGenerateRectifiedImage()));
 	connect(ui.actionGenerateRoofImages, SIGNAL(triggered()), this, SLOT(onGenerateRoofImages()));
 	connect(ui.actionGenerateEDImages, SIGNAL(triggered()), this, SLOT(onGenerateEDImages()));
+	connect(ui.actionGenerateDeformImages, SIGNAL(triggered()), this, SLOT(onGenerateDeformImages()));
+	connect(ui.actionGenerateFuseImages, SIGNAL(triggered()), this, SLOT(onGenerateFuseImages()));
 
 	// create tool bar for file menu
 	ui.mainToolBar->addAction(ui.actionOpen);
@@ -371,4 +373,16 @@ void MainWindow::onGenerateEDImages(){
 	float window_displacement = 0.2;
 	float window_prob = 0.7;
 	glWidget->generateEDImages(QString("../data_1/deform_side"), 120, 120, window_displacement, window_prob, 4);
+}
+
+void MainWindow::onGenerateDeformImages(){
+	float window_displacement = 0.2;
+	float window_prob = 1.0;
+	glWidget->generateDeformImages(QString("../data_1/test"), 120, 120, window_displacement, window_prob, 4);
+}
+
+void MainWindow::onGenerateFuseImages(){
+	float window_displacement = 0.2;
+	float window_prob = 1.0;
+	glWidget->generateFuseImages(QString("../data_1/deform"), 120, 120, window_displacement, window_prob, 4);
 }

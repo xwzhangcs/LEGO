@@ -75,6 +75,8 @@
     <addaction name="actionGenerateRectifiedImage"/>
     <addaction name="actionGenerateRoofImages"/>
     <addaction name="actionGenerateEDImages"/>
+    <addaction name="actionGenerateDeformImages"/>
+    <addaction name="actionGenerateFuseImages"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -307,6 +309,16 @@
   <action name="actionGenerateEDImages">
    <property name="text">
     <string>Generate ED Images</string>
+   </property>
+  </action>
+  <action name="actionGenerateDeformImages">
+   <property name="text">
+    <string>Generate Deform Images</string>
+   </property>
+  </action>
+  <action name="actionGenerateFuseImages">
+   <property name="text">
+    <string>Generate Fuse Images</string>
    </property>
   </action>
  </widget>

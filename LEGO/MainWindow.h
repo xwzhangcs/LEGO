@@ -38,6 +38,8 @@ public slots:
 	void onGenerateRectifiedImage();
 	void onGenerateRoofImages();
 	void onGenerateEDImages();
+	void onGenerateDeformImages();
+	void onGenerateFuseImages();
 };
 
 #endif // MAINWINDOW_H
