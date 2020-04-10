@@ -2133,7 +2133,7 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 
 void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	int index = 48600;
+	int index = 0;
 	double step_W = 0.2;
 	double step_H = 0.2;
 	int num_W = 0;
@@ -2159,7 +2159,7 @@ void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int h
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = true;
+	bool bSideW = false;
 	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
@@ -2207,7 +2207,7 @@ void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int h
 							if (row >= 6 && col >= 6)
 								num_iters = 30;
 							// draw facade image
-							for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
+							for (int iter_outers = 0; iter_outers < 3; ++iter_outers){
 								std::vector<cv::Mat> outpus = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
 								// A
 								QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
@@ -2229,7 +2229,7 @@ void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int h
 
 void GLWidget3D::generateFuseImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	int index = 48600;
+	int index = 0;
 	double step_W = 0.2;
 	double step_H = 0.2;
 	int num_W = 0;
@@ -2255,7 +2255,7 @@ void GLWidget3D::generateFuseImages(QString facadeImagesPath, int width, int hei
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = true;
+	bool bSideW = false;
 	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
@@ -2303,7 +2303,7 @@ void GLWidget3D::generateFuseImages(QString facadeImagesPath, int width, int hei
 							if (row >= 6 && col >= 6)
 								num_iters = 30;
 							// draw facade image
-							for (int iter_outers = 0; iter_outers < 5; ++iter_outers){
+							for (int iter_outers = 0; iter_outers < 1; ++iter_outers){
 								// A
 								QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
 								std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;

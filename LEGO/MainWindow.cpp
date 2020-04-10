@@ -376,7 +376,7 @@ void MainWindow::onGenerateEDImages(){
 }
 
 void MainWindow::onGenerateDeformImages(){
-	float window_displacement = 0.2;
+	float window_displacement = 0.1;
 	float window_prob = 1.0;
 	glWidget->generateDeformImages(QString("../data_1/test"), 120, 120, window_displacement, window_prob, 4);
 }
