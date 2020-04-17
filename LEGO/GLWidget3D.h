@@ -77,10 +77,17 @@ public:
 	void generateEDImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding);
 	cv::Mat generateFacade(int width, int height, int imageRows, int imageCols, int imageGroups, std::pair<double, double> imageRelativeW, std::pair<double, double> imageRelativeSideW, std::pair<double, double> imageRelativeMidW, float window_displacement, float window_prob, int imagePadding);
 	
-	void generateDeformImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding);
+	int generateDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
 	std::vector<cv::Mat> generateDeformFacade(int width, int height, int imageRows, int imageCols, int imageGroups, std::pair<double, double> imageRelativeW, std::pair<double, double> imageRelativeSideW, std::pair<double, double> imageRelativeMidW, float window_displacement, float window_prob, int imagePadding);
 
-	void generateFuseImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding);
+	int generateFuseImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
+
+	int generateFuseDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
+
+	int generateScoreImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
+	int generateScoreFuseImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
+	std::vector<double> eval_accuracy(const cv::Mat& seg_img, const cv::Mat& gt_img);
+	cv::Mat fuse_images(const cv::Mat& src_img_1, const cv::Mat& src_img_2);
 	//
 	void generateFacadeImages(QString facadeImagesPath, bool bDataAugmentaion, int width, int height, std::pair<int, int> imageRows, std::pair<int, int> imageCols, std::pair<int, int> imageGroups, std::pair<double, double> imageRelativeWidth, std::pair<double, double> imageRelativeHeight, bool bWindowDis, double windowDisRatio, bool bWindowProb, double windowProb, bool bPadding, std::pair<int, int> imagePadding);
 	cv::Mat generateFacadeSynImage(int width, int height, int imageRows, int imageCols, int imageGroups, double imageRelativeWidth, double imageRelativeHeight);

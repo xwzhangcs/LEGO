@@ -40,6 +40,7 @@ public slots:
 	void onGenerateEDImages();
 	void onGenerateDeformImages();
 	void onGenerateFuseImages();
+	void onGenerateScoreImages();
 };
 
 #endif // MAINWINDOW_H

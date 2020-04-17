@@ -1971,9 +1971,10 @@ std::vector<cv::Mat> GLWidget3D::generateDeformFacade(int width, int height, int
 	double WHM = FH * imageRelativeMidW.second;
 	double width_spacing = 0.0f;
 	double height_spacing = 0.0f;
-	std::cout << "WW, WH is " << WW << ", " << WH << std::endl;
+	window_displacement = util::genRand(0, window_displacement);
+	/*std::cout << "WW, WH is " << WW << ", " << WH << std::endl;
 	std::cout << "WWS, WHS is " << WWS << ", " << WHS << std::endl;
-	std::cout << "WWM, WHM is " << WWM << ", " << WHM << std::endl;
+	std::cout << "WWM, WHM is " << WWM << ", " << WHM << std::endl;*/
 	if (NC > 2)
 		width_spacing = (width - WWS * 2 - WW * (NC - 3) - WWM) / (NC - 1);
 	if (NR > 1)
@@ -2010,10 +2011,14 @@ std::vector<cv::Mat> GLWidget3D::generateDeformFacade(int width, int height, int
 				y2_G = y1_G + curH;
 				curW_spacing += curW + width_spacing;
 				if (window_displacement > 0) {
-					x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
+					/*x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
 					y1 += util::genRand(-curH * window_displacement, curH * window_displacement);
 					x2 += util::genRand(-curW * window_displacement, curW * window_displacement);
-					y2 += util::genRand(-curH * window_displacement, curH * window_displacement);
+					y2 += util::genRand(-curH * window_displacement, curH * window_displacement);*/
+					x1 += util::genRand(-curW, curW) * window_displacement;
+					y1 += util::genRand(-curH, curH) * window_displacement;
+					x2 += util::genRand(-curW, curW) * window_displacement;
+					y2 += util::genRand(-curH, curH) * window_displacement;
 				}
 
 				if (util::genRand() < window_prob) {
@@ -2131,9 +2136,8 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 	}
 }
 
-void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding){
+int GLWidget3D::generateDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	int index = 0;
 	double step_W = 0.2;
 	double step_H = 0.2;
 	int num_W = 0;
@@ -2159,7 +2163,7 @@ void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int h
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = false;
+	bool bSideW = true;
 	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
@@ -2206,8 +2210,14 @@ void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int h
 							int num_iters = 10;
 							if (row >= 6 && col >= 6)
 								num_iters = 30;
+							if (int(window_prob) == 1)
+								num_iters = 1;
 							// draw facade image
-							for (int iter_outers = 0; iter_outers < 3; ++iter_outers){
+							int num_deform = 3;
+							if (int(1 - window_displacement) == 1)
+								num_deform = 1;
+
+							for (int iter_outers = 0; iter_outers < num_deform * num_iters; ++iter_outers){
 								std::vector<cv::Mat> outpus = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
 								// A
 								QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
@@ -2225,11 +2235,11 @@ void GLWidget3D::generateDeformImages(QString facadeImagesPath, int width, int h
 			}
 		}
 	}
+	return index;
 }
 
-void GLWidget3D::generateFuseImages(QString facadeImagesPath, int width, int height, float window_displacement, float window_prob, int padding){
+int GLWidget3D::generateFuseImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	int index = 0;
 	double step_W = 0.2;
 	double step_H = 0.2;
 	int num_W = 0;
@@ -2322,6 +2332,523 @@ void GLWidget3D::generateFuseImages(QString facadeImagesPath, int width, int hei
 			}
 		}
 	}
+	return index;
+}
+
+int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
+	// generate facade images
+	double step_W = 0.2;
+	double step_H = 0.2;
+	int num_W = 0;
+	int num_H = 0;
+	std::pair<int, int> imageRowsRange(3, 8);
+	std::pair<int, int> imageColsRange(3, 8);
+	std::pair<int, int> imageGroupsRange(1, 1);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
+
+
+	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
+		num_W = ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+	else
+		num_W = floor((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+
+	if (ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H) - (imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H < 0.01)
+		num_H = ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	else
+		num_H = floor((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	/*std::cout << "num_W is " << num_W << std::endl;
+	std::cout << "num_H is " << num_H << std::endl;*/
+	cv::Scalar bg_color(0, 0, 0); // white back ground
+	cv::Scalar window_color(255, 255, 255); // black for windows
+	int thickness = -1;
+	bool bSideW = true;
+	bool bMidW = false;
+	double ratioWidth = 0.0;
+	double ratioHeight = 0.0;
+	double ratioSideWidth = 0.0;
+	double ratioSideHeight = 0.0;
+	double ratioMidWidth = 0.0;
+	double ratioMidHeight = 0.0;
+	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
+		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
+			for (int relativeW = 0; relativeW <= num_W; relativeW++){ // loop relativeWidth
+				for (int relativeH = 0; relativeH <= num_H; relativeH++){
+					for (int relativeSideW = 0; relativeSideW <= num_W; relativeSideW++){ // loop relativeWidth
+						for (int relativeMidW = 0; relativeMidW <= num_W; relativeMidW++){ // loop relativeWidth
+							if (bSideW && bMidW){
+								if (relativeW == relativeSideW || relativeW == relativeMidW)
+									continue;
+								if (col % 2 == 0)
+									continue;
+							}
+							else if (bSideW && !bMidW){
+								if (relativeW == relativeSideW || relativeW != relativeMidW)
+									continue;
+							}
+							else if (!bSideW && bMidW){
+								if (relativeW != relativeSideW || relativeW == relativeMidW)
+									continue;
+								if (col % 2 == 0)
+									continue;
+							}
+							else{
+								if (relativeW != relativeSideW || relativeW != relativeMidW)
+									continue;
+							}
+							ratioWidth = relativeW * step_W + imageRelativeWidthRange.first;
+							ratioHeight = relativeH * step_H + imageRelativeHeightRange.first;
+							ratioSideWidth = relativeSideW * step_W + imageRelativeWidthRange.first;
+							ratioSideHeight = relativeH * step_H + imageRelativeHeightRange.first;
+							ratioMidWidth = relativeMidW * step_W + imageRelativeWidthRange.first;
+							ratioMidHeight = relativeH * step_H + imageRelativeHeightRange.first;
+
+							std::pair<double, double> imageRelativeW(ratioWidth, ratioHeight);
+							std::pair<double, double> imageRelativeSideW(ratioSideWidth, ratioSideHeight);
+							std::pair<double, double> imageRelativeMidW(ratioMidWidth, ratioMidHeight);
+							int num_iters = 10;
+							if (row >= 6 && col >= 6)
+								num_iters = 30;
+							if (int(window_prob) == 1)
+								num_iters = 1;
+							// draw facade image
+							int num_deform = 3;
+							if (int(1 - window_displacement) == 1)
+								num_deform = 1;
+							// draw facade image
+							for (int iter_outers = 0; iter_outers < num_deform * num_iters; ++iter_outers){
+								std::vector<cv::Mat> outpus_A = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
+								// A
+								QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
+								//std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename_A.toUtf8().constData(), outpus_A[0]);
+								// A_G
+								QString img_filename_A_G = facadeImagesPath + QString("/A_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+								//std::cout << "img_filename_G is " << img_filename_A_G.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename_A_G.toUtf8().constData(), outpus_A[1]);
+
+								std::vector<cv::Mat> outpus_B = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
+								// B
+								QString img_filename_B = facadeImagesPath + QString("/B/facade_%1.png").arg(index, 5, 10, QChar('0'));
+								//std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename_B.toUtf8().constData(), outpus_B[0]);
+								// B_G
+								QString img_filename_B_G = facadeImagesPath + QString("/B_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+								//std::cout << "img_filename_G is " << img_filename_B_G.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename_B_G.toUtf8().constData(), outpus_B[1]);
+
+								// fuse image
+								cv::Mat fuse_img = fuse_images(outpus_A[1], outpus_B[1]);
+								QString img_filename_G = facadeImagesPath + QString("/G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+								//std::cout << "img_filename_G is " << img_filename_G.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename_G.toUtf8().constData(), fuse_img);
+
+								// Eval image
+								cv::Mat result_eval = generateFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, 0.0, 1.0, padding);
+								QString img_filename_Eval = facadeImagesPath + QString("/Eval/facade_%1.png").arg(index, 5, 10, QChar('0'));
+								//std::cout << "img_filename_Eval is " << img_filename_Eval.toUtf8().constData() << std::endl;
+								cv::imwrite(img_filename_Eval.toUtf8().constData(), result_eval);
+
+								index++;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return index;
+}
+
+
+int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
+	// generate facade images
+	double step_W = 0.2;
+	double step_H = 0.2;
+	int num_W = 0;
+	int num_H = 0;
+	std::pair<int, int> imageRowsRange(3, 8);
+	std::pair<int, int> imageColsRange(3, 8);
+	std::pair<int, int> imageGroupsRange(1, 1);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
+
+	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
+		num_W = ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+	else
+		num_W = floor((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+
+	if (ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H) - (imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H < 0.01)
+		num_H = ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	else
+		num_H = floor((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	//std::cout << "num_W is " << num_W << std::endl;
+	//std::cout << "num_H is " << num_H << std::endl;
+	cv::Scalar bg_color(0, 0, 0); // white back ground
+	cv::Scalar window_color(255, 255, 255); // black for windows
+	int thickness = -1;
+	double ratioWidth = 0.0;
+	double ratioHeight = 0.0;
+	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
+		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
+			int num_iters = 15;
+			if (row >= 6 && col >= 6)
+				num_iters = 30;
+			int num_displacement = 10;
+			int num_missing = 10;
+			if (int(window_prob) == 1)
+				num_missing = 1;
+			if (int(1 - window_displacement) == 1)
+				num_displacement = 1;
+
+			for (int iter_outers = 0; iter_outers < num_iters * num_displacement * num_missing; ++iter_outers){
+				cv::Mat result(height, width, CV_8UC1, bg_color);
+				cv::Mat result_G(height, width, CV_8UC1, bg_color);
+				/* draw the facade */
+				int NR = row;
+				int NG = 1;
+				int NC = col;
+				double FW = width * 1.0 / NC;
+				double FH = height * 1.0 / NR;
+				std::vector<double> WW;
+				std::vector<double> WH;
+				// generate W and H list
+				double AllW = 0.0;
+				double AllH = 0.0;
+				for (int list = 0; list < col; list++){
+					int relativeW = util::genRand(0, num_W + 1);
+					WW.push_back(FW * (relativeW * step_W + imageRelativeWidthRange.first));
+					AllW += FW * (relativeW * step_W + imageRelativeWidthRange.first);
+				}
+				for (int list = 0; list < row; list++){
+					int relativeH = util::genRand(0, num_H + 1);
+					WH.push_back(FH * (relativeH * step_H + imageRelativeHeightRange.first));
+					AllH += FH * (relativeH * step_H + imageRelativeHeightRange.first);
+				}
+
+				double width_spacing = 0.0f;
+				double height_spacing = 0.0f;
+				if (NC > 2)
+					width_spacing = (width - AllW) / (NC - 1);
+				if (NR > 1)
+					height_spacing = (height - AllH) / (NR - 1);
+
+				if (NG == 1){
+					float curH_spacing = 0;
+					float curW_spacing = 0;
+					for (int i = 0; i < NR; ++i) {
+						curW_spacing = 0;
+						for (int j = 0; j < NC; ++j) {
+							float x1, y1, x2, y2;
+							float x1_G, y1_G, x2_G, y2_G;
+							float curW = WW[j];
+							float curH = WH[i];
+
+							x1 = curW_spacing;
+							y1 = curH_spacing;
+							x2 = x1 + curW;
+							y2 = y1 + curH;
+							// G
+							x1_G = curW_spacing;
+							y1_G = curH_spacing;
+							x2_G = x1_G + curW;
+							y2_G = y1_G + curH;
+							curW_spacing += curW + width_spacing;
+							if (window_displacement > 0) {
+								x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
+								y1 += util::genRand(-curH * window_displacement, curH * window_displacement);
+								x2 += util::genRand(-curW * window_displacement, curW * window_displacement);
+								y2 += util::genRand(-curH * window_displacement, curH * window_displacement);
+							}
+
+							if (util::genRand() < window_prob) {
+								cv::rectangle(result, cv::Point(std::round(x1), std::round(y1)), cv::Point(std::round(x2), std::round(y2)), window_color, thickness);
+								cv::rectangle(result_G, cv::Point(std::round(x1_G), std::round(y1_G)), cv::Point(std::round(x2_G), std::round(y2_G)), window_color, thickness);
+							}
+						}
+						curH_spacing += height_spacing + WH[i];
+					}
+				}
+				if (padding > 0){
+					int top = padding;
+					int bottom = padding;
+					int left = padding;
+					int right = padding;
+					int borderType = cv::BORDER_CONSTANT;
+					cv::copyMakeBorder(result, result, top, bottom, left, right, borderType, bg_color);
+					cv::copyMakeBorder(result_G, result_G, top, bottom, left, right, borderType, bg_color);
+				}
+				// A
+				QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				//std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;
+				cv::imwrite(img_filename_A.toUtf8().constData(), result);
+				// G
+				QString img_filename_G = facadeImagesPath + QString("/G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				//std::cout << "img_filename_G is " << img_filename_G.toUtf8().constData() << std::endl;
+				cv::imwrite(img_filename_G.toUtf8().constData(), result_G);
+				index++;
+
+			}
+		}
+	}
+	return index;
+}
+
+
+int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
+	// generate facade images
+	double step_W = 0.2;
+	double step_H = 0.2;
+	int num_W = 0;
+	int num_H = 0;
+	std::pair<int, int> imageRowsRange(3, 8);
+	std::pair<int, int> imageColsRange(3, 8);
+	std::pair<int, int> imageGroupsRange(1, 1);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
+
+	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
+		num_W = ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+	else
+		num_W = floor((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+
+	if (ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H) - (imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H < 0.01)
+		num_H = ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	else
+		num_H = floor((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	//std::cout << "num_W is " << num_W << std::endl;
+	//std::cout << "num_H is " << num_H << std::endl;
+	cv::Scalar bg_color(0, 0, 0); // white back ground
+	cv::Scalar window_color(255, 255, 255); // black for windows
+	int thickness = -1;
+	double ratioWidth = 0.0;
+	double ratioHeight = 0.0;
+	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
+		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
+			window_prob = util::genRand(0.7, 1.0);
+			window_displacement = util::genRand(0.0, 0.2);
+			int num_iters = 15;
+			if (row >= 6 && col >= 6)
+				num_iters = 30;
+			int num_displacement = 10;
+			int num_missing = 10;
+			if (int(window_prob) == 1)
+				num_missing = 1;
+			if (int(1 - window_displacement) == 1)
+				num_displacement = 1;
+
+			for (int iter_outers = 0; iter_outers < 2 * num_iters * num_displacement * num_missing; ++iter_outers){
+				cv::Mat result_A(height, width, CV_8UC1, bg_color);
+				cv::Mat result_A_G(height, width, CV_8UC1, bg_color);
+				cv::Mat result_B(height, width, CV_8UC1, bg_color);
+				cv::Mat result_B_G(height, width, CV_8UC1, bg_color);
+				cv::Mat result_G(height, width, CV_8UC1, bg_color);
+				/* draw the facade */
+				int NR = row;
+				int NG = 1;
+				int NC = col;
+				double FW = width * 1.0 / NC;
+				double FH = height * 1.0 / NR;
+				std::vector<double> WW;
+				std::vector<double> WH;
+				// generate W and H list
+				double AllW = 0.0;
+				double AllH = 0.0;
+				for (int list = 0; list < col; list++){
+					int relativeW = util::genRand(0, num_W + 1);
+					WW.push_back(FW * (relativeW * step_W + imageRelativeWidthRange.first));
+					AllW += FW * (relativeW * step_W + imageRelativeWidthRange.first);
+				}
+				for (int list = 0; list < row; list++){
+					int relativeH = util::genRand(0, num_H + 1);
+					WH.push_back(FH * (relativeH * step_H + imageRelativeHeightRange.first));
+					AllH += FH * (relativeH * step_H + imageRelativeHeightRange.first);
+				}
+
+				double width_spacing = 0.0f;
+				double height_spacing = 0.0f;
+				if (NC > 2)
+					width_spacing = (width - AllW) / (NC - 1);
+				if (NR > 1)
+					height_spacing = (height - AllH) / (NR - 1);
+
+				if (NG == 1){
+					float curH_spacing = 0;
+					float curW_spacing = 0;
+					for (int i = 0; i < NR; ++i) {
+						curW_spacing = 0;
+						for (int j = 0; j < NC; ++j) {
+							float x1_A, y1_A, x2_A, y2_A;
+							float x1_A_G, y1_A_G, x2_A_G, y2_A_G;
+							float x1_B, y1_B, x2_B, y2_B;
+							float x1_B_G, y1_B_G, x2_B_G, y2_B_G;
+							float x1_G, y1_G, x2_G, y2_G;
+
+							float curW = WW[j];
+							float curH = WH[i];
+
+							// A
+							x1_A = curW_spacing;
+							y1_A = curH_spacing;
+							x2_A = x1_A + curW;
+							y2_A = y1_A + curH;
+							// A_G
+							x1_A_G = curW_spacing;
+							y1_A_G = curH_spacing;
+							x2_A_G = x1_A_G + curW;
+							y2_A_G = y1_A_G + curH;
+							// B
+							x1_B = curW_spacing;
+							y1_B = curH_spacing;
+							x2_B = x1_B + curW;
+							y2_B = y1_B + curH;
+							// B_G
+							x1_B_G = curW_spacing;
+							y1_B_G = curH_spacing;
+							x2_B_G = x1_B_G + curW;
+							y2_B_G = y1_B_G + curH;
+							//G
+							x1_G = curW_spacing;
+							y1_G = curH_spacing;
+							x2_G = x1_G + curW;
+							y2_G = y1_G + curH;
+
+							curW_spacing += curW + width_spacing;
+							if (window_displacement > 0) {
+								x1_A += util::genRand(-curW * window_displacement, curW * window_displacement);
+								y1_A += util::genRand(-curH * window_displacement, curH * window_displacement);
+								x2_A += util::genRand(-curW * window_displacement, curW * window_displacement);
+								y2_A += util::genRand(-curH * window_displacement, curH * window_displacement);
+
+								x1_B += util::genRand(-curW * window_displacement, curW * window_displacement);
+								y1_B += util::genRand(-curH * window_displacement, curH * window_displacement);
+								x2_B += util::genRand(-curW * window_displacement, curW * window_displacement);
+								y2_B += util::genRand(-curH * window_displacement, curH * window_displacement);
+
+							}
+
+							if (util::genRand() < window_prob) {
+								cv::rectangle(result_A, cv::Point(std::round(x1_A), std::round(y1_A)), cv::Point(std::round(x2_A), std::round(y2_A)), window_color, thickness);
+								cv::rectangle(result_A_G, cv::Point(std::round(x1_A_G), std::round(y1_A_G)), cv::Point(std::round(x2_A_G), std::round(y2_A_G)), window_color, thickness);
+							}
+
+							if (util::genRand() < window_prob) {
+								cv::rectangle(result_B, cv::Point(std::round(x1_B), std::round(y1_B)), cv::Point(std::round(x2_B), std::round(y2_B)), window_color, thickness);
+								cv::rectangle(result_B_G, cv::Point(std::round(x1_B_G), std::round(y1_B_G)), cv::Point(std::round(x2_B_G), std::round(y2_B_G)), window_color, thickness);
+							}
+							cv::rectangle(result_G, cv::Point(std::round(x1_G), std::round(y1_G)), cv::Point(std::round(x2_G), std::round(y2_G)), window_color, thickness);
+						}
+						curH_spacing += height_spacing + WH[i];
+					}
+				}
+				if (padding > 0){
+					int top = padding;
+					int bottom = padding;
+					int left = padding;
+					int right = padding;
+					int borderType = cv::BORDER_CONSTANT;
+					cv::copyMakeBorder(result_A, result_A, top, bottom, left, right, borderType, bg_color);
+					cv::copyMakeBorder(result_A_G, result_A_G, top, bottom, left, right, borderType, bg_color);
+					cv::copyMakeBorder(result_B, result_B, top, bottom, left, right, borderType, bg_color);
+					cv::copyMakeBorder(result_B_G, result_B_G, top, bottom, left, right, borderType, bg_color);
+					cv::copyMakeBorder(result_G, result_G, top, bottom, left, right, borderType, bg_color);
+				}
+				// A
+				QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				cv::imwrite(img_filename_A.toUtf8().constData(), result_A);
+				// A_G
+				QString img_filename_A_G = facadeImagesPath + QString("/A_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				cv::imwrite(img_filename_A_G.toUtf8().constData(), result_A_G);
+				// B
+				QString img_filename_B = facadeImagesPath + QString("/B/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				cv::imwrite(img_filename_B.toUtf8().constData(), result_B);
+				// B_G
+				QString img_filename_B_G = facadeImagesPath + QString("/B_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				cv::imwrite(img_filename_B_G.toUtf8().constData(), result_B_G);
+
+				// fuse image
+				cv::Mat fuse_img = fuse_images(result_A_G, result_B_G);
+				QString img_filename_G = facadeImagesPath + QString("/G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				cv::imwrite(img_filename_G.toUtf8().constData(), fuse_img);
+
+				// Eval image
+				QString img_filename_Eval = facadeImagesPath + QString("/Eval/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				cv::imwrite(img_filename_Eval.toUtf8().constData(), result_G);
+
+				index++;
+
+			}
+		}
+	}
+	return index;
+}
+
+
+std::vector<double> GLWidget3D::eval_accuracy(const cv::Mat& seg_img, const cv::Mat& gt_img) {
+	int gt_p = 0;
+	int seg_tp = 0;
+	int seg_fn = 0;
+	int gt_n = 0;
+	int seg_tn = 0;
+	int seg_fp = 0;
+	for (int i = 0; i < gt_img.size().height; i++) {
+		for (int j = 0; j < gt_img.size().width; j++) {
+			// window
+			if ((int)gt_img.at<uchar>(i, j) == 255) {
+				gt_p++;
+				if ((int)seg_img.at<uchar>(i, j) == 255) {
+					seg_tp++;
+				}
+				else
+					seg_fn++;
+			}
+			else {// wall
+				gt_n++;
+				if ((int)seg_img.at<uchar>(i, j) == 0) {
+					seg_tn++;
+				}
+				else
+					seg_fp++;
+			}
+		}
+	}
+	// return pixel accuracy and class accuracy
+	std::vector<double> eval_metrix;
+	// accuracy 
+	eval_metrix.push_back(1.0 * (seg_tp + seg_tn) / (gt_p + gt_n));
+	// precision
+	double precision = 1.0 * seg_tp / (seg_tp + seg_fp);
+	// recall
+	double recall = 1.0 * seg_tp / (seg_tp + seg_fn);
+	eval_metrix.push_back(precision);
+	eval_metrix.push_back(recall);
+	double f_score = 2 * precision * recall / (precision + recall);
+	eval_metrix.push_back(f_score);
+	std::cout << "P = " << gt_p << std::endl;
+	std::cout << "N = " << gt_n << std::endl;
+	std::cout << "TP = " << seg_tp << std::endl;
+	std::cout << "FN = " << seg_fn << std::endl;
+	std::cout << "TN = " << seg_tn << std::endl;
+	std::cout << "FP = " << seg_fp << std::endl;
+	return eval_metrix;
+}
+
+cv::Mat GLWidget3D::fuse_images(const cv::Mat& src_img_1, const cv::Mat& src_img_2) {
+	cv::Scalar bg_color(0, 0, 0); // white back ground
+	cv::Scalar window_color(255, 255, 255); // black for windows
+	cv::Mat result(src_img_1.size(), CV_8UC1, bg_color);
+	for (int i = 0; i < src_img_1.size().height; i++) {
+		for (int j = 0; j < src_img_1.size().width; j++) {
+			// window
+			if ((int)src_img_1.at<uchar>(i, j) == 255 || (int)src_img_2.at<uchar>(i, j) == 255) {
+				result.at<uchar>(i, j) = (uchar)255;
+			}
+			else {// wall
+				result.at<uchar>(i, j) = (uchar)0;
+			}
+		}
+	}
+	return result;
 }
 
 void GLWidget3D::update3DGeometry() {

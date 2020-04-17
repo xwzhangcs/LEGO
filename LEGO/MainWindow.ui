@@ -77,6 +77,7 @@
     <addaction name="actionGenerateEDImages"/>
     <addaction name="actionGenerateDeformImages"/>
     <addaction name="actionGenerateFuseImages"/>
+    <addaction name="actionGenerateScoreImages"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSimplify"/>
@@ -319,6 +320,11 @@
   <action name="actionGenerateFuseImages">
    <property name="text">
     <string>Generate Fuse Images</string>
+   </property>
+  </action>
+  <action name="actionGenerateScoreImages">
+   <property name="text">
+    <string>Generate Score Images</string>
    </property>
   </action>
  </widget>

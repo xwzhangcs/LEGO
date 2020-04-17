@@ -58,6 +58,7 @@ public:
     QAction *actionGenerateEDImages;
     QAction *actionGenerateDeformImages;
     QAction *actionGenerateFuseImages;
+    QAction *actionGenerateScoreImages;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -158,6 +159,8 @@ public:
         actionGenerateDeformImages->setObjectName(QStringLiteral("actionGenerateDeformImages"));
         actionGenerateFuseImages = new QAction(MainWindowClass);
         actionGenerateFuseImages->setObjectName(QStringLiteral("actionGenerateFuseImages"));
+        actionGenerateScoreImages = new QAction(MainWindowClass);
+        actionGenerateScoreImages->setObjectName(QStringLiteral("actionGenerateScoreImages"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -219,6 +222,7 @@ public:
         menuTools->addAction(actionGenerateEDImages);
         menuTools->addAction(actionGenerateDeformImages);
         menuTools->addAction(actionGenerateFuseImages);
+        menuTools->addAction(actionGenerateScoreImages);
 
         retranslateUi(MainWindowClass);
 
@@ -264,6 +268,7 @@ public:
         actionGenerateEDImages->setText(QApplication::translate("MainWindowClass", "Generate ED Images", Q_NULLPTR));
         actionGenerateDeformImages->setText(QApplication::translate("MainWindowClass", "Generate Deform Images", Q_NULLPTR));
         actionGenerateFuseImages->setText(QApplication::translate("MainWindowClass", "Generate Fuse Images", Q_NULLPTR));
+        actionGenerateScoreImages->setText(QApplication::translate("MainWindowClass", "Generate Score Images", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuRendering->setTitle(QApplication::translate("MainWindowClass", "Rendering", Q_NULLPTR));
         menuSimplify->setTitle(QApplication::translate("MainWindowClass", "Simplify", Q_NULLPTR));
