@@ -372,8 +372,8 @@ void MainWindow::onGenerateRoofImages(){
 
 void MainWindow::onGenerateEDImages(){
 	float window_displacement = 0.2;
-	float window_prob = 0.7;
-	glWidget->generateEDImages(QString("../data_1/deform_side"), 120, 120, window_displacement, window_prob, 4);
+	float window_prob = 1.0;
+	glWidget->generateEDImages(QString("../data_1/test"), 120, 120, window_displacement, window_prob, 4);
 }
 
 void MainWindow::onGenerateDeformImages(){
@@ -401,10 +401,10 @@ void MainWindow::onGenerateFuseImages(){
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	/*index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/side"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateFuseImagesTest(QString("../data_1/deform_fuse/others"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
-	window_displacement = 0.0;
-	window_prob = 0.7;
+	/*window_displacement = 0.2;
+	window_prob = 1.0;
 	index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/side"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.2;
@@ -415,18 +415,13 @@ void MainWindow::onGenerateFuseImages(){
 	window_prob = 0.7;
 	index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/side"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;*/
-	index = glWidget->generateScoreFuseImages(QString("../data_1/deform_fuse/score"), index, 120, 120, window_displacement, window_prob, 4);
-	std::cout << "index is " << index << std::endl;
-	/*window_displacement = 0.0;
+	/*window_displacement = 0.1;
 	window_prob = 0.75;
 	index = glWidget->generateScoreFuseImages(QString("../data_1/deform_fuse/score"), index, 120, 120, window_displacement, window_prob, 4);
-	std::cout << "index is " << index << std::endl;
-	window_displacement = 0.15;
-	window_prob = 1.0;
-	index = glWidget->generateScoreFuseImages(QString("../data_1/deform_fuse/score"), index, 120, 120, window_displacement, window_prob, 4);
-	std::cout << "index is " << index << std::endl;
-	window_displacement = 0.15;
-	window_prob = 0.7;
+	std::cout << "index is " << index << std::endl;*/
+
+	/*window_displacement = 0.2;
+	window_prob = 0.75;
 	index = glWidget->generateScoreFuseImages(QString("../data_1/deform_fuse/score"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;*/
 }

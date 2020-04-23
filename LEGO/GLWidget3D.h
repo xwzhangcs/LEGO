@@ -82,6 +82,8 @@ public:
 
 	int generateFuseImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
 
+	int generateFuseImagesTest(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
+
 	int generateFuseDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
 
 	int generateScoreImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
