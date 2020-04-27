@@ -380,19 +380,20 @@ void MainWindow::onGenerateDeformImages(){
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	index = glWidget->generateDeformImages(QString("../data_1/deform/side"), index, 120, 120, window_displacement, window_prob, 4);
+	int padding = 4;
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.7;
-	index = glWidget->generateDeformImages(QString("../data_1/deform/side"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 1.0;
-	index = glWidget->generateDeformImages(QString("../data_1/deform/side"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 0.7;
-	index = glWidget->generateDeformImages(QString("../data_1/deform/side"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 
 }
@@ -401,7 +402,7 @@ void MainWindow::onGenerateFuseImages(){
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	index = glWidget->generateFuseImagesTest(QString("../data_1/deform_fuse/others"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreFuseImages(QString("../data_1/deform_fuse/others"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	/*window_displacement = 0.2;
 	window_prob = 1.0;
@@ -431,21 +432,31 @@ void MainWindow::onGenerateScoreImages(){
 	cv::Mat gt_img = cv::imread("../data_1/test/G/facade_00000.png", CV_LOAD_IMAGE_UNCHANGED);
 	std::vector<double> eval_matrix = glWidget->eval_accuracy(seg_img, gt_img);
 	std::cout << "eval_matrix is " << eval_matrix[0] << ", " << eval_matrix[1] << ", " << eval_matrix[2] << ", " << eval_matrix[3] << std::endl;*/
+	//{
+	//	float window_displacement = 0.0;
+	//	float window_prob = 1.0;
+	//	int index = 5;
+	//	glWidget->countScoreImages(QString("../data_1/test"), index, 120, 120, 8, 8, window_displacement, window_prob, 4);
+	//}
+	//return;
+
+	srand(1);
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	index = glWidget->generateScoreImages(QString("../data_1/score"), index, 120, 120, window_displacement, window_prob, 4);
+	int padding = 4;
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.7;
-	index = glWidget->generateScoreImages(QString("../data_1/score"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 1.0;
-	index = glWidget->generateScoreImages(QString("../data_1/score"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 0.7;
-	index = glWidget->generateScoreImages(QString("../data_1/score"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 }
