@@ -2046,15 +2046,15 @@ std::vector<cv::Mat> GLWidget3D::generateDeformFacade(int width, int height, int
 				y2_G = y1_G + curH;
 				curW_spacing += curW + width_spacing;
 				if (window_displacement > 0) {
-					/*x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
+					x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
 					y1 += util::genRand(-curH * window_displacement, curH * window_displacement);
 					x2 += util::genRand(-curW * window_displacement, curW * window_displacement);
-					y2 += util::genRand(-curH * window_displacement, curH * window_displacement);*/
+					y2 += util::genRand(-curH * window_displacement, curH * window_displacement);
 
-					x1 += util::genRand(0, curW * window_displacement);
+					/*x1 += util::genRand(0, curW * window_displacement);
 					y1 += util::genRand(0, curH * window_displacement);
 					x2 += util::genRand(-curW * window_displacement, 0);
-					y2 += util::genRand(-curH * window_displacement, 0);
+					y2 += util::genRand(-curH * window_displacement, 0);*/
 
 				}
 
@@ -2184,16 +2184,16 @@ void GLWidget3D::generateEDImages(QString facadeImagesPath, int width, int heigh
 
 int GLWidget3D::generateDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	double step_W = 0.1;
-	double step_H = 0.1;
+	double step_W = 0.2;
+	double step_H = 0.2;
 	int num_W = 0;
 	int num_H = 0;
-	std::pair<int, int> imageRowsRange(2, 7);
-	std::pair<int, int> imageColsRange(2, 7);
-	//std::pair<int, int> imageRowsRange(3, 7);
-	//std::pair<int, int> imageColsRange(3, 7);
+	//std::pair<int, int> imageRowsRange(2, 7);
+	//std::pair<int, int> imageColsRange(2, 7);
+	std::pair<int, int> imageRowsRange(3, 8);
+	std::pair<int, int> imageColsRange(3, 8);
 	std::pair<int, int> imageGroupsRange(1, 1);
-	std::pair<double, double> imageRelativeWidthRange(0.2, 0.7);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
 	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
 
 
@@ -2211,7 +2211,7 @@ int GLWidget3D::generateDeformImages(QString facadeImagesPath, int index, int wi
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = true;
+	bool bSideW = false;
 	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
@@ -2265,7 +2265,7 @@ int GLWidget3D::generateDeformImages(QString facadeImagesPath, int index, int wi
 							if (int(1 - window_displacement) == 1)
 								num_deform = 1;
 
-							for (int iter_outers = 0; iter_outers < 1/*num_deform * num_iters*/; ++iter_outers){
+							for (int iter_outers = 0; iter_outers < 3/*num_deform * num_iters*/; ++iter_outers){
 								std::vector<cv::Mat> outpus = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, window_displacement, window_prob, padding);
 								if (outpus.size() == 0){
 									//std::cout << "invlaid image" << std::endl;
@@ -2640,15 +2640,16 @@ int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, in
 
 int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	double step_W = 0.1;
-	double step_H = 0.1;
+	double step_W = 0.2;
+	double step_H = 0.2;
 	int num_W = 0;
 	int num_H = 0;
-	std::pair<int, int> imageRowsRange(2, 7);
-	std::pair<int, int> imageColsRange(2, 7);
+	std::pair<int, int> imageRowsRange(3, 8);
+	std::pair<int, int> imageColsRange(3, 8);
 
 	std::pair<int, int> imageGroupsRange(1, 1);
-	std::pair<double, double> imageRelativeWidthRange(0.2, 0.7);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+	//std::pair<double, double> imageRelativeWidthRange(0.2, 0.7);
 	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
 
 	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
@@ -2669,10 +2670,10 @@ int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int wid
 	double ratioHeight = 0.0;
 	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
 		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
-			int num_iters = 50;
+			int num_iters = 50;// 50
 			if (row >= 6 && col >= 6)
-				num_iters = 70;
-			for (int iter = 0; iter < num_iters; iter++){
+				num_iters = 70; // 70
+			for (int iter = 0; iter < 100/*num_iters*/; iter++){
 				/* draw the facade */
 				int NR = row;
 				int NG = 1;
@@ -2765,14 +2766,14 @@ int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int wid
 								y2_G = y1_G + curH;
 								curW_spacing += curW + width_spacing;
 								if (window_displacement > 0) {
-									/*x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
+									x1 += util::genRand(-curW * window_displacement, curW * window_displacement);
 									y1 += util::genRand(-curH * window_displacement, curH * window_displacement);
 									x2 += util::genRand(-curW * window_displacement, curW * window_displacement);
-									y2 += util::genRand(-curH * window_displacement, curH * window_displacement);*/
-									x1 += util::genRand(0, curW * window_displacement);
+									y2 += util::genRand(-curH * window_displacement, curH * window_displacement);
+									/*x1 += util::genRand(0, curW * window_displacement);
 									y1 += util::genRand(0, curH * window_displacement);
 									x2 += util::genRand(-curW * window_displacement, 0);
-									y2 += util::genRand(-curH * window_displacement, 0);
+									y2 += util::genRand(-curH * window_displacement, 0);*/
 								}
 
 								if (util::genRand() < window_prob) {
@@ -2789,7 +2790,7 @@ int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int wid
 							curH_spacing += height_spacing + WH[i];
 						}
 					}
-					/*int padding_new = 4;
+					int padding_new = 4;
 					if (padding_new > 0){
 						int top = padding_new;
 						int bottom = padding_new;
@@ -2798,7 +2799,7 @@ int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int wid
 						int borderType = cv::BORDER_CONSTANT;
 						cv::copyMakeBorder(result, result, top, bottom, left, right, borderType, bg_color);
 						cv::copyMakeBorder(result_G, result_G, top, bottom, left, right, borderType, bg_color);
-					}*/
+					}
 					// A
 					QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
 					//std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;
@@ -2819,13 +2820,15 @@ int GLWidget3D::generateScoreImages(QString facadeImagesPath, int index, int wid
 
 void GLWidget3D::countScoreImages(QString facadeImagesPath, int index, int width, int height, int row, int col, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	double step_W = 0.1;
-	double step_H = 0.1;
+	double step_W = 0.2;
+	double step_H = 0.2;
 	int num_W = 0;
 	int num_H = 0;
 	std::pair<int, int> imageGroupsRange(1, 1);
-	std::pair<double, double> imageRelativeWidthRange(0.2, 0.8);
-	std::pair<double, double> imageRelativeHeightRange(0.3, 0.8);
+	//std::pair<double, double> imageRelativeWidthRange(0.2, 0.8);
+	//std::pair<double, double> imageRelativeHeightRange(0.3, 0.8);
+	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
 
 	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
 		num_W = ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);

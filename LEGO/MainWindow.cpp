@@ -381,19 +381,19 @@ void MainWindow::onGenerateDeformImages(){
 	float window_prob = 1.0;
 	int index = 0;
 	int padding = 4;
-	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.2/equal"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.7;
-	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.2/equal"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 1.0;
-	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.2/equal"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 0.7;
-	index = glWidget->generateDeformImages(QString("../data_1/deform_0.1_side/side"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateDeformImages(QString("../data_1/deform_0.2/equal"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 
 }
@@ -432,31 +432,56 @@ void MainWindow::onGenerateScoreImages(){
 	cv::Mat gt_img = cv::imread("../data_1/test/G/facade_00000.png", CV_LOAD_IMAGE_UNCHANGED);
 	std::vector<double> eval_matrix = glWidget->eval_accuracy(seg_img, gt_img);
 	std::cout << "eval_matrix is " << eval_matrix[0] << ", " << eval_matrix[1] << ", " << eval_matrix[2] << ", " << eval_matrix[3] << std::endl;*/
-	//{
-	//	float window_displacement = 0.0;
-	//	float window_prob = 1.0;
-	//	int index = 5;
-	//	glWidget->countScoreImages(QString("../data_1/test"), index, 120, 120, 8, 8, window_displacement, window_prob, 4);
-	//}
-	//return;
+	{
+		double step_W = 0.2;
+		double step_H = 0.2;
+		int num_W = 0;
+		int num_H = 0;
+		std::pair<int, int> imageGroupsRange(1, 1);
+		std::pair<int, int> imageRowsRange(3, 8);
+		std::pair<int, int> imageColsRange(3, 8);
+		std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
+		std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
 
-	srand(1);
+		if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
+			num_W = ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+		else
+			num_W = floor((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+
+		if (ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H) - (imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H < 0.01)
+			num_H = ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+		else
+			num_H = floor((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+		std::cout << "num_W is " << num_W << std::endl;
+		std::cout << "num_H is " << num_H << std::endl;
+		int total = 0;
+		for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
+			for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
+				total += pow(num_W + 1, col) * pow(num_H + 1, row);
+			}
+		}
+		std::cout << "index is " << total << std::endl;
+		
+	}
+	return;
+
+	srand(0);
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	int padding = 4;
-	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
+	int padding = 0;
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.2_padding/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.7;
-	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.2_padding/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 1.0;
-	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.2_padding/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 0.7;
-	index = glWidget->generateScoreImages(QString("../data_1/deform_0.1_side/general"), index, 120, 120, window_displacement, window_prob, padding);
+	index = glWidget->generateScoreImages(QString("../data_1/deform_0.2_padding/general"), index, 120, 120, window_displacement, window_prob, padding);
 	std::cout << "index is " << index << std::endl;
 }
