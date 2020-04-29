@@ -1902,9 +1902,9 @@ cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int ima
 	double WHM = FH * imageRelativeMidW.second;
 	double width_spacing = 0.0f;
 	double height_spacing = 0.0f;
-	std::cout << "WW, WH is " << WW << ", " << WH << std::endl;
-	std::cout << "WWS, WHS is " << WWS << ", " << WHS << std::endl;
-	std::cout << "WWM, WHM is " << WWM << ", " << WHM << std::endl;
+	//std::cout << "WW, WH is " << WW << ", " << WH << std::endl;
+	//std::cout << "WWS, WHS is " << WWS << ", " << WHS << std::endl;
+	//std::cout << "WWM, WHM is " << WWM << ", " << WHM << std::endl;
 	if (NC > 2)
 		width_spacing = (width - WWS * 2 - WW * (NC - 3) - WWM) / (NC - 1);
 	if (NR > 1)
@@ -2514,15 +2514,15 @@ int GLWidget3D::generateFuseImagesTest(QString facadeImagesPath, int index, int 
 
 int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
 	// generate facade images
-	double step_W = 0.2;
-	double step_H = 0.2;
+	double step_W = 0.1;
+	double step_H = 0.1;
 	int num_W = 0;
 	int num_H = 0;
-	std::pair<int, int> imageRowsRange(3, 8);
-	std::pair<int, int> imageColsRange(3, 8);
+	std::pair<int, int> imageRowsRange(2, 8);
+	std::pair<int, int> imageColsRange(2, 8);
 	std::pair<int, int> imageGroupsRange(1, 1);
-	std::pair<double, double> imageRelativeWidthRange(0.3, 0.7);
-	std::pair<double, double> imageRelativeHeightRange(0.3, 0.7);
+	std::pair<double, double> imageRelativeWidthRange(0.2, 0.8);
+	std::pair<double, double> imageRelativeHeightRange(0.2, 0.8);
 
 
 	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
@@ -2539,7 +2539,7 @@ int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, in
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = false;
+	bool bSideW = true;
 	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
@@ -2586,15 +2586,25 @@ int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, in
 							int num_iters = 10;
 							if (row >= 6 && col >= 6)
 								num_iters = 30;
+							num_iters = 2;
 							if (int(window_prob) == 1)
 								num_iters = 1;
 							// draw facade image
-							int num_deform = 3;
+							int num_deform = 2;
 							if (int(1 - window_displacement) == 1)
 								num_deform = 1;
 							// draw facade image
 							for (int iter_outers = 0; iter_outers < num_deform * num_iters; ++iter_outers){
 								std::vector<cv::Mat> outpus_A = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, 0.1, window_prob, padding);
+								if (outpus_A.size() == 0){
+									//std::cout << "invlaid image" << std::endl;
+									continue;
+								}
+								std::vector<cv::Mat> outpus_B = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, 0.2, window_prob, padding);
+								if (outpus_B.size() == 0){
+									//std::cout << "invlaid image" << std::endl;
+									continue;
+								}
 								// A
 								QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
 								//std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;
@@ -2604,7 +2614,7 @@ int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, in
 								//std::cout << "img_filename_G is " << img_filename_A_G.toUtf8().constData() << std::endl;
 								cv::imwrite(img_filename_A_G.toUtf8().constData(), outpus_A[1]);
 
-								std::vector<cv::Mat> outpus_B = generateDeformFacade(width, height, row, col, 1, imageRelativeW, imageRelativeSideW, imageRelativeMidW, 0.2, window_prob, padding);
+								
 								// B
 								QString img_filename_B = facadeImagesPath + QString("/B/facade_%1.png").arg(index, 5, 10, QChar('0'));
 								//std::cout << "img_filename_A is " << img_filename_A.toUtf8().constData() << std::endl;
@@ -3160,8 +3170,11 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 			int num_iters =80;
 			if (row >= 6 && col >= 6)
 				num_iters = 100;
-			int num_displacement = 15;
-			int num_missing = 15;
+			num_iters = 15;
+			//int num_displacement = 15;
+			//int num_missing = 15;
+			int num_displacement = 5;
+			int num_missing = 5;
 			if (int(window_prob) == 1)
 				num_missing = 1;
 			if (int(1 - window_displacement) == 1)
