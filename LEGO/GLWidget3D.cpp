@@ -1905,7 +1905,7 @@ cv::Mat GLWidget3D::generateFacade(int width, int height, int imageRows, int ima
 	//std::cout << "WW, WH is " << WW << ", " << WH << std::endl;
 	//std::cout << "WWS, WHS is " << WWS << ", " << WHS << std::endl;
 	//std::cout << "WWM, WHM is " << WWM << ", " << WHM << std::endl;
-	if (NC > 2)
+	if (NC > 1)
 		width_spacing = (width - WWS * 2 - WW * (NC - 3) - WWM) / (NC - 1);
 	if (NR > 1)
 		height_spacing = (height - WH * NR) / (NR - 1);
@@ -2539,7 +2539,7 @@ int GLWidget3D::generateFuseDeformImages(QString facadeImagesPath, int index, in
 	cv::Scalar bg_color(0, 0, 0); // white back ground
 	cv::Scalar window_color(255, 255, 255); // black for windows
 	int thickness = -1;
-	bool bSideW = true;
+	bool bSideW = false;
 	bool bMidW = false;
 	double ratioWidth = 0.0;
 	double ratioHeight = 0.0;
@@ -3145,8 +3145,10 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 	double step_H = 0.1;
 	int num_W = 0;
 	int num_H = 0;
-	std::pair<int, int> imageRowsRange(2, 8);
-	std::pair<int, int> imageColsRange(2, 8);
+	//std::pair<int, int> imageRowsRange(2, 8);
+	//std::pair<int, int> imageColsRange(2, 8);
+	std::pair<int, int> imageRowsRange(3, 3);
+	std::pair<int, int> imageColsRange(4, 4);
 	std::pair<int, int> imageGroupsRange(1, 1);
 	std::pair<double, double> imageRelativeWidthRange(0.2, 0.8);
 	std::pair<double, double> imageRelativeHeightRange(0.2, 0.8);
@@ -3170,11 +3172,8 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 			int num_iters =80;
 			if (row >= 6 && col >= 6)
 				num_iters = 100;
-			num_iters = 15;
-			//int num_displacement = 15;
-			//int num_missing = 15;
-			int num_displacement = 5;
-			int num_missing = 5;
+			int num_displacement = 15;
+			int num_missing = 15;
 			if (int(window_prob) == 1)
 				num_missing = 1;
 			if (int(1 - window_displacement) == 1)
