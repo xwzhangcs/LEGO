@@ -3145,10 +3145,8 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 	double step_H = 0.1;
 	int num_W = 0;
 	int num_H = 0;
-	//std::pair<int, int> imageRowsRange(2, 8);
-	//std::pair<int, int> imageColsRange(2, 8);
-	std::pair<int, int> imageRowsRange(3, 3);
-	std::pair<int, int> imageColsRange(4, 4);
+	std::pair<int, int> imageRowsRange(2, 8);
+	std::pair<int, int> imageColsRange(2, 8);
 	std::pair<int, int> imageGroupsRange(1, 1);
 	std::pair<double, double> imageRelativeWidthRange(0.2, 0.8);
 	std::pair<double, double> imageRelativeHeightRange(0.2, 0.8);
@@ -3169,11 +3167,11 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 	double ratioHeight = 0.0;
 	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
 		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
-			int num_iters =80;
+			int num_iters =100;
 			if (row >= 6 && col >= 6)
 				num_iters = 100;
-			int num_displacement = 15;
-			int num_missing = 15;
+			int num_displacement = 20;
+			int num_missing = 20;
 			if (int(window_prob) == 1)
 				num_missing = 1;
 			if (int(1 - window_displacement) == 1)
@@ -3221,8 +3219,8 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				// computer the min start rh
 				for (int list = 0; list < col; list++){
 					int relativeW = util::genRand(min_start_rw, num_W + 1);
-					WW.push_back(FW * (relativeW * step_W + imageRelativeWidthRange.first));
-					AllW += FW * (relativeW * step_W + imageRelativeWidthRange.first);
+						WW.push_back(FW * (relativeW * step_W + imageRelativeWidthRange.first));
+						AllW += FW * (relativeW * step_W + imageRelativeWidthRange.first);
 				}
 				for (int list = 0; list < row; list++){
 					int relativeH = util::genRand(min_start_rh, num_H + 1);
@@ -3237,23 +3235,59 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				if (NR > 1)
 					height_spacing = (height - AllH) / (NR - 1);
 
+
+				// compute spacing adjustment
+				// currently only adjust right side
+				// e.g. between -0.5 * curW and -0.5 * width_spacing
+				std::vector<double> SpacingAdjustW;
+				std::vector<double> SpacingAdjustH;
+				for (int list = 0; list < col; list++){
+					if (list < col - 1){
+						SpacingAdjustW.push_back(util::genRand(-0.5 * WW[list], 0.5 * width_spacing));
+					}
+					else
+						SpacingAdjustW.push_back(0);
+				}
+				for (int list = 0; list < row; list++){
+					if (list < row - 1){
+						SpacingAdjustH.push_back(util::genRand(-0.5 * WH[list], 0.5 * height_spacing));
+					}
+					else
+						SpacingAdjustH.push_back(0);
+				}
+
+
 				// check valid
 				bool bValid_Window = true;
-				bool bValid_Spacing = true;
 				for (int list = 0; list < WW.size(); list++){
-					if (WW[list] < threshold * width){
+					if (WW[list] + SpacingAdjustW[list] < threshold * width){
 						bValid_Window = false;
 						break;
 					}
 				}
 				for (int list = 0; list < WH.size(); list++){
-					if (WH[list] < threshold * height){
+					if (WH[list] + SpacingAdjustH[list] < threshold * height){
 						bValid_Window = false;
 						break;
 					}
 				}
 
-				if (!bValid_Window || width_spacing < threshold * width || height_spacing < threshold * height){
+				// check valid of spacing
+				bool bValid_Spacing = true;
+				for (int list = 0; list < WW.size(); list++){
+					if (width_spacing - SpacingAdjustW[list] < threshold * width){
+						bValid_Spacing = false;
+						break;
+					}
+				}
+				for (int list = 0; list < WH.size(); list++){
+					if (height_spacing - SpacingAdjustH[list] < threshold * height){
+						bValid_Spacing = false;
+						break;
+					}
+				}
+
+				if (!bValid_Window || !bValid_Spacing){
 					//std::cout << "Invalid image" << std::endl;
 					continue;
 				}
@@ -3273,31 +3307,35 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 							float curW = WW[j];
 							float curH = WH[i];
 
+							float spacing_adjustW = SpacingAdjustW[j];
+							float spacing_adjustH = SpacingAdjustH[i];
+
+
 							// A
 							x1_A = curW_spacing;
 							y1_A = curH_spacing;
-							x2_A = x1_A + curW;
-							y2_A = y1_A + curH;
+							x2_A = x1_A + curW + spacing_adjustW;
+							y2_A = y1_A + curH + spacing_adjustH;
 							// A_G
 							x1_A_G = curW_spacing;
 							y1_A_G = curH_spacing;
-							x2_A_G = x1_A_G + curW;
-							y2_A_G = y1_A_G + curH;
+							x2_A_G = x1_A_G + curW + spacing_adjustW;
+							y2_A_G = y1_A_G + curH + spacing_adjustH;
 							// B
 							x1_B = curW_spacing;
 							y1_B = curH_spacing;
-							x2_B = x1_B + curW;
-							y2_B = y1_B + curH;
+							x2_B = x1_B + curW + spacing_adjustW;
+							y2_B = y1_B + curH + spacing_adjustH;
 							// B_G
 							x1_B_G = curW_spacing;
 							y1_B_G = curH_spacing;
-							x2_B_G = x1_B_G + curW;
-							y2_B_G = y1_B_G + curH;
+							x2_B_G = x1_B_G + curW + spacing_adjustW;
+							y2_B_G = y1_B_G + curH + spacing_adjustH;
 							//G
 							x1_G = curW_spacing;
 							y1_G = curH_spacing;
-							x2_G = x1_G + curW;
-							y2_G = y1_G + curH;
+							x2_G = x1_G + curW + spacing_adjustW;
+							y2_G = y1_G + curH + spacing_adjustH;
 
 							curW_spacing += curW + width_spacing;
 							if (window_displacement > 0) {
@@ -3306,10 +3344,32 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 								x2_A += util::genRand(-curW * window_displacement, curW * window_displacement);
 								y2_A += util::genRand(-curH * window_displacement, curH * window_displacement);
 
+								// can not be too small
+								if (x2_A - x1_A < threshold * width)
+								{
+									x1_A = curW_spacing;
+									x2_A = x1_A + curW + spacing_adjustW;
+								}
+								if (y2_A - y1_A < threshold * height){
+									y1_A = curH_spacing;
+									y2_A = y1_A + curH + spacing_adjustH;
+								}
+
 								x1_B += util::genRand(-curW * window_displacement, curW * window_displacement);
 								y1_B += util::genRand(-curH * window_displacement, curH * window_displacement);
 								x2_B += util::genRand(-curW * window_displacement, curW * window_displacement);
 								y2_B += util::genRand(-curH * window_displacement, curH * window_displacement);
+
+								// can not be too small
+								if (x2_B - x1_B < threshold * width)
+								{
+									x1_B = curW_spacing;
+									x2_B = x1_B + curW + spacing_adjustW;
+								}
+								if (y2_B - y1_B < threshold * height){
+									y1_B = curH_spacing;
+									y2_B = y1_B + curH + spacing_adjustH;
+								}
 
 							}
 
