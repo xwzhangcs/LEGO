@@ -3337,7 +3337,6 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 							x2_G = x1_G + curW + spacing_adjustW;
 							y2_G = y1_G + curH + spacing_adjustH;
 
-							curW_spacing += curW + width_spacing;
 							if (window_displacement > 0) {
 								x1_A += util::genRand(-curW * window_displacement, curW * window_displacement);
 								y1_A += util::genRand(-curH * window_displacement, curH * window_displacement);
@@ -3395,6 +3394,8 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 								}
 							}
 							cv::rectangle(result_G, cv::Point(std::round(x1_G) + padding, std::round(y1_G) + padding), cv::Point(std::round(x2_G) + padding, std::round(y2_G) + padding), window_color, thickness);
+
+							curW_spacing += curW + width_spacing;
 						}
 						curH_spacing += height_spacing + WH[i];
 					}
