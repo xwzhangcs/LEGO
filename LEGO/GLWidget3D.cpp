@@ -3241,16 +3241,23 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				// e.g. between -0.5 * curW and -0.5 * width_spacing
 				std::vector<double> SpacingAdjustW;
 				std::vector<double> SpacingAdjustH;
+				float adjust_ratio = 0.6;
 				for (int list = 0; list < col; list++){
 					if (list < col - 1){
-						SpacingAdjustW.push_back(util::genRand(-0.5 * WW[list], 0.5 * width_spacing));
+						if (util::genRand() > adjust_ratio) // 50% addding spacing adjustment
+							SpacingAdjustW.push_back(util::genRand(-0.5 * WW[list], 0.5 * width_spacing));
+						else
+							SpacingAdjustW.push_back(0);
 					}
 					else
 						SpacingAdjustW.push_back(0);
 				}
 				for (int list = 0; list < row; list++){
 					if (list < row - 1){
-						SpacingAdjustH.push_back(util::genRand(-0.5 * WH[list], 0.5 * height_spacing));
+						if (util::genRand() > adjust_ratio)
+							SpacingAdjustH.push_back(util::genRand(-0.5 * WH[list], 0.5 * height_spacing));
+						else
+							SpacingAdjustH.push_back(0);
 					}
 					else
 						SpacingAdjustH.push_back(0);
