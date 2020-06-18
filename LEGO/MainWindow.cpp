@@ -399,37 +399,38 @@ void MainWindow::onGenerateDeformImages(){
 }
 
 void MainWindow::onGenerateFuseImages(){
-	srand(0);
+	srand(1);
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing_new"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.7;
-	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing_new"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 1.0;
-	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing_new"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 0.7;
-	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateScoreFuseImages(QString("../data_1/regularization/spacing_new"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
-	/*index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/equal"), index, 120, 120, window_displacement, window_prob, 4);
+
+	/*index = glWidget->generateFuseDeformImages(QString("../data_1/regularization/side"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.7;
-	index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/equal"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateFuseDeformImages(QString("../data_1/regularization/side"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 1.0;
-	index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/equal"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateFuseDeformImages(QString("../data_1/regularization/side"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
 	window_prob = 0.7;
-	index = glWidget->generateFuseDeformImages(QString("../data_1/deform_fuse/equal"), index, 120, 120, window_displacement, window_prob, 4);
+	index = glWidget->generateFuseDeformImages(QString("../data_1/regularization/side"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;*/
 }
 

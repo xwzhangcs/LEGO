@@ -3170,7 +3170,10 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 			int num_iters =100;
 			if (row >= 6 && col >= 6)
 				num_iters = 100;
-			int num_displacement = 20;
+			num_iters = 10;
+			//int num_displacement = 20;
+			//int num_missing = 20;
+			int num_displacement = 10;
 			int num_missing = 20;
 			if (int(window_prob) == 1)
 				num_missing = 1;
@@ -3217,15 +3220,30 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				if (min_start_rh < 0)
 					min_start_rh = 0;
 				// computer the min start rh
+				int fixed_relativeW = util::genRand(min_start_rw, num_W + 1);
+				float size_ratio = 0.6;
 				for (int list = 0; list < col; list++){
-					int relativeW = util::genRand(min_start_rw, num_W + 1);
+					if (util::genRand() > size_ratio){
+						int relativeW = util::genRand(min_start_rw, num_W + 1);
 						WW.push_back(FW * (relativeW * step_W + imageRelativeWidthRange.first));
 						AllW += FW * (relativeW * step_W + imageRelativeWidthRange.first);
+					}
+					else{
+						WW.push_back(FW * (fixed_relativeW * step_W + imageRelativeWidthRange.first));
+						AllW += FW * (fixed_relativeW * step_W + imageRelativeWidthRange.first);
+					}
 				}
+				int fixed_relativeH = util::genRand(min_start_rh, num_H + 1);
 				for (int list = 0; list < row; list++){
-					int relativeH = util::genRand(min_start_rh, num_H + 1);
-					WH.push_back(FH * (relativeH * step_H + imageRelativeHeightRange.first));
-					AllH += FH * (relativeH * step_H + imageRelativeHeightRange.first);
+					if (util::genRand() > size_ratio){
+						int relativeH = util::genRand(min_start_rh, num_H + 1);
+						WH.push_back(FH * (relativeH * step_H + imageRelativeHeightRange.first));
+						AllH += FH * (relativeH * step_H + imageRelativeHeightRange.first);
+					}
+					else{
+						WH.push_back(FH * (fixed_relativeH * step_H + imageRelativeHeightRange.first));
+						AllH += FH * (fixed_relativeH * step_H + imageRelativeHeightRange.first);
+					}
 				}
 
 				double width_spacing = 0.0f;
