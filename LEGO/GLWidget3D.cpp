@@ -3517,7 +3517,7 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 					min_start_rh = 0;
 				// computer the min start rh
 				int fixed_relativeW = util::genRand(min_start_rw, num_W + 1);
-				float size_ratio = 1.0;
+				float size_ratio = 0.5;
 				for (int list = 0; list < col; list++){
 					if (util::genRand() > size_ratio){
 						int relativeW = util::genRand(min_start_rw, num_W + 1);
