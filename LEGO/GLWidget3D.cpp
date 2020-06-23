@@ -3466,10 +3466,10 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 	double ratioHeight = 0.0;
 	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
 		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
-			int num_iters =100;
+			int num_iters = 80;
 			if (row >= 6 && col >= 6)
-				num_iters = 100;
-			int num_displacement = 20;
+				num_iters = 120;
+			int num_displacement = 30;
 			int num_missing = 20;
 			if (int(window_prob) == 1)
 				num_missing = 1;
@@ -3484,6 +3484,8 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				cv::Mat result_G(height, width, CV_8UC1, bg_color);
 
 				if (padding > 0){
+					// random padding
+
 					int top = padding;
 					int bottom = padding;
 					int left = padding;
@@ -3495,29 +3497,51 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 					cv::copyMakeBorder(result_B_G, result_B_G, top, bottom, left, right, borderType, bg_color);
 					cv::copyMakeBorder(result_G, result_G, top, bottom, left, right, borderType, bg_color);
 				}
+				/* Borders*/
+				int top = 0;
+				int bottom = util::genRand(4, 20);
+				int left = util::genRand(4, 20);
+				int right = util::genRand(4, 20);
+				if (row >= 6){
+					top = util::genRand(4, 12);
+					bottom = util::genRand(4, 12);
+				}
+				else{
+					top = util::genRand(4, 20);
+					bottom = util::genRand(4, 20);
+				}
+
+				if (col >= 6){
+					left = util::genRand(4, 12);
+					right = util::genRand(4, 12);
+				}
+				else{
+					left = util::genRand(4, 20);
+					right = util::genRand(4, 20);
+				}
 
 				/* draw the facade */
 				int NR = row;
 				int NG = 1;
 				int NC = col;
-				double threshold = 0.05;
-				double FW = width * 1.0 / NC;
-				double FH = height * 1.0 / NR;
+				double threshold = 6.0;
+				double FW = (width - left - right) * 1.0 / NC;
+				double FH = (height - top - bottom) * 1.0 / NR;
 				std::vector<double> WW;
 				std::vector<double> WH;
 				// generate W and H list
 				double AllW = 0.0;
 				double AllH = 0.0;
 				// compute the min start rw and wh
-				int min_start_rw = ((threshold * width) / FW - imageRelativeWidthRange.first) / step_W;
+				int min_start_rw = (threshold / FW - imageRelativeWidthRange.first) / step_W;
 				if (min_start_rw < 0)
 					min_start_rw = 0;
-				int min_start_rh = ((threshold * height) / FH - imageRelativeHeightRange.first) / step_H;
+				int min_start_rh = (threshold / FH - imageRelativeHeightRange.first) / step_H;
 				if (min_start_rh < 0)
 					min_start_rh = 0;
 				// computer the min start rh
 				int fixed_relativeW = util::genRand(min_start_rw, num_W + 1);
-				float size_ratio = 0.5;
+				float size_ratio = 0.6;
 				for (int list = 0; list < col; list++){
 					if (util::genRand() > size_ratio){
 						int relativeW = util::genRand(min_start_rw, num_W + 1);
@@ -3545,9 +3569,9 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				double width_spacing = 0.0f;
 				double height_spacing = 0.0f;
 				if (NC > 1)
-					width_spacing = (width - AllW) / (NC - 1);
+					width_spacing = (width - AllW - left - right) / (NC - 1);
 				if (NR > 1)
-					height_spacing = (height - AllH) / (NR - 1);
+					height_spacing = (height - AllH - top - bottom) / (NR - 1);
 
 
 				// compute spacing adjustment
@@ -3580,13 +3604,13 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				// check valid
 				bool bValid_Window = true;
 				for (int list = 0; list < WW.size(); list++){
-					if (WW[list] + SpacingAdjustW[list] < threshold * width){
+					if (WW[list] + SpacingAdjustW[list] < threshold){
 						bValid_Window = false;
 						break;
 					}
 				}
 				for (int list = 0; list < WH.size(); list++){
-					if (WH[list] + SpacingAdjustH[list] < threshold * height){
+					if (WH[list] + SpacingAdjustH[list] < threshold){
 						bValid_Window = false;
 						break;
 					}
@@ -3595,13 +3619,13 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				// check valid of spacing
 				bool bValid_Spacing = true;
 				for (int list = 0; list < WW.size(); list++){
-					if (width_spacing - SpacingAdjustW[list] < threshold * width){
+					if (width_spacing - SpacingAdjustW[list] < threshold){
 						bValid_Spacing = false;
 						break;
 					}
 				}
 				for (int list = 0; list < WH.size(); list++){
-					if (height_spacing - SpacingAdjustH[list] < threshold * height){
+					if (height_spacing - SpacingAdjustH[list] < threshold){
 						bValid_Spacing = false;
 						break;
 					}
@@ -3613,10 +3637,10 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				}
 
 				if (NG == 1){
-					float curH_spacing = 0;
-					float curW_spacing = 0;
+					float curH_spacing = top;
+					float curW_spacing = left;
 					for (int i = 0; i < NR; ++i) {
-						curW_spacing = 0;
+						curW_spacing = left;
 						for (int j = 0; j < NC; ++j) {
 							float x1_A, y1_A, x2_A, y2_A;
 							float x1_A_G, y1_A_G, x2_A_G, y2_A_G;
@@ -3658,34 +3682,36 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 							y2_G = y1_G + curH + spacing_adjustH;
 
 							if (window_displacement > 0) {
-								x1_A += util::genRand(-curW * window_displacement, curW * window_displacement);
-								y1_A += util::genRand(-curH * window_displacement, curH * window_displacement);
-								x2_A += util::genRand(-curW * window_displacement, curW * window_displacement);
-								y2_A += util::genRand(-curH * window_displacement, curH * window_displacement);
+								double w_displacment = curW * window_displacement < 0.5 * threshold ? curW * window_displacement : 0.5 * threshold;
+								double h_displacment = curH * window_displacement < 0.5 * threshold ? curH * window_displacement : 0.5 * threshold;
+								x1_A += util::genRand(-w_displacment, w_displacment);
+								y1_A += util::genRand(-h_displacment, h_displacment);
+								x2_A += util::genRand(-w_displacment, w_displacment);
+								y2_A += util::genRand(-h_displacment, h_displacment);
 
 								// can not be too small
-								if (x2_A - x1_A < threshold * width)
+								if (x2_A - x1_A < threshold)
 								{
 									x1_A = curW_spacing;
 									x2_A = x1_A + curW + spacing_adjustW;
 								}
-								if (y2_A - y1_A < threshold * height){
+								if (y2_A - y1_A < threshold){
 									y1_A = curH_spacing;
 									y2_A = y1_A + curH + spacing_adjustH;
 								}
 
-								x1_B += util::genRand(-curW * window_displacement, curW * window_displacement);
-								y1_B += util::genRand(-curH * window_displacement, curH * window_displacement);
-								x2_B += util::genRand(-curW * window_displacement, curW * window_displacement);
-								y2_B += util::genRand(-curH * window_displacement, curH * window_displacement);
+								x1_B += util::genRand(-w_displacment, w_displacment);
+								y1_B += util::genRand(-h_displacment, h_displacment);
+								x2_B += util::genRand(-w_displacment, w_displacment);
+								y2_B += util::genRand(-h_displacment, h_displacment);
 
 								// can not be too small
-								if (x2_B - x1_B < threshold * width)
+								if (x2_B - x1_B < threshold)
 								{
 									x1_B = curW_spacing;
 									x2_B = x1_B + curW + spacing_adjustW;
 								}
-								if (y2_B - y1_B < threshold * height){
+								if (y2_B - y1_B < threshold){
 									y1_B = curH_spacing;
 									y2_B = y1_B + curH + spacing_adjustH;
 								}
@@ -3713,7 +3739,11 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 									cv::rectangle(result_B_G, cv::Point(std::round(x1_B_G) , std::round(y1_B_G)), cv::Point(std::round(x2_B_G), std::round(y2_B_G)), window_color, thickness);
 								}
 							}
-							cv::rectangle(result_G, cv::Point(std::round(x1_G) + padding, std::round(y1_G) + padding), cv::Point(std::round(x2_G) + padding, std::round(y2_G) + padding), window_color, thickness);
+							if (padding > 0){
+								cv::rectangle(result_G, cv::Point(std::round(x1_G) + padding, std::round(y1_G) + padding), cv::Point(std::round(x2_G) + padding, std::round(y2_G) + padding), window_color, thickness);
+							}
+							else
+								cv::rectangle(result_G, cv::Point(std::round(x1_G), std::round(y1_G)), cv::Point(std::round(x2_G), std::round(y2_G)), window_color, thickness);
 
 							curW_spacing += curW + width_spacing;
 						}
@@ -3726,21 +3756,23 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				// A_G
 				QString img_filename_A_G = facadeImagesPath + QString("/A_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
 				cv::imwrite(img_filename_A_G.toUtf8().constData(), result_A_G);
-				// B
-				QString img_filename_B = facadeImagesPath + QString("/B/facade_%1.png").arg(index, 5, 10, QChar('0'));
-				cv::imwrite(img_filename_B.toUtf8().constData(), result_B);
-				// B_G
-				QString img_filename_B_G = facadeImagesPath + QString("/B_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
-				cv::imwrite(img_filename_B_G.toUtf8().constData(), result_B_G);
+				//{
+				//	// B
+				//	QString img_filename_B = facadeImagesPath + QString("/B/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				//	cv::imwrite(img_filename_B.toUtf8().constData(), result_B);
+				//	// B_G
+				//	QString img_filename_B_G = facadeImagesPath + QString("/B_G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				//	cv::imwrite(img_filename_B_G.toUtf8().constData(), result_B_G);
 
-				// fuse image
-				cv::Mat fuse_img = fuse_images(result_A_G, result_B_G);
-				QString img_filename_G = facadeImagesPath + QString("/G/facade_%1.png").arg(index, 5, 10, QChar('0'));
-				cv::imwrite(img_filename_G.toUtf8().constData(), fuse_img);
+				//	// fuse image
+				//	cv::Mat fuse_img = fuse_images(result_A_G, result_B_G);
+				//	QString img_filename_G = facadeImagesPath + QString("/G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				//	cv::imwrite(img_filename_G.toUtf8().constData(), fuse_img);
 
-				// Eval image
-				QString img_filename_Eval = facadeImagesPath + QString("/Eval/facade_%1.png").arg(index, 5, 10, QChar('0'));
-				cv::imwrite(img_filename_Eval.toUtf8().constData(), result_G);
+				//	// Eval image
+				//	QString img_filename_Eval = facadeImagesPath + QString("/Eval/facade_%1.png").arg(index, 5, 10, QChar('0'));
+				//	cv::imwrite(img_filename_Eval.toUtf8().constData(), result_G);
+				//}
 
 				//std::cout << img_filename_A.toUtf8().constData() << std::endl;
 				index++;
