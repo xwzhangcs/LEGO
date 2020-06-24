@@ -406,7 +406,7 @@ void MainWindow::onGenerateFuseImages(){
 	index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
-	window_prob = 0.7;
+	window_prob = 0.75;
 	index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
@@ -414,7 +414,7 @@ void MainWindow::onGenerateFuseImages(){
 	index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.1;
-	window_prob = 0.7;
+	window_prob = 0.75;
 	index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
 	std::cout << "index is " << index << std::endl;
 

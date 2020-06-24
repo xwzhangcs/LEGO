@@ -3466,10 +3466,10 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 	double ratioHeight = 0.0;
 	for (int row = imageRowsRange.first; row <= imageRowsRange.second; row++){ // loop row
 		for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
-			int num_iters = 80;
+			int num_iters = 100;
 			if (row >= 6 && col >= 6)
 				num_iters = 120;
-			int num_displacement = 30;
+			int num_displacement = 20;
 			int num_missing = 20;
 			if (int(window_prob) == 1)
 				num_missing = 1;
@@ -3499,25 +3499,25 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 				}
 				/* Borders*/
 				int top = 0;
-				int bottom = util::genRand(4, 20);
-				int left = util::genRand(4, 20);
-				int right = util::genRand(4, 20);
+				int bottom = 0;
+				int left = 0;
+				int right = 0;
 				if (row >= 6){
-					top = util::genRand(4, 12);
-					bottom = util::genRand(4, 12);
+					top = util::genRand(4, 8);
+					bottom = util::genRand(4, 8);
 				}
 				else{
-					top = util::genRand(4, 20);
-					bottom = util::genRand(4, 20);
+					top = util::genRand(4, 10);
+					bottom = util::genRand(4, 10);
 				}
 
 				if (col >= 6){
-					left = util::genRand(4, 12);
-					right = util::genRand(4, 12);
+					left = util::genRand(4, 8);
+					right = util::genRand(4, 8);
 				}
 				else{
-					left = util::genRand(4, 20);
-					right = util::genRand(4, 20);
+					left = util::genRand(4, 10);
+					right = util::genRand(4, 10);
 				}
 
 				/* draw the facade */
