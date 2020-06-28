@@ -90,6 +90,7 @@ public:
 	void countScoreImages(QString facadeImagesPath, int index, int width, int height, int row, int col, float window_displacement, float window_prob, int padding);
 
 	int generateScoreFuseImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
+	int generateSingleFloorImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding);
 	std::vector<double> eval_accuracy(const cv::Mat& seg_img, const cv::Mat& gt_img);
 	cv::Mat fuse_images(const cv::Mat& src_img_1, const cv::Mat& src_img_2);
 	//

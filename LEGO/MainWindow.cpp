@@ -403,7 +403,23 @@ void MainWindow::onGenerateFuseImages(){
 	float window_displacement = 0.0;
 	float window_prob = 1.0;
 	int index = 0;
-	index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
+
+	index = glWidget->generateSingleFloorImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
+	std::cout << "index is " << index << std::endl;
+	window_displacement = 0.0;
+	window_prob = 0.8;
+	index = glWidget->generateSingleFloorImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
+	std::cout << "index is " << index << std::endl;
+	window_displacement = 0.1;
+	window_prob = 1.0;
+	index = glWidget->generateSingleFloorImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
+	std::cout << "index is " << index << std::endl;
+	window_displacement = 0.1;
+	window_prob = 0.8;
+	index = glWidget->generateSingleFloorImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
+	std::cout << "index is " << index << std::endl;
+
+	/*index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
 	std::cout << "index is " << index << std::endl;
 	window_displacement = 0.0;
 	window_prob = 0.75;
@@ -416,7 +432,7 @@ void MainWindow::onGenerateFuseImages(){
 	window_displacement = 0.1;
 	window_prob = 0.75;
 	index = glWidget->generateScoreFuseImages(QString("C:/data/spacing"), index, 128, 128, window_displacement, window_prob, 0);
-	std::cout << "index is " << index << std::endl;
+	std::cout << "index is " << index << std::endl;*/
 
 	/*index = glWidget->generateFuseDeformImages(QString("../data_1/side_new"), index, 120, 120, window_displacement, window_prob, 4);
 	std::cout << "index is " << index << std::endl;

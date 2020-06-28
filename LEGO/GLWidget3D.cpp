@@ -3783,6 +3783,213 @@ int GLWidget3D::generateScoreFuseImages(QString facadeImagesPath, int index, int
 	return index;
 }
 
+int GLWidget3D::generateSingleFloorImages(QString facadeImagesPath, int index, int width, int height, float window_displacement, float window_prob, int padding){
+	// generate facade images
+	double step_W = 0.1;
+	double step_H = 0.1;
+	int num_W = 0;
+	int num_H = 0;
+
+	std::pair<int, int> imageColsRange(2, 8);
+	std::pair<int, int> imageGroupsRange(1, 1);
+	std::pair<double, double> imageRelativeWidthRange(0.2, 0.8);
+	std::pair<double, double> imageRelativeHeightRange(0.2, 0.8);
+
+	if (ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W) - (imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W < 0.01)
+		num_W = ceil((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+	else
+		num_W = floor((imageRelativeWidthRange.second - imageRelativeWidthRange.first) / step_W);
+
+	if (ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H) - (imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H < 0.01)
+		num_H = ceil((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	else
+		num_H = floor((imageRelativeHeightRange.second - imageRelativeHeightRange.first) / step_H);
+	cv::Scalar bg_color(0, 0, 0); // white back ground
+	cv::Scalar window_color(255, 255, 255); // black for windows
+	int thickness = -1;
+	double ratioWidth = 0.0;
+	double ratioHeight = 0.0;
+	for (int col = imageColsRange.first; col <= imageColsRange.second; col++){ // loop col
+		int num_iters = 60;
+		int num_displacement = 20;
+		int num_missing = 10;
+		if (int(window_prob) == 1)
+			num_missing = 1;
+		if (int(1 - window_displacement) == 1)
+			num_displacement = 1;
+
+		for (int iter_outers = 0; iter_outers < num_iters * num_displacement * num_missing; ++iter_outers){
+			cv::Mat result_A(height, width, CV_8UC1, bg_color);
+			cv::Mat result_G(height, width, CV_8UC1, bg_color);
+
+			if (padding > 0){
+				// random padding
+
+				int top = padding;
+				int bottom = padding;
+				int left = padding;
+				int right = padding;
+				int borderType = cv::BORDER_CONSTANT;
+				cv::copyMakeBorder(result_A, result_A, top, bottom, left, right, borderType, bg_color);
+				cv::copyMakeBorder(result_G, result_G, top, bottom, left, right, borderType, bg_color);
+			}
+			/* Borders*/
+			int top = 0;
+			int bottom = 0;
+			int left = 0;
+			int right = 0;
+
+			top = util::genRand(50, 55);
+			bottom = util::genRand(50, 55);
+			left = util::genRand(4, 8);
+			right = util::genRand(4, 8);
+
+			/* draw the facade */
+			int NG = 1;
+			int NC = col;
+			double threshold = 6.0;
+			double FW = (width - left - right) * 1.0 / NC;
+			std::vector<double> WW;
+			// generate W and H list
+			double AllW = 0.0;
+			// compute the min start rw and wh
+			int min_start_rw = (threshold / FW - imageRelativeWidthRange.first) / step_W;
+			if (min_start_rw < 0)
+				min_start_rw = 0;
+			// computer the min start rh
+			int fixed_relativeW = util::genRand(min_start_rw, num_W + 1);
+			float size_ratio = 0.8;
+			for (int list = 0; list < col; list++){
+				if (util::genRand() > size_ratio){
+					int relativeW = util::genRand(min_start_rw, num_W + 1);
+					WW.push_back(FW * (relativeW * step_W + imageRelativeWidthRange.first));
+					AllW += FW * (relativeW * step_W + imageRelativeWidthRange.first);
+				}
+				else{
+					WW.push_back(FW * (fixed_relativeW * step_W + imageRelativeWidthRange.first));
+					AllW += FW * (fixed_relativeW * step_W + imageRelativeWidthRange.first);
+				}
+			}
+
+			double width_spacing = 0.0f;
+			if (NC > 1)
+				width_spacing = (width - AllW - left - right) / (NC - 1);
+
+			// compute spacing adjustment
+			// currently only adjust right side
+			// e.g. between -0.5 * curW and -0.5 * width_spacing
+			std::vector<double> SpacingAdjustW;
+			float adjust_ratio = 0.7;
+			for (int list = 0; list < col; list++){
+				if (list < col - 1){
+					if (util::genRand() > adjust_ratio) // 50% addding spacing adjustment
+						SpacingAdjustW.push_back(util::genRand(-0.5 * WW[list], 0.5 * width_spacing));
+					else
+						SpacingAdjustW.push_back(0);
+				}
+				else
+					SpacingAdjustW.push_back(0);
+			}
+			
+
+			// check valid
+			bool bValid_Window = true;
+			for (int list = 0; list < WW.size(); list++){
+				if (WW[list] + SpacingAdjustW[list] < threshold){
+					bValid_Window = false;
+					break;
+				}
+			}
+
+			// check valid of spacing
+			bool bValid_Spacing = true;
+			for (int list = 0; list < WW.size(); list++){
+				if (width_spacing - SpacingAdjustW[list] < threshold){
+					bValid_Spacing = false;
+					break;
+				}
+			}
+
+			if (!bValid_Window || !bValid_Spacing){
+				//std::cout << "Invalid image" << std::endl;
+				continue;
+			}
+
+			if (NG == 1){
+				float curH_spacing = top;
+				float curW_spacing = left;
+				
+				curW_spacing = left;
+				for (int j = 0; j < NC; ++j) {
+					float x1_A, y1_A, x2_A, y2_A;
+					float x1_G, y1_G, x2_G, y2_G;
+
+					float curW = WW[j];
+					float curH = height - top - bottom;
+
+					float spacing_adjustW = SpacingAdjustW[j];
+
+
+					// A
+					x1_A = curW_spacing;
+					y1_A = curH_spacing;
+					x2_A = x1_A + curW + spacing_adjustW;
+					y2_A = y1_A + curH;
+					// G
+					x1_G = curW_spacing;
+					y1_G = curH_spacing;
+					x2_G = x1_G + curW + spacing_adjustW;
+					y2_G = y1_G + curH;
+
+					if (window_displacement > 0) {
+						double w_displacment = curW * window_displacement < 0.5 * threshold ? curW * window_displacement : 0.5 * threshold;
+						double h_displacment = curH * window_displacement < 0.5 * threshold ? curH * window_displacement : 0.5 * threshold;
+						x1_A += util::genRand(-w_displacment, w_displacment);
+						y1_A += util::genRand(-h_displacment, h_displacment);
+						x2_A += util::genRand(-w_displacment, w_displacment);
+						y2_A += util::genRand(-h_displacment, h_displacment);
+
+						// can not be too small
+						if (x2_A - x1_A < threshold)
+						{
+							x1_A = curW_spacing;
+							x2_A = x1_A + curW + spacing_adjustW;
+						}
+						if (y2_A - y1_A < threshold){
+							y1_A = curH_spacing;
+							y2_A = y1_A + curH;
+						}
+
+					}
+
+					if (util::genRand() < window_prob) {
+						if (padding > 0){
+							cv::rectangle(result_A, cv::Point(std::round(x1_A) + padding, std::round(y1_A) + padding), cv::Point(std::round(x2_A) + padding, std::round(y2_A) + padding), window_color, thickness);
+							cv::rectangle(result_G, cv::Point(std::round(x1_G) + padding, std::round(y1_G) + padding), cv::Point(std::round(x2_G) + padding, std::round(y2_G) + padding), window_color, thickness);
+						}
+						else{
+							cv::rectangle(result_A, cv::Point(std::round(x1_A), std::round(y1_A)), cv::Point(std::round(x2_A), std::round(y2_A)), window_color, thickness);
+							cv::rectangle(result_G, cv::Point(std::round(x1_G), std::round(y1_G)), cv::Point(std::round(x2_G), std::round(y2_G)), window_color, thickness);
+						}
+					}
+
+					curW_spacing += curW + width_spacing;
+				}
+
+			}
+			// A
+			QString img_filename_A = facadeImagesPath + QString("/A/facade_%1.png").arg(index, 5, 10, QChar('0'));
+			cv::imwrite(img_filename_A.toUtf8().constData(), result_A);
+			// A_G
+			QString img_filename_A_G = facadeImagesPath + QString("/G/facade_%1.png").arg(index, 5, 10, QChar('0'));
+			cv::imwrite(img_filename_A_G.toUtf8().constData(), result_G);
+
+			index++;
+
+		}
+	}
+	return index;
+}
 
 std::vector<double> GLWidget3D::eval_accuracy(const cv::Mat& seg_img, const cv::Mat& gt_img) {
 	int gt_p = 0;
